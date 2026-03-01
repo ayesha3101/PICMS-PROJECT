@@ -1,0 +1,31 @@
+# ================================
+# PICMS Project .gitignore
+# ================================
+
+# Database Configuration - NEVER commit passwords!
+src/config/db_config.php
+
+# Logs
+logs/
+*.log
+error_log
+
+# Temporary Files
+temp/
+tmp/
+*.tmp
+*.bak
+*.old
+
+# IDE Files
+.vscode/
+.idea/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Session Files
+sessions/
+*.sess
