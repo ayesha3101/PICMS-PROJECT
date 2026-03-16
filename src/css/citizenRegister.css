@@ -14,13 +14,13 @@
   --error:    #c0392b;
   --success:  #27ae60;
 }
-
+ 
 html, body { background: var(--offwhite); font-family: 'Outfit', sans-serif; color: var(--text); }
 
 /* ── NAVBAR ── */
 nav { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--navy); display:flex; align-items:center; justify-content:space-between; padding:0 60px; height:64px; border-bottom:1px solid rgba(184,147,63,0.25); }
 .nav-brand { display:flex; align-items:center; gap:12px; }
-.nav-logo { width:36px; height:36px; background:#ffffff;  border:1.5px solid rgba(184,147,63,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.nav-logo { width:36px; height:36px; background:#ffffff; border:1.5px solid rgba(184,147,63,0.5); border-radius:50%; display:flex; align-items:center; justify-content:center; }
 .nav-logo svg { width:20px; height:20px; fill:var(--gold-lt); }
 .nav-brand-text { display:flex; flex-direction:column; line-height:1; }
 .nav-brand-text span:first-child { font-family:'Cormorant Garamond',serif; font-size:1.1rem; font-weight:600; color:var(--white); letter-spacing:0.04em; }
@@ -75,6 +75,12 @@ nav { position:fixed; top:0; left:0; right:0; z-index:100; background:var(--navy
 .card-body { padding:28px 32px; }
 
 /* ── FIELDS ── */
+/* Field row — side by side */
+.field-row { display:flex; gap:12px; }
+.field-row .field { flex:1; min-width:0; }
+.required { color:var(--error); font-size:0.65rem; font-weight:600; }
+.optional { color:var(--muted); font-size:0.62rem; font-weight:400; text-transform:none; letter-spacing:0; }
+
 .field { margin-bottom:14px; }
 .field label { display:block; font-size:0.68rem; font-weight:600; letter-spacing:0.08em; text-transform:uppercase; color:var(--navy); margin-bottom:5px; }
 .input-wrap { position:relative; }

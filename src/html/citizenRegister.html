@@ -13,7 +13,7 @@
   <nav>
     <div class="nav-brand">
       <div class="nav-logo">
-        <img src="../../assets/policeLogo.png"style="width:45px"/>
+         <img src="../../assets/policeLogo.png"style="width:45px"/>
       </div>
       <div class="nav-brand-text">
         <span>PICMS</span>
@@ -21,9 +21,9 @@
       </div>
     </div>
     <div class="nav-links">
-      <a href="#">Home</a>
-      <a href="#">About</a>
-      <a href="#">Contact</a>
+      <a href="citizenHome.html">Home</a>
+      <a href="citizenHome.html#about">About</a>
+      <a href="citizenHome.html#contact">Contact</a>
       <a href="citizenLogin.html" class="nav-cta">Login</a>
     </div>
   </nav>
@@ -37,8 +37,8 @@
         <p class="hero-sub">"Your identity, your case — secured and tracked with integrity."</p>
       </div>
       <div class="hero-badge">
-        <!-- Replace with: <img src="../../assets/logo.png" alt="Police Logo" style="width:60px"/> -->
-        <img src="../../assets/policeLogo.png"style="width:120px"/> 
+         <img src="../../assets/policeLogo.png"style="width:120px"/>
+      </div>
     </div>
   </section>
 
@@ -88,14 +88,33 @@
 
       <div class="card-body">
 
-        <!-- Full Name -->
+        <!-- First Name & Middle Name -->
+        <div class="field-row">
+          <div class="field">
+            <label>First Name <span class="required">*</span></label>
+            <div class="input-wrap">
+              <input type="text" id="firstname" placeholder="Muhammad" autocomplete="given-name"/>
+              <svg class="field-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+            <span class="field-error" id="firstname-error"></span>
+          </div>
+          <div class="field">
+            <label>Middle Name <span class="optional">(Optional)</span></label>
+            <div class="input-wrap">
+              <input type="text" id="middlename" placeholder="Ali" autocomplete="additional-name"/>
+              <svg class="field-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Last Name -->
         <div class="field">
-          <label>Full Name</label>
+          <label>Last Name <span class="required">*</span></label>
           <div class="input-wrap">
-            <input type="text" id="fullname" placeholder="Muhammad Ali Khan" autocomplete="name"/>
+            <input type="text" id="lastname" placeholder="Khan" autocomplete="family-name"/>
             <svg class="field-icon" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
-          <span class="field-error" id="fullname-error"></span>
+          <span class="field-error" id="lastname-error"></span>
         </div>
 
         <!-- CNIC -->
@@ -147,7 +166,7 @@
         <button class="btn-register" onclick="handleRegister()">Create Account & Send OTP</button>
 
         <div class="card-footer">
-          <p>Already have an account? &nbsp;<a href="citizenLogin.html">Login here</a></p>
+          <p>Already have an account? &nbsp;<a href="login.html">Login here</a></p>
         </div>
 
       </div>
