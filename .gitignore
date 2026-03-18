@@ -3,7 +3,7 @@
 # ================================
 
 # Database Configuration - NEVER commit passwords!
-src/config/db_config.php
+src/config/config.php
 
 # Logs
 logs/
