@@ -29,3 +29,6 @@ desktop.ini
 # Session Files
 sessions/
 *.sess
+
+# PHP Dependencies
+vendor/
