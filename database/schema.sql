@@ -16,3 +16,41 @@ create table citizens (
     is_verified   tinyint(1) default 0,
     created_at    timestamp default current_timestamp
 );
+
+
+
+
+create table otp_verifications (
+    -- unique id for each otp record
+    id int auto_increment primary key,
+
+    -- foreign key referencing citizens table
+    -- links otp to the correct citizen
+    cnic varchar(15) not null,
+
+    -- the otp stored as a hash for security
+    otp varchar(255) not null,
+
+    -- expiry time calculated by mysql at insert time
+    expires_at datetime not null,
+
+    -- tracks wrong otp guesses
+    attempts int default 0,
+
+    -- maximum wrong guesses allowed
+    max_attempts int default 5,
+
+    -- 0 = not verified, 1 = verified
+    verified tinyint(1) default 0,
+
+    -- when this record was created, used for rate limiting
+    created_at timestamp default current_timestamp,
+
+    -- foreign key constraint linking to citizens
+    foreign key (cnic) references citizens(cnic)
+        on delete cascade
+        on update cascade,
+
+    -- index for faster lookups
+    index(cnic)
+);
