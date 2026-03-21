@@ -102,7 +102,7 @@ function showError(id, msg) {
     btn.disabled    = true;
   
     try {
-      const response = await fetch('../php/citizenRegister.php', {
+      const response = await fetch('/PICMS-PROJECT/src/php/citizenRegister.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ firstname, middlename, lastname, fullname, cnic, email, password })
@@ -160,7 +160,7 @@ function showError(id, msg) {
     btn.disabled    = true;
   
     try {
-      const response = await fetch('../php/verifyOTP.php', {
+      const response = await fetch('/PICMS-PROJECT/src/php/verifyOTP.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ otp })
@@ -201,7 +201,7 @@ function showError(id, msg) {
     const firstname = document.getElementById('firstname').value.trim();
   
     try {
-      const response = await fetch('../php/sendOTP.php', {
+      const response = await fetch('/PICMS-PROJECT/src/php/sendOTP.php', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ cnic, email, firstname, resend: true })

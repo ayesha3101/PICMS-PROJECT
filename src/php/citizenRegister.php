@@ -6,6 +6,7 @@
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/otpService.php';
 
 header('Content-Type: application/json');
 
@@ -41,23 +42,44 @@ if (strlen($password) < 8) {
 }
 
 // ── Check if CNIC already registered
-/*SQL*/ $stmt = $conn->prepare("SELECT cnic FROM citizens WHERE cnic = ?"); /*END*/
+$stmt = $conn->prepare("SELECT cnic, is_verified FROM citizens WHERE cnic = ?");
 $stmt->bind_param("s", $cnic);
 $stmt->execute();
-if ($stmt->get_result()->num_rows > 0) {
-    echo json_encode(['success' => false, 'message' => 'This CNIC is already registered']);
-    exit;
+$existing = $stmt->get_result()->fetch_assoc();
+
+if ($existing) {
+    if ($existing['is_verified'] == 1) {
+        // fully registered — block them
+        echo json_encode(['success' => false, 'message' => 'This CNIC is already registered']);
+        exit;
+    } else {
+        // registered but never verified — delete and let them retry
+        $del = $conn->prepare("DELETE FROM citizens WHERE cnic = ?");
+        $del->bind_param("s", $cnic);
+        $del->execute();
+        // also clean up old OTPs
+        $del = $conn->prepare("DELETE FROM otp_verifications WHERE cnic = ?");
+        $del->bind_param("s", $cnic);
+        $del->execute();
+    }
 }
 
 // ── Check if email already registered
-/*SQL*/ $stmt = $conn->prepare("SELECT email FROM citizens WHERE email = ?"); /*END*/
+$stmt = $conn->prepare("SELECT email, is_verified FROM citizens WHERE email = ?");
 $stmt->bind_param("s", $email);
 $stmt->execute();
-if ($stmt->get_result()->num_rows > 0) {
-    echo json_encode(['success' => false, 'message' => 'This email is already registered']);
-    exit;
-}
+$existing = $stmt->get_result()->fetch_assoc();
 
+if ($existing) {
+    if ($existing['is_verified'] == 1) {
+        echo json_encode(['success' => false, 'message' => 'This email is already registered']);
+        exit;
+    } else {
+        $del = $conn->prepare("DELETE FROM citizens WHERE email = ?");
+        $del->bind_param("s", $email);
+        $del->execute();
+    }
+}
 // ── Hash password and save citizen
 $password_hash = password_hash($password, PASSWORD_DEFAULT);
 /*SQL*/
@@ -73,28 +95,7 @@ if (!$stmt->execute()) {
     exit;
 }
 
-// ── Citizen saved — now send OTP via curl
-$otpData = json_encode([
-    'cnic'      => $cnic,
-    'email'     => $email,
-    'firstname' => $firstname,
-    'purpose'   => 'register'
-]);
-
-// Build URL to the sibling endpoint (works regardless of project folder name)
-$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
-$dir = rtrim(dirname($_SERVER['SCRIPT_NAME'] ?? ''), '/');
-$sendOtpUrl = $scheme . '://' . $host . $dir . '/sendOTP.php';
-
-$ch = curl_init($sendOtpUrl);
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POST, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $otpData);
-curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
-curl_setopt($ch, CURLOPT_COOKIE, 'PHPSESSID=' . session_id());
-$otpResponse = curl_exec($ch);
-curl_close($ch);
-
-echo $otpResponse;
+// ── Citizen saved — now send OTP directly (no localhost loopback request)
+$otpResult = sendOtpForCitizen($conn, $cnic, $email, $firstname, 'register');
+echo json_encode($otpResult);
 ?>
