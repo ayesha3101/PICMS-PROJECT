@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PICMS — My Profile | Karachi Police</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/citizenDashboard.css"/>
+  <link rel="stylesheet" href="../css/citizenProfile.css"/>
+</head>
+<body>
+
+  <nav class="nav">
+    <a href="citizenHome.html" class="nav-brand">
+      <div class="nav-logo">
+        <img src="../../assets/policeLogo.png" style="width:38px;"/>
+      </div>
+      <div class="brand-text">
+        <span>PICMS</span>
+        <span>Karachi Police</span>
+      </div>
+    </a>
+    <div class="nav-right">
+      <div class="nav-divider"></div>
+      <div class="citizen-info">
+        <div class="citizen-avatar" id="citizenInitials">--</div>
+        <span class="citizen-name" id="citizenName">Loading...</span>
+      </div>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-label">Menu</div>
+      <a class="sidebar-item" href="citizenDashboard.html">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="sidebar-item" href="citizenDashboard.html">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        My Complaints
+      </a>
+      <a class="sidebar-item" href="trackCase.html">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Track a Case
+      </a>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-label">Account</div>
+      <a class="sidebar-item active" href="citizenProfile.html">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item sidebar-signout" href="../php/citizenLogout.php">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </a>
+    </aside>
+
+    <main class="main">
+      <div class="page-header">
+        <div>
+          <div class="page-eyebrow">
+            <div class="eyebrow-line"></div>
+            <span class="eyebrow-text">Account</span>
+          </div>
+          <h1 class="page-title">My <em>Profile</em></h1>
+        </div>
+      </div>
+
+      <div class="loading-state" id="loadingState">
+        <div class="loading-spinner"></div>
+        <span>Loading profile...</span>
+      </div>
+
+      <div id="profileContent" style="display:none;">
+
+        <!-- PROFILE HEADER CARD -->
+        <div class="profile-header-card">
+          <div class="profile-avatar-lg" id="profileAvatarLg">--</div>
+          <div class="profile-header-info">
+            <div class="profile-name" id="profileFullName">—</div>
+            <div class="profile-cnic" id="profileCnic">—</div>
+            <div class="verified-badge" id="verifiedBadge">
+              <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+              Verified Citizen
+            </div>
+          </div>
+        </div>
+
+        <!-- INFO SECTION -->
+        <div class="two-col-profile">
+
+          <!-- Personal Info -->
+          <div class="profile-section">
+            <div class="profile-section-head">
+              <span class="profile-section-title">Personal Information</span>
+              <button class="btn-edit" id="editBtn" onclick="toggleEdit()">
+                <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+              </button>
+            </div>
+
+            <div id="viewMode">
+              <div class="profile-row"><span class="profile-key">First Name</span><span class="profile-val" id="viewFname">—</span></div>
+              <div class="profile-row"><span class="profile-key">Middle Name</span><span class="profile-val" id="viewMinit">—</span></div>
+              <div class="profile-row"><span class="profile-key">Last Name</span><span class="profile-val" id="viewLname">—</span></div>
+              <div class="profile-row"><span class="profile-key">Email</span><span class="profile-val" id="viewEmail">—</span></div>
+              <div class="profile-row"><span class="profile-key">CNIC</span><span class="profile-val" id="viewCnic">—</span></div>
+              <div class="profile-row"><span class="profile-key">Member Since</span><span class="profile-val" id="viewSince">—</span></div>
+            </div>
+
+            <div id="editMode" style="display:none;">
+              <div class="field-group-sm">
+                <label class="field-label-sm">First Name</label>
+                <input type="text" id="editFname" class="input-sm"/>
+              </div>
+              <div class="field-group-sm">
+                <label class="field-label-sm">Middle Name</label>
+                <input type="text" id="editMinit" class="input-sm" placeholder="Optional"/>
+              </div>
+              <div class="field-group-sm">
+                <label class="field-label-sm">Last Name</label>
+                <input type="text" id="editLname" class="input-sm"/>
+              </div>
+              <span class="field-error" id="profile-error"></span>
+              <div class="edit-actions">
+                <button class="btn-ghost-xs" onclick="cancelEdit()">Cancel</button>
+                <button class="btn-save" onclick="saveProfile()">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Security -->
+          <div class="profile-section">
+            <div class="profile-section-head">
+              <span class="profile-section-title">Security</span>
+              <button class="btn-edit" id="passBtn" onclick="togglePassForm()">
+                <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Change Password
+              </button>
+            </div>
+
+            <!-- Locked fields — always visible -->
+            <p class="profile-security-note">Your CNIC and email cannot be changed after registration.</p>
+            <div class="locked-field">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span id="lockedEmail">—</span>
+            </div>
+            <div class="locked-field" style="margin-bottom:16px;">
+              <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span id="lockedCnic">—</span>
+            </div>
+
+            <!-- Inline change password form — hidden by default -->
+            <div id="passForm" style="display:none;">
+              <div class="profile-divider"></div>
+              <div class="field-group-sm">
+                <label class="field-label-sm">Current Password</label>
+                <input type="password" id="currentPass" class="input-sm" placeholder="Enter current password"/>
+              </div>
+              <div class="field-group-sm">
+                <label class="field-label-sm">New Password</label>
+                <input type="password" id="newPass" class="input-sm" placeholder="Min. 8 characters"/>
+              </div>
+              <div class="field-group-sm">
+                <label class="field-label-sm">Confirm New Password</label>
+                <input type="password" id="confirmPass" class="input-sm" placeholder="Repeat new password"/>
+              </div>
+              <span class="field-error" id="pass-error"></span>
+              <span class="pass-success" id="pass-success"></span>
+              <div class="edit-actions">
+                <button class="btn-ghost-xs" onclick="cancelPassForm()">Cancel</button>
+                <button class="btn-save" id="passSaveBtn" onclick="savePassword()">Update Password</button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="../js/citizenProfile.js"></script>
+</body>
+</html>

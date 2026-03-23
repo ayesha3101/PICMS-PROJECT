@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PICMS — File a Complaint | Karachi Police</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/citizenDashboard.css"/>
+  <link rel="stylesheet" href="../css/complaintForm.css"/>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <a href="citizenHome.html" class="nav-brand">
+      <div class="nav-logo">
+        <img src="../../assets/policeLogo.png" style="width:38px;"/>
+      </div>
+      <div class="brand-text">
+        <span>PICMS</span>
+        <span>Karachi Police</span>
+      </div>
+    </a>
+    <div class="nav-right">
+      <div class="nav-divider"></div>
+      <div class="citizen-info" onclick="window.location.href='citizenProfile.html'">
+        <div class="citizen-avatar" id="citizenInitials">--</div>
+        <span class="citizen-name" id="citizenName">Loading...</span>
+        <svg class="citizen-chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
+      </div>
+    </div>
+  </nav>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-label">Menu</div>
+      <a class="sidebar-item" href="citizenDashboard.html">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </a>
+      <a class="sidebar-item active" href="complaintForm.html">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        My Complaints
+      </a>
+      <a class="sidebar-item" href="trackCase.html">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Track a Case
+      </a>
+      <div class="sidebar-divider"></div>
+      <div class="sidebar-label">Account</div>
+      <a class="sidebar-item" href="citizenProfile.html">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        Profile
+      </a>
+      <div class="sidebar-divider"></div>
+      <a class="sidebar-item sidebar-signout" href="../php/citizenLogout.php">
+        <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign out
+      </a>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- PAGE HEADER -->
+      <div class="page-header">
+        <div>
+          <div class="page-eyebrow">
+            <div class="eyebrow-line"></div>
+            <span class="eyebrow-text">Citizen Portal</span>
+          </div>
+          <h1 class="page-title">File a <em>Complaint</em></h1>
+        </div>
+        <a href="citizenDashboard.html" class="btn-ghost-sm">
+          <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+          Back to Dashboard
+        </a>
+      </div>
+
+      <!-- STEP INDICATOR -->
+      <div class="steps-bar">
+        <div class="step active" id="step-ind-1">
+          <div class="step-circle">1</div>
+          <span>Incident Details</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-2">
+          <div class="step-circle">2</div>
+          <span>Location & Station</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-3">
+          <div class="step-circle">3</div>
+          <span>Additional Info</span>
+        </div>
+        <div class="step-line"></div>
+        <div class="step" id="step-ind-4">
+          <div class="step-circle">4</div>
+          <span>Review & Submit</span>
+        </div>
+      </div>
+
+      <!-- FORM CARD -->
+      <div class="form-card">
+
+        <!-- STEP 1: Incident Details -->
+        <div class="form-step active" id="step-1">
+          <div class="step-title">What happened?</div>
+          <div class="step-desc">Select the category that best describes your complaint.</div>
+
+          <div class="field-group">
+            <label class="field-label">Complaint Category <span class="req">*</span></label>
+            <select id="category" onchange="updateSubcategory()">
+              <option value="">— Select category —</option>
+              <option value="Theft / Robbery">Theft / Robbery</option>
+              <option value="Harassment / Threats">Harassment / Threats</option>
+              <option value="Fraud / Cybercrime">Fraud / Cybercrime</option>
+              <option value="Missing Person">Missing Person</option>
+              <option value="Property Dispute">Property Dispute</option>
+              <option value="Domestic Violence">Domestic Violence</option>
+              <option value="Traffic Incident">Traffic Incident</option>
+              <option value="Corruption / Misconduct">Corruption / Misconduct</option>
+              <option value="Other">Other</option>
+            </select>
+            <span class="field-error" id="category-error"></span>
+          </div>
+
+          <div class="field-group" id="subcategory-wrap" style="display:none;">
+            <label class="field-label">Sub-category</label>
+            <select id="subcategory">
+              <option value="">— Select sub-category —</option>
+            </select>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Date of Incident <span class="req">*</span></label>
+              <input type="date" id="incident_date" max=""/>
+              <span class="field-error" id="date-error"></span>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Time of Incident</label>
+              <input type="time" id="incident_time"/>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Description <span class="req">*</span></label>
+            <textarea id="description" rows="4" placeholder="Briefly describe what happened. Include any relevant details about the incident."></textarea>
+            <div class="char-count"><span id="descCount">0</span> / 500</div>
+            <span class="field-error" id="desc-error"></span>
+          </div>
+
+          <div class="form-nav">
+            <div></div>
+            <button class="btn-primary" onclick="nextStep(1)">
+              Next
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 2: Location & Station -->
+        <div class="form-step" id="step-2">
+          <div class="step-title">Where did it happen?</div>
+          <div class="step-desc">We'll automatically assign the correct police station based on your area.</div>
+
+          <div class="field-group">
+            <label class="field-label">Incident Area / Locality <span class="req">*</span></label>
+            <select id="incident_area" onchange="autoAssignStation()">
+              <option value="">— Select area —</option>
+              <option value="Clifton">Clifton</option>
+              <option value="DHA">DHA (Defence Housing Authority)</option>
+              <option value="Gulshan-e-Iqbal">Gulshan-e-Iqbal</option>
+              <option value="Saddar">Saddar</option>
+              <option value="Korangi">Korangi</option>
+              <option value="North Nazimabad">North Nazimabad</option>
+              <option value="Malir">Malir</option>
+              <option value="Orangi Town">Orangi Town</option>
+              <option value="Landhi">Landhi</option>
+              <option value="Baldia Town">Baldia Town</option>
+              <option value="SITE">SITE</option>
+              <option value="Lyari">Lyari</option>
+              <option value="Kemari">Kemari</option>
+              <option value="Garden">Garden</option>
+              <option value="Frere Town">Frere Town</option>
+              <option value="Other">Other area in Karachi</option>
+            </select>
+            <span class="field-error" id="area-error"></span>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">Landmark / Street (optional)</label>
+            <input type="text" id="incident_landmark" placeholder="e.g. Near Imtiaz Store, Block 6"/>
+          </div>
+
+          <!-- Auto-assigned station display -->
+          <div class="station-preview" id="stationPreview" style="display:none;">
+            <div class="station-preview-icon">
+              <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+            </div>
+            <div class="station-preview-text">
+              <span class="station-preview-label">Auto-assigned station</span>
+              <span class="station-preview-name" id="assignedStationName">—</span>
+            </div>
+            <div class="station-preview-badge">Auto</div>
+          </div>
+
+          <input type="hidden" id="station_id"/>
+
+          <div class="form-nav">
+            <button class="btn-ghost-sm" onclick="prevStep(2)">
+              <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+              Back
+            </button>
+            <button class="btn-primary" onclick="nextStep(2)">
+              Next
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 3: Additional Info -->
+        <div class="form-step" id="step-3">
+          <div class="step-title">Any additional information?</div>
+          <div class="step-desc">All fields on this step are optional.</div>
+
+          <!-- Witnesses -->
+          <div class="field-group">
+            <label class="field-label">Were there any witnesses?</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active" id="witnessNo" onclick="toggleWitness(false)">No</button>
+              <button class="toggle-btn" id="witnessYes" onclick="toggleWitness(true)">Yes</button>
+            </div>
+          </div>
+
+          <div id="witnessFields" style="display:none;">
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">Witness Name</label>
+                <input type="text" id="witness_name" placeholder="Full name"/>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Witness Contact</label>
+                <input type="tel" id="witness_contact" placeholder="03XX-XXXXXXX"/>
+              </div>
+            </div>
+          </div>
+
+          <!-- Anonymous -->
+          <div class="field-group" style="margin-top:8px;">
+            <label class="field-label">Submit anonymously?</label>
+            <div class="toggle-row">
+              <button class="toggle-btn active" id="anonNo" onclick="toggleAnon(false)">No — show my name</button>
+              <button class="toggle-btn" id="anonYes" onclick="toggleAnon(true)">Yes — hide my name</button>
+            </div>
+            <p class="field-hint">If anonymous, officers will contact you only via the phone number on your profile.</p>
+          </div>
+
+          <div class="form-nav">
+            <button class="btn-ghost-sm" onclick="prevStep(3)">
+              <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+              Back
+            </button>
+            <button class="btn-primary" onclick="nextStep(3)">
+              Review Complaint
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12,5 19,12 12,19"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Review & Submit -->
+        <div class="form-step" id="step-4">
+          <div class="step-title">Review your complaint</div>
+          <div class="step-desc">Please confirm all details are correct before submitting.</div>
+
+          <div class="review-grid" id="reviewGrid"></div>
+
+          <div class="field-group" style="margin-top:20px;">
+            <label class="checkbox-label">
+              <input type="checkbox" id="confirmCheck"/>
+              <span class="custom-check">
+                <svg viewBox="0 0 12 12"><polyline points="1,6 4.5,9.5 11,2"/></svg>
+              </span>
+              I confirm that all information provided is accurate to the best of my knowledge.
+            </label>
+            <span class="field-error" id="confirm-error"></span>
+          </div>
+
+          <div class="form-nav">
+            <button class="btn-ghost-sm" onclick="prevStep(4)">
+              <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+              Back
+            </button>
+            <button class="btn-submit" id="submitBtn" onclick="submitComplaint()">
+              <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+              Submit Complaint
+            </button>
+          </div>
+        </div>
+
+      </div>
+      <!-- END FORM CARD -->
+
+      <!-- SUCCESS STATE -->
+      <div class="success-card" id="successCard" style="display:none;">
+        <div class="success-icon">
+          <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
+        </div>
+        <h2>Complaint Submitted</h2>
+        <p>Your complaint has been received and is now under review by the station SHO.</p>
+        <div class="ref-box">
+          <span class="ref-label">Reference Number</span>
+          <span class="ref-num" id="refNumber">—</span>
+        </div>
+        <p class="success-note">A confirmation has been sent to your registered email address. You will be contacted within 48–72 hours.</p>
+        <a href="citizenDashboard.html" class="btn-primary" style="margin-top:20px;">Back to Dashboard</a>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../js/complaintForm.js"></script>
+</body>
+</html>
