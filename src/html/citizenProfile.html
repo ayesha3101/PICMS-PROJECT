@@ -157,15 +157,30 @@
               <div class="profile-divider"></div>
               <div class="field-group-sm">
                 <label class="field-label-sm">Current Password</label>
-                <input type="password" id="currentPass" class="input-sm" placeholder="Enter current password"/>
+                <div class="pass-wrap">
+                  <input type="password" id="currentPass" class="input-sm" placeholder="Enter current password"/>
+                  <button type="button" class="eye-toggle" onclick="togglePassVis('currentPass', this)">
+                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
               <div class="field-group-sm">
                 <label class="field-label-sm">New Password</label>
-                <input type="password" id="newPass" class="input-sm" placeholder="Min. 8 characters"/>
+                <div class="pass-wrap">
+                  <input type="password" id="newPass" class="input-sm" placeholder="Min. 8 characters"/>
+                  <button type="button" class="eye-toggle" onclick="togglePassVis('newPass', this)">
+                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
               <div class="field-group-sm">
                 <label class="field-label-sm">Confirm New Password</label>
-                <input type="password" id="confirmPass" class="input-sm" placeholder="Repeat new password"/>
+                <div class="pass-wrap">
+                  <input type="password" id="confirmPass" class="input-sm" placeholder="Repeat new password"/>
+                  <button type="button" class="eye-toggle" onclick="togglePassVis('confirmPass', this)">
+                    <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  </button>
+                </div>
               </div>
               <span class="field-error" id="pass-error"></span>
               <span class="pass-success" id="pass-success"></span>

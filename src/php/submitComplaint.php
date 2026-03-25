@@ -1,16 +1,15 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 // ══════════════════════════════════════════════
 // submitComplaint.php
-// Job: validate and insert a new complaint,
-//      generate reference number KHI-YY-XXXXX,
-//      send confirmation email via PHPMailer
+// Job: validate and insert a new complaint
+//      and generate reference number KHI-YY-XXXXX
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
-require_once __DIR__ . '/../../vendor/autoload.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+
 
 header('Content-Type: application/json');
 
@@ -83,8 +82,12 @@ $stmt = $conn->prepare("
     )
 ");
 /*END*/
+// Type string: s=cnic i=station_id s=category s=subcategory
+//   s=incident_area s=incident_landmark s=incident_date s=incident_time
+//   s=description i=has_witnesses s=witness_name s=witness_contact
+//   i=is_anonymous s=priority  →  14 params total
 $stmt->bind_param(
-    "siissssssiissis",
+    "sisssssssissis",
     $cnic, $station_id,
     $category, $subcategory,
     $incident_area, $incident_landmark,
@@ -128,73 +131,6 @@ $upd2 = $conn->prepare("
 $upd2->bind_param("i", $complaint_id);
 $upd2->execute();
 
-// ── Fetch citizen details for the confirmation email
-/*SQL — SELECT citizen name and email for confirmation email */
-$cit = $conn->prepare("
-    SELECT c_fname, c_lname, email FROM citizens WHERE cnic = ?
-");
-/*END*/
-$cit->bind_param("s", $cnic);
-$cit->execute();
-$citizen = $cit->get_result()->fetch_assoc();
-
-// ── Fetch station name for the email
-/*SQL — SELECT station name to include in confirmation email */
-$st = $conn->prepare("
-    SELECT station_name FROM stations WHERE station_id = ?
-");
-/*END*/
-$st->bind_param("i", $station_id);
-$st->execute();
-$station = $st->get_result()->fetch_assoc();
-
-// ── Send confirmation email via PHPMailer
-$fname        = $citizen['c_fname'] ?? 'Citizen';
-$lname        = $citizen['c_lname'] ?? '';
-$email        = $citizen['email']   ?? '';
-$station_name = $station['station_name'] ?? 'Karachi Police Station';
-
-if ($email) {
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = 'noreply.picmskarachi@gmail.com';
-        $mail->Password   = 'mmbrgoxxlwlvezcv';
-        $mail->SMTPSecure = 'tls';
-        $mail->Port       = 587;
-
-        $mail->setFrom('noreply.picmskarachi@gmail.com', 'PICMS Karachi Police');
-        $mail->addAddress($email);
-        $mail->Subject = "Complaint Received — {$reference_number}";
-        $mail->isHTML(true);
-        $mail->Body = "
-            <div style='font-family:Arial,sans-serif;max-width:480px;padding:28px;'>
-              <h2 style='color:#08121f;font-family:Georgia,serif;margin-bottom:4px;'>PICMS — Complaint Received</h2>
-              <p style='color:#888;font-size:12px;margin-bottom:20px;'>Karachi Police — Citizen Portal</p>
-              <p>Dear {$fname} {$lname},</p>
-              <p>Your complaint has been successfully submitted and is now under review by the Station House Officer.</p>
-              <div style='background:#faf8f5;border:1px solid #e4dfd8;border-radius:8px;padding:16px 20px;margin:20px 0;'>
-                <p style='font-size:11px;color:#c9a84c;letter-spacing:2px;text-transform:uppercase;margin:0 0 4px;'>Reference Number</p>
-                <p style='font-size:22px;font-family:Georgia,serif;font-weight:600;color:#08121f;letter-spacing:2px;margin:0;'>{$reference_number}</p>
-              </div>
-              <table style='width:100%;font-size:13px;border-collapse:collapse;'>
-                <tr><td style='color:#888;padding:5px 0;'>Category</td><td style='color:#1a2232;text-align:right;'>{$category}</td></tr>
-                <tr><td style='color:#888;padding:5px 0;'>Assigned Station</td><td style='color:#1a2232;text-align:right;'>{$station_name}</td></tr>
-                <tr><td style='color:#888;padding:5px 0;'>Date Filed</td><td style='color:#1a2232;text-align:right;'>".date('d M Y')."</td></tr>
-                <tr><td style='color:#888;padding:5px 0;'>Priority</td><td style='color:#1a2232;text-align:right;'>{$priority}</td></tr>
-              </table>
-              <p style='margin-top:20px;'>A representative will contact you within <strong>48–72 hours</strong> to discuss your case further.</p>
-              <p style='color:#999;font-size:12px;margin-top:24px;border-top:1px solid #eee;padding-top:16px;'>Please keep your reference number safe. You can track your case status at any time through the PICMS Citizen Portal.</p>
-              <p style='color:#bbb;font-size:11px;'>For emergencies, always call <strong>15</strong> directly.</p>
-            </div>
-        ";
-        $mail->send();
-    } catch (Exception $e) {
-        // Email failure should not block complaint submission — continue
-    }
-}
 
 echo json_encode([
     'success'          => true,

@@ -1,176 +1,133 @@
 /* ══════════════════════════════════════════════
-   citizenProfile.css
-   Extends citizenDashboard.css — import both
+   citizenProfile.css  — PICMS v3
+   Extends citizenDashboard.css
    ══════════════════════════════════════════════ */
 
    .btn-ghost-sm {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 7px 14px; background: transparent; color: var(--muted);
-    border: 1px solid var(--border); border-radius: 4px;
-    font-family: 'Outfit', sans-serif; font-size: 0.68rem; font-weight: 400;
-    letter-spacing: 0.04em; text-decoration: none; cursor: pointer;
-    transition: all 0.15s;
+    border: 1px solid var(--border); border-radius: 5px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.67rem; font-weight: 400; letter-spacing: 0.04em;
+    text-decoration: none; cursor: pointer; transition: all 0.14s;
   }
-  .btn-ghost-sm svg { width:12px; height:12px; stroke:currentColor; fill:none; stroke-width:2; }
-  .btn-ghost-sm:hover { border-color: rgba(201,168,76,0.35); color: var(--text); }
+  .btn-ghost-sm svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; }
+  .btn-ghost-sm:hover { border-color: rgba(184,147,63,0.35); color: var(--text); }
   
   /* ── PROFILE HEADER CARD */
   .profile-header-card {
-    display: flex; align-items: center; gap: 20px;
-    background: var(--navy);
-    border-radius: 8px; padding: 24px 28px;
-    margin-bottom: 16px;
+    display: flex; align-items: center; gap: 18px;
+    background: var(--navy); border-radius: 8px;
+    padding: 22px 26px; margin-bottom: 14px;
   }
   .profile-avatar-lg {
-    width: 56px; height: 56px; border-radius: 50%;
-    background: var(--gold-dim);
-    border: 2px solid var(--gold-line);
+    width: 52px; height: 52px; border-radius: 50%;
+    background: var(--gold-dim); border: 2px solid var(--gold-line);
     display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem; font-weight: 600;
+    font-size: 1rem; font-weight: 600;
     color: var(--gold-lt); letter-spacing: 0.05em;
     text-transform: uppercase; flex-shrink: 0;
   }
-  .profile-header-info { display: flex; flex-direction: column; gap: 4px; }
-  .profile-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem; font-weight: 600; color: #fff;
-  }
-  .profile-cnic { font-size: 0.72rem; color: rgba(255,255,255,0.4); letter-spacing: 0.08em; }
+  .profile-header-info { display: flex; flex-direction: column; gap: 3px; }
+  .profile-name { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-weight: 600; color: #fff; }
+  .profile-cnic { font-size: 0.7rem; color: rgba(255,255,255,0.38); letter-spacing: 0.08em; }
   .verified-badge {
     display: inline-flex; align-items: center; gap: 5px;
-    font-size: 0.62rem; font-weight: 500;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--gold-lt); margin-top: 2px;
+    font-size: 0.6rem; font-weight: 500; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gold-lt); margin-top: 1px;
   }
-  .verified-badge svg {
-    width: 12px; height: 12px;
-    stroke: var(--gold); fill: none; stroke-width: 2.5;
-  }
+  .verified-badge svg { width: 11px; height: 11px; stroke: var(--gold); fill: none; stroke-width: 2.5; }
   
-  /* ── TWO COL PROFILE */
-  .two-col-profile {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
-  }
+  /* ── TWO COL */
+  .two-col-profile { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   
   /* ── PROFILE SECTION */
   .profile-section {
     background: var(--white); border: 1px solid var(--border);
-    border-radius: 6px; padding: 18px 20px;
+    border-radius: 7px; padding: 17px 19px;
   }
   .profile-section-head {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px; padding-bottom: 10px;
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border);
   }
   .profile-section-title {
-    font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--muted);
+    font-size: 0.62rem; font-weight: 500; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--muted);
   }
   .btn-edit {
     display: inline-flex; align-items: center; gap: 5px;
-    padding: 5px 12px;
-    background: transparent; color: var(--muted);
+    padding: 5px 11px; background: transparent; color: var(--muted);
     border: 1px solid var(--border); border-radius: 4px;
-    font-family: 'Outfit', sans-serif;
-    font-size: 0.65rem; cursor: pointer; transition: all 0.15s;
+    font-family: 'Outfit', sans-serif; font-size: 0.63rem;
+    cursor: pointer; transition: all 0.14s;
   }
-  .btn-edit svg { width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:1.8; }
-  .btn-edit:hover { border-color: rgba(201,168,76,0.35); color: var(--navy); }
+  .btn-edit svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .btn-edit:hover { border-color: rgba(184,147,63,0.35); color: var(--navy); }
   
   /* ── PROFILE ROWS */
   .profile-row {
-    display: flex; justify-content: space-between;
-    align-items: center; padding: 8px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.75rem;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.74rem;
   }
   .profile-row:last-child { border-bottom: none; }
-  .profile-key { color: var(--muted); font-weight: 400; }
-  .profile-val { color: var(--navy); font-weight: 400; }
+  .profile-key { color: var(--muted); }
+  .profile-val { color: var(--navy); }
   
   /* ── EDIT FIELDS */
-  .field-group-sm { margin-bottom: 12px; }
+  .field-group-sm { margin-bottom: 11px; }
   .field-label-sm {
-    display: block; font-size: 0.68rem; font-weight: 500;
-    color: var(--text); margin-bottom: 5px; letter-spacing: 0.02em;
+    display: block; font-size: 0.66rem; font-weight: 500;
+    color: var(--text); margin-bottom: 4px; letter-spacing: 0.02em;
   }
   .input-sm {
     width: 100%; padding: 8px 10px;
-    border: 1px solid var(--border); border-radius: 4px;
+    border: 1.5px solid var(--border); border-radius: 5px;
     font-family: 'Outfit', sans-serif; font-size: 0.76rem;
     color: var(--text); background: var(--white); outline: none;
-    transition: border-color 0.18s;
+    transition: border-color 0.18s, box-shadow 0.18s;
   }
-  .input-sm:focus { border-color: var(--gold); }
-  
-  .field-error {
-    display: block; font-size: 0.65rem;
-    color: #e74c3c; margin-bottom: 10px; min-height: 14px;
-  }
+  .input-sm:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(184,147,63,0.1); }
+  .field-error { display: block; font-size: 0.63rem; color: #e05555; margin-bottom: 8px; min-height: 14px; }
+  .pass-success { display: block; font-size: 0.63rem; color: #22c55e; margin-bottom: 8px; min-height: 14px; }
   
   .edit-actions {
-    display: flex; gap: 8px; justify-content: flex-end;
-    margin-top: 14px; padding-top: 12px;
-    border-top: 1px solid var(--border);
+    display: flex; gap: 7px; justify-content: flex-end;
+    margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--border);
   }
   .btn-ghost-xs {
-    padding: 6px 12px; background: transparent;
+    padding: 5px 11px; background: transparent;
     border: 1px solid var(--border); border-radius: 4px;
-    font-family: 'Outfit', sans-serif; font-size: 0.65rem;
-    color: var(--muted); cursor: pointer; transition: all 0.15s;
+    font-family: 'Outfit', sans-serif; font-size: 0.63rem;
+    color: var(--muted); cursor: pointer; transition: all 0.14s;
   }
   .btn-ghost-xs:hover { color: var(--text); }
   .btn-save {
-    padding: 6px 16px;
-    background: var(--navy); color: rgba(255,255,255,0.85);
-    border: 1px solid var(--navy3); border-radius: 4px;
-    font-family: 'Outfit', sans-serif; font-size: 0.65rem;
-    font-weight: 500; cursor: pointer; transition: background 0.15s;
+    padding: 5px 15px; background: var(--navy); color: rgba(255,255,255,0.85);
+    border: none; border-radius: 4px;
+    font-family: 'Outfit', sans-serif; font-size: 0.63rem; font-weight: 500;
+    cursor: pointer; transition: background 0.14s;
   }
-  .btn-save:hover { background: var(--navy3); }
+  .btn-save:hover { background: var(--navy2); }
   
   /* ── SECURITY SECTION */
-  .profile-security-note {
-    font-size: 0.72rem; color: var(--muted);
-    line-height: 1.6; margin-bottom: 14px;
-  }
-  .btn-change-pass {
-    display: inline-flex; align-items: center; gap: 6px;
-    padding: 8px 16px;
-    border: 1px solid var(--border); border-radius: 4px;
-    background: var(--white); color: var(--text);
-    font-family: 'Outfit', sans-serif; font-size: 0.72rem;
-    text-decoration: none; cursor: pointer;
-    transition: all 0.15s; margin-bottom: 16px;
-  }
-  .btn-change-pass svg {
-    width: 13px; height: 13px;
-    stroke: currentColor; fill: none; stroke-width: 1.8;
-  }
-  .btn-change-pass:hover {
-    border-color: rgba(201,168,76,0.35);
-    background: var(--gold-dim); color: var(--navy);
-  }
+  .profile-security-note { font-size: 0.7rem; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
   .profile-divider { height: 1px; background: var(--border); margin: 12px 0; }
-  
   .locked-field {
-    display: flex; align-items: center; gap: 8px;
-    padding: 8px 12px; margin-bottom: 8px;
-    background: var(--offwhite); border: 1px solid var(--border);
-    border-radius: 4px; font-size: 0.73rem; color: var(--muted);
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 11px; margin-bottom: 7px;
+    background: var(--off); border: 1px solid var(--border);
+    border-radius: 5px; font-size: 0.72rem; color: var(--muted);
   }
-  .locked-field svg {
-    width: 12px; height: 12px;
-    stroke: var(--muted); fill: none; stroke-width: 1.8; flex-shrink: 0;
-  }
+  .locked-field svg { width: 11px; height: 11px; stroke: var(--muted); fill: none; stroke-width: 1.8; flex-shrink: 0; }
   
-  /* ── Password success message */
-  .pass-success {
-    display: block; font-size: 0.65rem;
-    color: #22c55e; margin-bottom: 10px; min-height: 14px;
+  /* ── PASSWORD EYE TOGGLE */
+  .pass-wrap { position: relative; display: flex; align-items: center; }
+  .pass-wrap .input-sm { padding-right: 34px; }
+  .eye-toggle {
+    position: absolute; right: 7px;
+    background: none; border: none; cursor: pointer;
+    padding: 3px; display: flex; align-items: center;
+    color: var(--muted); transition: color 0.14s;
   }
-  
-  /* ── Remove old change-pass button (no longer used) */
-  .btn-change-pass { display: none; }
+  .eye-toggle:hover { color: var(--navy); }
+  .eye-toggle svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.8; }
