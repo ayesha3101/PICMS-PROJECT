@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Session guard — redirect if not logged in
 function checkSession() {
-  fetch('/PICMS-PROJECT/src/php/checkSession.php')
+  fetch('../php/checkSession.php')
     .then(r => r.json())
     .then(data => {
       if (!data.logged_in) { window.location.href = 'citizenLogin.html'; return; }
@@ -247,7 +247,7 @@ async function submitComplaint() {
   };
 
   try {
-    const response = await fetch('/PICMS-PROJECT/src/php/submitComplaint.php', {
+    const response = await fetch('../php/submitComplaint.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify(payload),

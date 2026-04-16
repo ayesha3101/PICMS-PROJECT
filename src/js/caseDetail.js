@@ -34,7 +34,7 @@ const STATUS_ORDER = [
   
   // ── Session guard
   function checkSession() {
-    fetch('/PICMS-PROJECT/src/php/checkSession.php')
+    fetch('../php/checkSession.php')
       .then(r => r.json())
       .then(data => {
         if (!data.logged_in) { window.location.href = 'citizenLogin.html'; return; }
@@ -54,7 +54,7 @@ const STATUS_ORDER = [
   
   // ── Fetch and render full case detail
   function loadCaseDetail(ref) {
-    fetch(`/PICMS-PROJECT/src/php/getCaseDetails.php?ref=${encodeURIComponent(ref)}`)
+    fetch(`../php/getCaseDetails.php?ref=${encodeURIComponent(ref)}`)
       .then(r => r.json())
       .then(data => {
         document.getElementById('loadingState').style.display = 'none';

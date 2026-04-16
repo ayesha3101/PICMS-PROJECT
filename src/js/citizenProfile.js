@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ── Session guard
 function checkSession() {
-  fetch('/PICMS-PROJECT/src/php/checkSession.php')
+  fetch('../php/checkSession.php')
     .then(r => r.json())
     .then(data => {
       if (!data.logged_in) { window.location.href = 'citizenLogin.html'; return; }
@@ -32,7 +32,7 @@ function setNavInfo(fullName) {
 
 // ── Load profile data from PHP
 function loadProfile() {
-  fetch('/PICMS-PROJECT/src/php/getProfile.php')
+  fetch('../php/getProfile.php')
     .then(r => r.json())
     .then(data => {
       document.getElementById('loadingState').style.display = 'none';
@@ -109,7 +109,7 @@ async function saveProfile() {
   btn.disabled    = true;
 
   try {
-    const response = await fetch('/PICMS-PROJECT/src/php/updateProfile.php', {
+    const response = await fetch('../php/updateProfile.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ c_fname: fname, c_minit: minit, c_lname: lname }),
@@ -196,7 +196,7 @@ async function savePassword() {
   btn.disabled    = true;
 
   try {
-    const response = await fetch('/PICMS-PROJECT/src/php/changePasswordAuth.php', {
+    const response = await fetch('../php/changePasswordAuth.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({
