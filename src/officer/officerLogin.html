@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Officer Login — PICMS Karachi Police</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy:         #08121f;
+      --navy-mid:     #0d1c2e;
+      --navy-surface: #111f30;
+      --navy-card:    #152435;
+      --navy-border:  #1e3248;
+      --maroon:       #6b1a26;
+      --maroon-soft:  #7d2030;
+      --maroon-glow:  rgba(107,26,38,0.32);
+      --gold:         #c9a84c;
+      --gold-light:   #e0c06a;
+      --gold-dim:     #8a6e30;
+      --offwhite:     #f5f0e8;
+      --cream:        #ede5d4;
+      --muted:        #6e8098;
+      --border:       #1e3248;
+      --danger:       #d95f5f;
+      --success:      #4caf80;
+    }
+    *, *::before, *::after { box-sizing:border-box; margin:0; padding:0; }
+    html, body { height:100%; font-family:'Outfit',sans-serif; background:var(--navy); color:var(--offwhite); overflow:hidden; }
+
+    /* ── Layout ── */
+    .page { display:grid; grid-template-columns:1fr 1fr; height:100vh; }
+
+    /* ── Left Panel ── */
+    .left-panel {
+      position:relative; overflow:hidden;
+      display:flex; flex-direction:column; justify-content:flex-end;
+      padding:56px 60px;
+      background:var(--navy-mid);
+    }
+    .left-panel::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:
+        radial-gradient(ellipse 80% 60% at 25% 15%, rgba(107,26,38,0.24) 0%, transparent 65%),
+        radial-gradient(ellipse 60% 80% at 80% 95%, rgba(8,18,31,0.85) 0%, transparent 70%);
+    }
+    .glow-blob {
+      position:absolute; top:-80px; left:-80px; pointer-events:none;
+      width:380px; height:380px; border-radius:50%;
+      background:radial-gradient(circle, var(--maroon-glow) 0%, transparent 70%);
+    }
+    .watermark {
+      position:absolute; top:50%; left:50%;
+      transform:translate(-50%,-50%);
+      font-size:300px; line-height:1; opacity:0.024;
+      user-select:none; pointer-events:none;
+    }
+    .v-rule {
+      position:absolute; top:10%; right:0; width:1px; height:80%;
+      background:linear-gradient(to bottom, transparent, var(--gold-dim) 35%, var(--gold) 65%, transparent);
+      opacity:0.35;
+    }
+    .left-content { position:relative; z-index:2; animation:fadeUp 0.9s ease both; }
+    .emblem { margin-bottom:34px; }
+    .emblem-ring {
+      width:66px; height:66px; border-radius:50%;
+      border:1.5px solid var(--gold);
+      display:flex; align-items:center; justify-content:center;
+      position:relative;
+      box-shadow:0 0 0 6px rgba(201,168,76,0.05), 0 0 26px rgba(201,168,76,0.1);
+    }
+    .emblem-ring::before {
+      content:''; position:absolute; inset:5px; border-radius:50%;
+      border:1px solid rgba(201,168,76,0.26);
+    }
+    .emblem-icon { font-size:24px; }
+    .left-eyebrow { font-size:10px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:13px; }
+    .left-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,3.3vw,50px); font-weight:600; line-height:1.08; color:var(--offwhite); margin-bottom:16px; }
+    .left-heading em { font-style:italic; color:var(--gold); }
+    .h-rule { width:50px; height:1.5px; background:linear-gradient(to right, var(--gold), transparent); margin-bottom:16px; }
+    .left-tagline { font-size:13px; color:var(--muted); font-weight:300; line-height:1.75; max-width:290px; }
+    .authority-tag {
+      margin-top:42px; display:inline-flex; align-items:center; gap:10px;
+      padding:7px 14px;
+      background:rgba(107,26,38,0.18); border:1px solid rgba(107,26,38,0.52); border-radius:4px;
+    }
+    .authority-tag .dot { width:6px; height:6px; border-radius:50%; background:var(--maroon-soft); box-shadow:0 0 5px var(--maroon-soft); }
+    .authority-tag span { font-size:10px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:rgba(245,240,232,0.38); }
+    .left-footer { position:absolute; bottom:26px; left:60px; z-index:2; font-size:10px; letter-spacing:0.12em; color:rgba(110,128,152,0.32); text-transform:uppercase; }
+
+    /* ── Right Panel ── */
+    .right-panel {
+      display:flex; flex-direction:column; justify-content:center; align-items:center;
+      padding:48px 52px; background:var(--navy); position:relative;
+    }
+    .right-panel::before {
+      content:''; position:absolute; inset:0; pointer-events:none;
+      background:radial-gradient(ellipse 70% 50% at 90% 10%, rgba(107,26,38,0.07) 0%, transparent 60%);
+    }
+    .login-card { position:relative; z-index:1; width:100%; max-width:400px; animation:fadeUp 0.7s ease both; }
+    .card-header { margin-bottom:24px; }
+    .card-header h2 { font-family:'Cormorant Garamond',serif; font-size:28px; font-weight:600; color:var(--offwhite); margin-bottom:4px; }
+    .card-header p  { font-size:13px; color:var(--muted); font-weight:300; }
+
+    /* identifier toggle */
+    .id-toggle { display:flex; background:var(--navy-surface); border:1px solid var(--border); border-radius:8px; padding:3px; margin-bottom:18px; }
+    .toggle-btn { flex:1; padding:9px 0; background:none; border:none; border-radius:6px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:500; letter-spacing:0.04em; color:var(--muted); cursor:pointer; transition:background 0.2s, color 0.2s; }
+    .toggle-btn.active { background:var(--navy-card); color:var(--gold); box-shadow:0 1px 6px rgba(0,0,0,0.28); }
+
+    /* alert */
+    .alert { display:none; align-items:center; gap:10px; padding:11px 14px; border-radius:6px; font-size:12.5px; margin-bottom:14px; border:1px solid transparent; }
+    .alert.error   { display:flex; background:rgba(217,95,95,0.1);  border-color:rgba(217,95,95,0.3);  color:#e88080; }
+    .alert.success { display:flex; background:rgba(76,175,128,0.1); border-color:rgba(76,175,128,0.3); color:#6fcba0; }
+
+    /* fields */
+    .field-group { display:flex; flex-direction:column; gap:16px; margin-bottom:15px; }
+    .field { display:flex; flex-direction:column; gap:7px; }
+    .field label { font-size:10.5px; font-weight:600; letter-spacing:0.18em; text-transform:uppercase; color:var(--gold-dim); }
+    .field-wrap { position:relative; }
+    .field-wrap input {
+      width:100%; background:var(--navy-surface); border:1px solid var(--border); border-radius:6px;
+      padding:13px 42px 13px 14px;
+      font-family:'Outfit',sans-serif; font-size:13.5px; font-weight:400; color:var(--offwhite);
+      outline:none; transition:border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field-wrap input::placeholder { color:rgba(30,50,72,0.85); font-weight:300; }
+    .field-wrap input:focus { border-color:var(--gold-dim); background:var(--navy-card); box-shadow:0 0 0 3px rgba(201,168,76,0.07); }
+    .field-wrap input.err { border-color:var(--danger); }
+    .field-icon { position:absolute; right:13px; top:50%; transform:translateY(-50%); color:var(--navy-border); font-size:15px; pointer-events:none; transition:color 0.2s; }
+    .field-wrap input:focus ~ .field-icon { color:var(--gold-dim); }
+    .eye-btn { position:absolute; right:13px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:var(--navy-border); font-size:15px; padding:0; transition:color 0.2s; line-height:1; }
+    .eye-btn:hover { color:var(--gold-dim); }
+    .field-error { font-size:11px; color:var(--danger); min-height:14px; display:block; }
+
+    /* remember + forgot */
+    .form-meta { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
+    .remember { display:flex; align-items:center; gap:8px; cursor:pointer; }
+    .remember input[type="checkbox"] { appearance:none; width:15px; height:15px; border:1px solid var(--border); border-radius:3px; background:var(--navy-surface); cursor:pointer; position:relative; transition:border-color 0.2s, background 0.2s; flex-shrink:0; }
+    .remember input:checked { background:var(--gold); border-color:var(--gold); }
+    .remember input:checked::after { content:''; position:absolute; left:4px; top:1px; width:5px; height:8px; border:1.5px solid var(--navy); border-top:none; border-left:none; transform:rotate(45deg); }
+    .remember span { font-size:12px; color:var(--muted); }
+    .forgot-link { font-size:12px; color:var(--gold-dim); text-decoration:none; transition:color 0.2s; }
+    .forgot-link:hover { color:var(--gold); }
+
+    /* main button */
+    .btn-main {
+      width:100%; padding:14px; background:var(--gold); border:none; border-radius:6px;
+      font-family:'Outfit',sans-serif; font-size:12.5px; font-weight:600; letter-spacing:0.16em; text-transform:uppercase;
+      color:var(--navy); cursor:pointer; transition:background 0.2s, transform 0.15s, box-shadow 0.2s;
+    }
+    .btn-main:hover:not(:disabled) { background:var(--gold-light); box-shadow:0 4px 18px rgba(201,168,76,0.2); transform:translateY(-1px); }
+    .btn-main:active:not(:disabled) { transform:translateY(0); }
+    .btn-main:disabled { opacity:0.55; cursor:not-allowed; }
+    .spinner-wrap { display:none; justify-content:center; }
+    .spinner { width:15px; height:15px; border:2px solid rgba(8,18,31,0.25); border-top-color:var(--navy); border-radius:50%; animation:spin 0.7s linear infinite; }
+    .btn-main.loading .btn-text { display:none; }
+    .btn-main.loading .spinner-wrap { display:flex; }
+
+    .divider { display:flex; align-items:center; gap:12px; margin:16px 0; color:var(--navy-border); font-size:10px; }
+    .divider::before,.divider::after { content:''; flex:1; height:1px; background:var(--navy-border); }
+    .citizen-link { text-align:center; }
+    .citizen-link a { font-size:12px; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+    .citizen-link a span { color:var(--gold-dim); font-weight:500; }
+    .citizen-link a:hover span { color:var(--gold); }
+
+    /* ── Modals shared ── */
+    .modal-overlay {
+      position:fixed; inset:0;
+      background:rgba(5,10,18,0.9); backdrop-filter:blur(8px);
+      z-index:100; display:none; align-items:center; justify-content:center;
+    }
+    .modal-overlay.active { display:flex; animation:fadeIn 0.2s ease; }
+
+    /* first-login modal — no close, no escape */
+    .modal-box {
+      background:var(--navy-card); border:1px solid var(--border); border-radius:12px;
+      padding:38px 34px; width:100%; max-width:430px; position:relative;
+      box-shadow:0 24px 64px rgba(0,0,0,0.55); animation:slideUp 0.28s ease both;
+    }
+    .modal-box::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      border-radius:12px 12px 0 0;
+      background:linear-gradient(to right, var(--maroon), var(--gold-dim), var(--maroon));
+    }
+    .modal-icon { width:46px; height:46px; border-radius:50%; background:rgba(107,26,38,0.15); border:1px solid rgba(107,26,38,0.48); display:flex; align-items:center; justify-content:center; font-size:18px; margin-bottom:16px; }
+    .modal-box h3 { font-family:'Cormorant Garamond',serif; font-size:22px; font-weight:600; color:var(--offwhite); margin-bottom:6px; }
+    .modal-box > p { font-size:12.5px; color:var(--muted); line-height:1.65; margin-bottom:22px; }
+    .modal-box > p strong { color:var(--cream); font-weight:500; }
+    .modal-box .field-group { margin-bottom:18px; }
+
+    /* strength */
+    .pwd-strength { height:2px; background:var(--border); border-radius:2px; margin-top:6px; overflow:hidden; }
+    .pwd-strength-bar { height:100%; border-radius:2px; width:0; transition:width 0.3s, background 0.3s; }
+    .strength-lbl { font-size:10px; color:var(--muted); margin-top:4px; display:block; }
+
+    /* forgot modal (smaller) */
+    .modal-sm {
+      background:var(--navy-card); border:1px solid var(--border); border-radius:12px;
+      padding:34px 30px; width:100%; max-width:380px; position:relative;
+      box-shadow:0 24px 64px rgba(0,0,0,0.55); animation:slideUp 0.28s ease both;
+    }
+    .modal-sm::before {
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      border-radius:12px 12px 0 0;
+      background:linear-gradient(to right, var(--maroon), var(--gold-dim), var(--maroon));
+    }
+    .modal-sm h3 { font-family:'Cormorant Garamond',serif; font-size:20px; font-weight:600; color:var(--offwhite); margin-bottom:6px; }
+    .modal-sm > p { font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:18px; }
+    .modal-sm .field { margin-bottom:14px; }
+    .btn-row { display:flex; gap:10px; }
+    .btn-ghost { flex:1; padding:12px; background:none; border:1px solid var(--border); border-radius:6px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:500; color:var(--muted); cursor:pointer; transition:border-color 0.2s, color 0.2s; }
+    .btn-ghost:hover { border-color:var(--gold-dim); color:var(--offwhite); }
+    .btn-gold-sm { flex:2; padding:12px; background:var(--gold); border:none; border-radius:6px; font-family:'Outfit',sans-serif; font-size:12px; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--navy); cursor:pointer; transition:background 0.2s; }
+    .btn-gold-sm:hover:not(:disabled) { background:var(--gold-light); }
+    .btn-gold-sm:disabled { opacity:0.5; cursor:not-allowed; }
+
+    /* OTP step inside forgot modal */
+    .otp-step { display:none; }
+    .otp-step.visible { display:block; }
+    .email-step.hidden { display:none; }
+
+    /* otp inputs row */
+    .otp-row { display:flex; gap:8px; margin-bottom:4px; }
+    .otp-row input {
+      flex:1; text-align:center; font-size:18px; font-weight:600; letter-spacing:0.05em;
+      background:var(--navy-surface); border:1px solid var(--border); border-radius:6px;
+      padding:12px 4px; color:var(--offwhite); outline:none;
+      transition:border-color 0.2s, box-shadow 0.2s;
+    }
+    .otp-row input:focus { border-color:var(--gold-dim); box-shadow:0 0 0 3px rgba(201,168,76,0.07); }
+    .resend-row { font-size:11px; color:var(--muted); margin-top:8px; margin-bottom:16px; }
+    .resend-row a { color:var(--gold-dim); text-decoration:none; cursor:pointer; }
+    .resend-row a:hover { color:var(--gold); }
+
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+    @keyframes slideUp { from{opacity:0;transform:translateY(26px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+    @keyframes spin    { to{transform:rotate(360deg)} }
+
+    @media(max-width:860px){
+      .page{grid-template-columns:1fr; overflow-y:auto}
+      html,body{overflow:auto}
+      .left-panel{padding:36px 24px 30px; min-height:auto}
+      .left-footer,.v-rule{display:none}
+      .right-panel{padding:34px 22px}
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <!-- LEFT -->
+  <div class="left-panel">
+    <div class="glow-blob"></div>
+    <div class="v-rule"></div>
+    <div class="watermark">⚖</div>
+    <div class="left-content">
+      <div class="emblem">
+        <div class="emblem-ring">
+          <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:40px; height:40px; object-fit:contain;"/>
+        </div>
+      </div>
+      <p class="left-eyebrow">Karachi Police</p>
+      <h1 class="left-heading">Investigation<br /><em>Case Management</em><br />System</h1>
+      <div class="h-rule"></div>
+      <p class="left-tagline">Serving justice through transparency,<br />accountability, and precision.</p>
+      <div class="authority-tag">
+        <span class="dot"></span>
+        <span>Restricted — Authorised Personnel Only</span>
+      </div>
+    </div>
+    <div class="left-footer">PICMS &nbsp;·&nbsp; Internal Use Only</div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="login-card">
+      <div class="card-header">
+        <h2>Officer Sign In</h2>
+        <p>Access the PICMS officer portal</p>
+      </div>
+
+      <!-- Badge / Email toggle -->
+      <div class="id-toggle">
+        <button class="toggle-btn active" id="btnBadge" type="button">Badge Number</button>
+        <button class="toggle-btn"        id="btnEmail" type="button">Email Address</button>
+      </div>
+
+      <div class="alert" id="loginAlert"><span id="loginAlertMsg"></span></div>
+
+      <div class="field-group">
+        <div class="field">
+          <label id="idLabel" for="identifier">Badge Number</label>
+          <div class="field-wrap">
+            <input type="text" id="identifier" placeholder="e.g. KHI-2024-001" autocomplete="username" spellcheck="false" />
+            <span class="field-icon" id="idIcon">🪪</span>
+          </div>
+          <span class="field-error" id="idErr"></span>
+        </div>
+        <div class="field">
+          <label for="loginPwd">Password</label>
+          <div class="field-wrap">
+            <input type="password" id="loginPwd" placeholder="Enter your password" autocomplete="current-password" />
+            <button class="eye-btn" type="button" id="eyeLogin">👁</button>
+          </div>
+          <span class="field-error" id="pwdErr"></span>
+        </div>
+      </div>
+
+      <div class="form-meta">
+        <label class="remember">
+          <input type="checkbox" id="rememberMe" />
+          <span>Remember me</span>
+        </label>
+        <a href="#" class="forgot-link" id="forgotLink">Forgot password?</a>
+      </div>
+
+      <button class="btn-main" id="loginBtn" type="button">
+        <span class="btn-text">Sign In to System</span>
+        <span class="spinner-wrap"><span class="spinner"></span></span>
+      </button>
+
+      <div class="divider">or</div>
+      <div class="citizen-link">
+        <a href="../citizen/citizenLogin.html">Not an officer? <span>Go to Citizen Portal →</span></a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FIRST-LOGIN PASSWORD CHANGE MODAL
+     No X button, no backdrop click dismiss,
+     no escape key — officer MUST set password.
+══════════════════════════════════ -->
+<div class="modal-overlay" id="firstLoginModal">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <h3>Set Your Password</h3>
+    <p>
+      Your account was created with a <strong>temporary password</strong>.
+      You must set a new private password before you can access the system.
+      This cannot be skipped.
+    </p>
+    <div class="alert" id="firstLoginAlert"></div>
+    <div class="field-group">
+      <div class="field">
+        <label for="newPwd">New Password</label>
+        <div class="field-wrap">
+          <input type="password" id="newPwd" placeholder="Minimum 8 characters" autocomplete="new-password" />
+          <button class="eye-btn" type="button" id="eyeNew">👁</button>
+        </div>
+        <div class="pwd-strength"><div class="pwd-strength-bar" id="strengthBar"></div></div>
+        <span class="strength-lbl" id="strengthLbl"></span>
+        <span class="field-error" id="newPwdErr"></span>
+      </div>
+      <div class="field">
+        <label for="confirmPwd">Confirm Password</label>
+        <div class="field-wrap">
+          <input type="password" id="confirmPwd" placeholder="Re-enter new password" autocomplete="new-password" />
+          <button class="eye-btn" type="button" id="eyeConfirm">👁</button>
+        </div>
+        <span class="field-error" id="confirmPwdErr"></span>
+      </div>
+    </div>
+    <button class="btn-main" id="confirmPwdBtn" type="button">
+      <span class="btn-text">Confirm &amp; Continue</span>
+      <span class="spinner-wrap"><span class="spinner"></span></span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+     FORGOT PASSWORD MODAL
+     Step 1: enter email
+     Step 2: enter OTP
+     Step 3: new password
+══════════════════════════════════ -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-sm">
+    <div class="modal-icon" style="font-size:16px">📧</div>
+
+    <!-- Step 1: email -->
+    <div id="stepEmail">
+      <h3>Reset Password</h3>
+      <p>Enter your registered email address and we'll send you a verification code.</p>
+      <div class="alert" id="forgotAlert"></div>
+      <div class="field">
+        <label for="forgotEmail">Email Address</label>
+        <div class="field-wrap">
+          <input type="email" id="forgotEmail" placeholder="your.email@karachi.police.gov" />
+          <span class="field-icon">✉</span>
+        </div>
+        <span class="field-error" id="forgotEmailErr"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-ghost"   id="forgotCancel">Cancel</button>
+        <button class="btn-gold-sm" id="forgotSendOtp">Send Code</button>
+      </div>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="stepOtp" style="display:none">
+      <h3>Enter Verification Code</h3>
+      <p id="otpSentTo" style="margin-bottom:18px">Code sent to your email.</p>
+      <div class="alert" id="otpAlert"></div>
+      <label class="field" style="gap:7px">
+        <span style="font-size:10.5px;font-weight:600;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold-dim)">6-Digit Code</span>
+        <div class="otp-row" id="otpRow">
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+          <input type="text" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+        </div>
+        <span class="field-error" id="otpErr"></span>
+      </label>
+      <div class="resend-row">
+        Didn't receive it? <a id="resendOtp">Resend code</a>
+      </div>
+      <div class="btn-row">
+        <button class="btn-ghost"   id="otpBack">Back</button>
+        <button class="btn-gold-sm" id="otpVerify">Verify Code</button>
+      </div>
+    </div>
+
+    <!-- Step 3: new password -->
+    <div id="stepNewPwd" style="display:none">
+      <h3>New Password</h3>
+      <p>Almost done. Set a new password for your account.</p>
+      <div class="alert" id="resetAlert"></div>
+      <div class="field-group" style="margin-bottom:16px">
+        <div class="field">
+          <label for="resetPwd">New Password</label>
+          <div class="field-wrap">
+            <input type="password" id="resetPwd" placeholder="Minimum 8 characters" autocomplete="new-password" />
+            <button class="eye-btn" type="button" id="eyeReset">👁</button>
+          </div>
+          <div class="pwd-strength"><div class="pwd-strength-bar" id="resetStrengthBar"></div></div>
+          <span class="strength-lbl" id="resetStrengthLbl"></span>
+          <span class="field-error" id="resetPwdErr"></span>
+        </div>
+        <div class="field">
+          <label for="resetConfirm">Confirm Password</label>
+          <div class="field-wrap">
+            <input type="password" id="resetConfirm" placeholder="Re-enter new password" autocomplete="new-password" />
+            <button class="eye-btn" type="button" id="eyeResetConfirm">👁</button>
+          </div>
+          <span class="field-error" id="resetConfirmErr"></span>
+        </div>
+      </div>
+      <button class="btn-gold-sm" style="flex:unset;width:100%;padding:13px" id="resetSubmit">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════
+   UTILITIES
+══════════════════════════ */
+function eye(btnId, inputId) {
+  document.getElementById(btnId).addEventListener('click', () => {
+    const inp = document.getElementById(inputId);
+    const show = inp.type === 'password';
+    inp.type = show ? 'text' : 'password';
+    document.getElementById(btnId).textContent = show ? '🙈' : '👁';
+  });
+}
+eye('eyeLogin',       'loginPwd');
+eye('eyeNew',         'newPwd');
+eye('eyeConfirm',     'confirmPwd');
+eye('eyeReset',       'resetPwd');
+eye('eyeResetConfirm','resetConfirm');
+
+function setAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = `alert ${type}`;
+  el.textContent = msg;
+  el.style.display = 'flex';
+}
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  el.className = 'alert';
+  el.style.display = '';
+  el.textContent = '';
+}
+
+function strengthCheck(inputId, barId, lblId) {
+  document.getElementById(inputId).addEventListener('input', function() {
+    const v = this.value; let s = 0;
+    if (v.length >= 8) s++;
+    if (/[A-Z]/.test(v)) s++;
+    if (/[0-9]/.test(v)) s++;
+    if (/[^A-Za-z0-9]/.test(v)) s++;
+    const bar = document.getElementById(barId);
+    const lbl = document.getElementById(lblId);
+    if (!v) { bar.style.width = '0'; lbl.textContent = ''; return; }
+    const i = Math.max(0, s - 1);
+    bar.style.width      = ['25%','50%','75%','100%'][i];
+    bar.style.background = ['#d95f5f','#c9a84c','#8a9e6a','#4caf80'][i];
+    lbl.textContent      = ['Weak','Fair','Good','Strong'][i];
+  });
+}
+strengthCheck('newPwd',   'strengthBar',      'strengthLbl');
+strengthCheck('resetPwd', 'resetStrengthBar', 'resetStrengthLbl');
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.classList.toggle('loading', loading);
+  btn.disabled = loading;
+}
+
+/* ══════════════════════════
+   LOGIN MODE TOGGLE
+══════════════════════════ */
+let loginMode = 'badge';
+const idInput = document.getElementById('identifier');
+
+document.getElementById('btnBadge').addEventListener('click', () => {
+  loginMode = 'badge';
+  document.getElementById('btnBadge').classList.add('active');
+  document.getElementById('btnEmail').classList.remove('active');
+  document.getElementById('idLabel').textContent = 'Badge Number';
+  idInput.placeholder = 'e.g. KHI-2024-001';
+  idInput.type = 'text';
+  document.getElementById('idIcon').textContent = '🪪';
+  idInput.autocomplete = 'username';
+  clearLoginErrors();
+});
+document.getElementById('btnEmail').addEventListener('click', () => {
+  loginMode = 'email';
+  document.getElementById('btnEmail').classList.add('active');
+  document.getElementById('btnBadge').classList.remove('active');
+  document.getElementById('idLabel').textContent = 'Email Address';
+  idInput.placeholder = 'your.email@example.com';
+  idInput.type = 'email';
+  document.getElementById('idIcon').textContent = '✉';
+  idInput.autocomplete = 'email';
+  clearLoginErrors();
+});
+
+function clearLoginErrors() {
+  document.getElementById('idErr').textContent  = '';
+  document.getElementById('pwdErr').textContent = '';
+  idInput.classList.remove('err');
+  document.getElementById('loginPwd').classList.remove('err');
+  clearAlert('loginAlert');
+}
+
+/* ══════════════════════════
+   REMEMBER ME RESTORE
+══════════════════════════ */
+const savedId   = localStorage.getItem('officer_rm_id');
+const savedMode = localStorage.getItem('officer_rm_mode');
+if (savedId && savedMode) {
+  if (savedMode === 'email') document.getElementById('btnEmail').click();
+  idInput.value = savedId;
+  document.getElementById('rememberMe').checked = true;
+}
+
+/* ══════════════════════════
+   LOGIN SUBMIT
+══════════════════════════ */
+async function doLogin() {
+  clearLoginErrors();
+  const id  = idInput.value.trim();
+  const pwd = document.getElementById('loginPwd').value;
+  let valid = true;
+
+  if (!id) {
+    document.getElementById('idErr').textContent = loginMode === 'badge' ? 'Badge number is required.' : 'Email is required.';
+    idInput.classList.add('err'); valid = false;
+  } else if (loginMode === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(id)) {
+    document.getElementById('idErr').textContent = 'Enter a valid email address.';
+    idInput.classList.add('err'); valid = false;
+  }
+  if (!pwd) {
+    document.getElementById('pwdErr').textContent = 'Password is required.';
+    document.getElementById('loginPwd').classList.add('err'); valid = false;
+  }
+  if (!valid) return;
+
+  const remember = document.getElementById('rememberMe').checked;
+  if (remember) {
+    localStorage.setItem('officer_rm_id',   id);
+    localStorage.setItem('officer_rm_mode', loginMode);
+  } else {
+    localStorage.removeItem('officer_rm_id');
+    localStorage.removeItem('officer_rm_mode');
+  }
+
+  setLoading('loginBtn', true);
+  try {
+    const body = { password: pwd };
+    if (loginMode === 'badge') body.badge_number = id;
+    else                        body.email        = id;
+
+    const res  = await fetch('../php/officerLogin.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      if (!data.password_changed) {
+        // First login — MUST change password, no way out
+        document.getElementById('firstLoginModal').classList.add('active');
+        // Prevent closing on backdrop click or Escape
+      } else {
+        window.location.href = data.is_sho ? 'shoDashboard.html' : 'officerDashboard.html';
+      }
+    } else {
+      setAlert('loginAlert', 'error', data.message || 'Invalid credentials. Please try again.');
+    }
+  } catch {
+    setAlert('loginAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    setLoading('loginBtn', false);
+  }
+}
+
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+['identifier','loginPwd'].forEach(id =>
+  document.getElementById(id).addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); })
+);
+
+/* ══════════════════════════
+   FIRST-LOGIN MODAL
+   Backdrop + Escape blocked
+══════════════════════════ */
+const firstLoginModal = document.getElementById('firstLoginModal');
+
+// Block backdrop click
+firstLoginModal.addEventListener('click', e => { e.stopPropagation(); });
+// Block Escape globally while first-login modal is open
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && firstLoginModal.classList.contains('active')) e.preventDefault();
+});
+
+document.getElementById('confirmPwdBtn').addEventListener('click', async function() {
+  clearAlert('firstLoginAlert');
+  document.getElementById('newPwdErr').textContent     = '';
+  document.getElementById('confirmPwdErr').textContent = '';
+
+  const np = document.getElementById('newPwd').value;
+  const cp = document.getElementById('confirmPwd').value;
+  let valid = true;
+
+  if (np.length < 8) {
+    document.getElementById('newPwdErr').textContent = 'Password must be at least 8 characters.';
+    valid = false;
+  }
+  if (np !== cp) {
+    document.getElementById('confirmPwdErr').textContent = 'Passwords do not match.';
+    valid = false;
+  }
+  if (!valid) return;
+
+  setLoading('confirmPwdBtn', true);
+  try {
+    const res  = await fetch('../php/changeOfficerPassword.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: np })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      firstLoginModal.classList.remove('active');
+      window.location.href = data.is_sho ? 'shoDashboard.html' : 'officerDashboard.html';
+    } else {
+      setAlert('firstLoginAlert', 'error', data.message || 'Failed to update password.');
+    }
+  } catch {
+    setAlert('firstLoginAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    setLoading('confirmPwdBtn', false);
+  }
+});
+
+/* ══════════════════════════
+   FORGOT PASSWORD MODAL
+   3 steps: email → OTP → new password
+══════════════════════════ */
+const forgotModal = document.getElementById('forgotModal');
+
+document.getElementById('forgotLink').addEventListener('click', e => {
+  e.preventDefault();
+  // pre-fill email if in email mode
+  if (loginMode === 'email' && idInput.value.trim())
+    document.getElementById('forgotEmail').value = idInput.value.trim();
+  forgotModal.classList.add('active');
+});
+
+function closeForgot() {
+  forgotModal.classList.remove('active');
+  // reset all steps
+  showStep('stepEmail');
+  ['forgotAlert','otpAlert','resetAlert'].forEach(clearAlert);
+  ['forgotEmailErr','otpErr','resetPwdErr','resetConfirmErr'].forEach(id => document.getElementById(id).textContent = '');
+  document.getElementById('forgotEmail').value  = '';
+  document.getElementById('resetPwd').value     = '';
+  document.getElementById('resetConfirm').value = '';
+  document.querySelectorAll('#otpRow input').forEach(i => i.value = '');
+  const rb = document.getElementById('resetStrengthBar');
+  rb.style.width = '0'; document.getElementById('resetStrengthLbl').textContent = '';
+}
+
+// backdrop close (only for forgot, not first-login)
+forgotModal.addEventListener('click', e => { if (e.target === forgotModal) closeForgot(); });
+
+document.getElementById('forgotCancel').addEventListener('click', closeForgot);
+
+function showStep(stepId) {
+  ['stepEmail','stepOtp','stepNewPwd'].forEach(id => {
+    document.getElementById(id).style.display = id === stepId ? 'block' : 'none';
+  });
+}
+
+// Step 1 — send OTP
+document.getElementById('forgotSendOtp').addEventListener('click', async function() {
+  clearAlert('forgotAlert');
+  document.getElementById('forgotEmailErr').textContent = '';
+  const email = document.getElementById('forgotEmail').value.trim();
+
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('forgotEmailErr').textContent = 'Enter a valid email address.'; return;
+  }
+
+  this.disabled = true; this.textContent = 'Sending…';
+  try {
+    const res  = await fetch('../php/officerForgotPassword.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('otpSentTo').textContent = `Code sent to ${email}`;
+      showStep('stepOtp');
+      // focus first OTP input
+      document.querySelector('#otpRow input').focus();
+    } else {
+      setAlert('forgotAlert', 'error', data.message || 'Could not send code. Please try again.');
+    }
+  } catch {
+    setAlert('forgotAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    this.disabled = false; this.textContent = 'Send Code';
+  }
+});
+
+// OTP input auto-advance
+document.querySelectorAll('#otpRow input').forEach((inp, idx, all) => {
+  inp.addEventListener('input', () => {
+    inp.value = inp.value.replace(/[^0-9]/g, '').slice(-1);
+    if (inp.value && idx < all.length - 1) all[idx + 1].focus();
+  });
+  inp.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && !inp.value && idx > 0) all[idx - 1].focus();
+  });
+});
+
+// Resend
+document.getElementById('resendOtp').addEventListener('click', async function() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  this.style.pointerEvents = 'none'; this.textContent = 'Sending…';
+  try {
+    await fetch('../php/officerForgotPassword.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+    document.querySelectorAll('#otpRow input').forEach(i => i.value = '');
+    document.querySelector('#otpRow input').focus();
+    clearAlert('otpAlert');
+    setAlert('otpAlert', 'success', 'New code sent.');
+  } catch {
+    setAlert('otpAlert', 'error', 'Could not resend. Please try again.');
+  } finally {
+    this.style.pointerEvents = ''; this.textContent = 'Resend code';
+  }
+});
+
+document.getElementById('otpBack').addEventListener('click', () => showStep('stepEmail'));
+
+// Step 2 — verify OTP
+document.getElementById('otpVerify').addEventListener('click', async function() {
+  clearAlert('otpAlert');
+  document.getElementById('otpErr').textContent = '';
+  const otp = [...document.querySelectorAll('#otpRow input')].map(i => i.value).join('');
+
+  if (otp.length < 6) {
+    document.getElementById('otpErr').textContent = 'Enter all 6 digits.'; return;
+  }
+
+  this.disabled = true; this.textContent = 'Verifying…';
+  try {
+    const res  = await fetch('../php/officerVerifyOTP.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp, email: document.getElementById('forgotEmail').value.trim() })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      showStep('stepNewPwd');
+    } else {
+      setAlert('otpAlert', 'error', data.message || 'Incorrect code. Please try again.');
+    }
+  } catch {
+    setAlert('otpAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    this.disabled = false; this.textContent = 'Verify Code';
+  }
+});
+
+// Step 3 — set new password
+document.getElementById('resetSubmit').addEventListener('click', async function() {
+  clearAlert('resetAlert');
+  document.getElementById('resetPwdErr').textContent     = '';
+  document.getElementById('resetConfirmErr').textContent = '';
+
+  const np = document.getElementById('resetPwd').value;
+  const cp = document.getElementById('resetConfirm').value;
+  let valid = true;
+
+  if (np.length < 8) {
+    document.getElementById('resetPwdErr').textContent = 'Minimum 8 characters.'; valid = false;
+  }
+  if (np !== cp) {
+    document.getElementById('resetConfirmErr').textContent = 'Passwords do not match.'; valid = false;
+  }
+  if (!valid) return;
+
+  this.disabled = true; this.textContent = 'Updating…';
+  try {
+    const res  = await fetch('../php/officerResetPassword.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ new_password: np, email: document.getElementById('forgotEmail').value.trim() })
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      closeForgot();
+      setAlert('loginAlert', 'success', 'Password updated. Please sign in with your new password.');
+    } else {
+      setAlert('resetAlert', 'error', data.message || 'Failed to update password.');
+    }
+  } catch {
+    setAlert('resetAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    this.disabled = false; this.textContent = 'Update Password';
+  }
+});
+</script>
+</body>
+</html>

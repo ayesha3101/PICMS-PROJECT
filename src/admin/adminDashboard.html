@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard — PICMS Karachi Police</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/adminDashboard.css" />
+</head>
+<body>
+
+<!-- ════ SIDEBAR ════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-top">
+    <div class="sidebar-brand">
+      <div class="brand-emblem">
+        <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:22px; height:22px; object-fit:contain;"/>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">PICMS</span>
+        <span class="brand-role">Admin Console</span>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <p class="nav-section-label">Overview</p>
+    <a href="#" class="nav-item active" data-page="dashboard">
+      <span class="nav-icon">⊞</span>
+      <span>Dashboard</span>
+    </a>
+
+    <p class="nav-section-label">Management</p>
+    <a href="#" class="nav-item" data-page="officers">
+      <span class="nav-icon">👤</span>
+      <span>Officers</span>
+    </a>
+    <a href="#" class="nav-item" data-page="stations">
+      <span class="nav-icon">🏛</span>
+      <span>Stations</span>
+    </a>
+    <a href="#" class="nav-item" data-page="sho">
+      <span class="nav-icon">⭐</span>
+      <span>SHO Appointments</span>
+    </a>
+    <a href="#" class="nav-item" data-page="superintendent">
+      <span class="nav-icon">🔒</span>
+      <span>Superintendent Appointments</span>
+    </a>
+
+    <p class="nav-section-label">System</p>
+    <a href="#" class="nav-item" data-page="complaints">
+      <span class="nav-icon">📋</span>
+      <span>All Complaints</span>
+    </a>
+    <a href="#" class="nav-item" data-page="logs">
+      <span class="nav-icon">📜</span>
+      <span>Activity Logs</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <a href="#" class="nav-item" id="logoutBtn">
+      <span class="nav-icon">↩</span>
+      <span>Sign Out</span>
+    </a>
+  </div>
+</aside>
+
+<!-- ════ MAIN CONTENT ════ -->
+<main class="main">
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+      <div class="page-title">
+        <h1 id="pageTitle">Dashboard</h1>
+        <p id="pageSubtitle">Welcome back, <span id="adminName">Admin</span></p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-date" id="topbarDate"></div>
+      <div class="admin-chip">
+        <div class="admin-avatar">A</div>
+        <div class="admin-info">
+          <span class="admin-label">Police Chief</span>
+          <span class="admin-badge" id="adminBadge">ADMIN-001</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page content -->
+  <div class="content" id="mainContent">
+
+    <!-- ── Dashboard page ── -->
+    <div class="page-section active" id="page-dashboard">
+
+      <!-- Stat cards -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon steel">👤</div>
+          <div class="stat-body">
+            <p class="stat-label">Total Officers</p>
+            <p class="stat-value" id="statOfficers">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon gold">📋</div>
+          <div class="stat-body">
+            <p class="stat-label">Active Complaints</p>
+            <p class="stat-value" id="statComplaints">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon success">✔</div>
+          <div class="stat-body">
+            <p class="stat-label">Resolved This Month</p>
+            <p class="stat-value" id="statResolved">—</p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon danger">⚑</div>
+          <div class="stat-body">
+            <p class="stat-label">Urgent Complaints</p>
+            <p class="stat-value" id="statUrgent">—</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two column layout -->
+      <div class="dash-grid">
+
+        <!-- Recent complaints -->
+        <div class="dash-card">
+          <div class="dash-card-header">
+            <h2>Recent Complaints</h2>
+            <a href="#" class="dash-link">View all →</a>
+          </div>
+          <div class="table-wrap">
+            <table class="dash-table">
+              <thead>
+                <tr>
+                  <th>Reference</th>
+                  <th>Category</th>
+                  <th>Station</th>
+                  <th>Status</th>
+                  <th>Priority</th>
+                </tr>
+              </thead>
+              <tbody id="complaintsTbody">
+                <tr><td colspan="5" class="table-empty">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Quick actions + station overview -->
+        <div class="dash-right">
+          <div class="dash-card">
+            <div class="dash-card-header">
+              <h2>Quick Actions</h2>
+            </div>
+            <div class="quick-actions">
+              <button class="qa-btn" data-page="officers">
+                <span class="qa-icon">➕</span>
+                <span>Add Officer</span>
+              </button>
+              <button class="qa-btn" data-page="sho">
+                <span class="qa-icon">⭐</span>
+                <span>Appoint SHO</span>
+              </button>
+              <button class="qa-btn" data-page="superintendent">
+                <span class="qa-icon">🔒</span>
+                <span>Appoint Superintendent</span>
+              </button>
+              <button class="qa-btn" data-page="stations">
+                <span class="qa-icon">🏛</span>
+                <span>View Stations</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="dash-card" style="margin-top: 20px;">
+            <div class="dash-card-header">
+              <h2>Stations Overview</h2>
+            </div>
+            <div class="station-list" id="stationList">
+              <p class="table-empty">Loading…</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Officers page (placeholder) ── -->
+    <div class="page-section" id="page-officers">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">👤</p>
+        <h2>Officers Management</h2>
+        <p>Add, edit, deactivate officers and assign roles. Coming next.</p>
+      </div>
+    </div>
+
+    <!-- ── Stations page (placeholder) ── -->
+    <div class="page-section" id="page-stations">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">🏛</p>
+        <h2>Stations</h2>
+        <p>View all 15 Karachi police stations and their details.</p>
+      </div>
+    </div>
+
+    <!-- ── SHO Appointments (placeholder) ── -->
+    <div class="page-section" id="page-sho">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">⭐</p>
+        <h2>SHO Appointments</h2>
+        <p>Appoint and remove Station House Officers per station.</p>
+      </div>
+    </div>
+
+    <!-- ── Superintendent Appointments (placeholder) ── -->
+    <div class="page-section" id="page-superintendent">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">🔒</p>
+        <h2>Superintendent Appointments</h2>
+        <p>Appoint and remove Jail Superintendents per station.</p>
+      </div>
+    </div>
+
+    <!-- ── Complaints page (placeholder) ── -->
+    <div class="page-section" id="page-complaints">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">📋</p>
+        <h2>All Complaints</h2>
+        <p>System-wide complaint overview across all stations.</p>
+      </div>
+    </div>
+
+    <!-- ── Logs page (placeholder) ── -->
+    <div class="page-section" id="page-logs">
+      <div class="placeholder-card">
+        <p class="placeholder-icon">📜</p>
+        <h2>Activity Logs</h2>
+        <p>Full audit trail of admin actions across the system.</p>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script src="../js/adminDashboard.js"></script>
+</body>
+</html>

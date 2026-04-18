@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login — PICMS Karachi Police</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/adminLogin.css" />
+</head>
+<body>
+
+<div class="page">
+
+  <!-- ════ LEFT PANEL ════ -->
+  <div class="left-panel">
+    <div class="glow-blob"></div>
+    <div class="v-rule"></div>
+    <div class="watermark">★</div>
+
+    <div class="left-content">
+      <div class="emblem">
+        <div class="emblem-ring">
+          <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:40px; height:40px; object-fit:contain;"/>
+        </div>
+      </div>
+      <p class="left-eyebrow">Karachi Police — Command Access</p>
+      <h1 class="left-heading">System<br /><em>Administration</em><br />Portal</h1>
+      <div class="h-rule"></div>
+      <p class="left-tagline">
+        Oversight, accountability,<br />
+        and command — all in one place.
+      </p>
+      <div class="authority-tag">
+        <span class="dot"></span>
+        <span>Police Chief Access Only</span>
+      </div>
+    </div>
+
+    <div class="left-footer">PICMS &nbsp;·&nbsp; Admin Console</div>
+  </div>
+
+  <!-- ════ RIGHT PANEL ════ -->
+  <div class="right-panel">
+    <div class="login-card">
+
+      <div class="card-header">
+        <h2>Admin Sign In</h2>
+        <p>Access the PICMS administration console</p>
+      </div>
+
+      <!-- Badge / Email toggle -->
+      <div class="id-toggle">
+        <button class="toggle-btn active" id="btnBadge" type="button">Badge Number</button>
+        <button class="toggle-btn" id="btnEmail" type="button">Email Address</button>
+      </div>
+
+      <div class="alert" id="loginAlert"><span id="loginAlertMsg"></span></div>
+
+      <div class="field-group">
+        <div class="field">
+          <label class="field-label" id="idLabel" for="identifier">Badge Number</label>
+          <div class="field-wrap">
+            <input type="text" id="identifier" placeholder="e.g. ADMIN-001" autocomplete="username" spellcheck="false" />
+            <span class="field-icon" id="idIcon">🪪</span>
+          </div>
+          <span class="field-error" id="idErr"></span>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="loginPwd">Password</label>
+          <div class="field-wrap">
+            <input type="password" id="loginPwd" placeholder="Enter your password" autocomplete="current-password" />
+            <button class="eye-btn" type="button" id="eyeLogin">👁</button>
+          </div>
+          <span class="field-error" id="pwdErr"></span>
+        </div>
+      </div>
+
+      <div class="form-meta">
+        <label class="remember">
+          <input type="checkbox" id="rememberMe" />
+          <span>Remember me</span>
+        </label>
+        <button class="forgot-link" id="forgotLink" type="button">Forgot password?</button>
+      </div>
+
+      <button class="btn-main" id="loginBtn" type="button">
+        <span class="btn-text">Sign In to Console</span>
+        <span class="spinner-wrap"><span class="spinner"></span></span>
+      </button>
+
+      <div class="divider">or</div>
+      <div class="portal-link">
+        <a href="../officer/officerLogin.html">Officer portal <span>→</span></a>
+        &nbsp;&nbsp;·&nbsp;&nbsp;
+        <a href="../citizen/citizenLogin.html">Citizen portal <span>→</span></a>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════ FIRST-LOGIN PASSWORD CHANGE MODAL ════ -->
+<div class="modal-overlay" id="firstLoginModal">
+  <div class="modal-box">
+    <div class="modal-icon">🔐</div>
+    <h3>Set Your Password</h3>
+    <p>Your account was created with a <strong>temporary password</strong>. Set a new private password to continue — this cannot be skipped.</p>
+
+    <div class="alert" id="firstLoginAlert"></div>
+
+    <div class="field-group">
+      <div class="field">
+        <label class="field-label" for="newPwd">New Password</label>
+        <div class="field-wrap">
+          <input type="password" id="newPwd" placeholder="Minimum 8 characters" autocomplete="new-password" />
+          <button class="eye-btn" type="button" id="eyeNew">👁</button>
+        </div>
+        <div class="pwd-strength"><div class="pwd-strength-bar" id="strengthBar"></div></div>
+        <span class="strength-lbl" id="strengthLbl"></span>
+        <span class="field-error" id="newPwdErr"></span>
+      </div>
+      <div class="field">
+        <label class="field-label" for="confirmPwd">Confirm Password</label>
+        <div class="field-wrap">
+          <input type="password" id="confirmPwd" placeholder="Re-enter new password" autocomplete="new-password" />
+          <button class="eye-btn" type="button" id="eyeConfirm">👁</button>
+        </div>
+        <span class="field-error" id="confirmPwdErr"></span>
+      </div>
+    </div>
+
+    <button class="btn-main" id="confirmPwdBtn" type="button">
+      <span class="btn-text">Confirm &amp; Continue</span>
+      <span class="spinner-wrap"><span class="spinner"></span></span>
+    </button>
+  </div>
+</div>
+
+<!-- ════ FORGOT PASSWORD MODAL ════ -->
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal-sm">
+    <div class="modal-icon" style="font-size:16px">📧</div>
+
+    <!-- Step 1: email -->
+    <div id="stepEmail">
+      <h3>Reset Password</h3>
+      <p>Enter your registered email address and we'll send you a verification code.</p>
+      <div class="alert" id="forgotAlert"></div>
+      <div class="field">
+        <label class="field-label" for="forgotEmail">Email Address</label>
+        <div class="field-wrap">
+          <input type="email" id="forgotEmail" placeholder="your.email@karachi.police.gov" />
+          <span class="field-icon">✉</span>
+        </div>
+        <span class="field-error" id="forgotEmailErr"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-ghost" id="forgotCancel">Cancel</button>
+        <button class="btn-gold-sm" id="forgotSendOtp">Send Code</button>
+      </div>
+    </div>
+
+    <!-- Step 2: OTP -->
+    <div id="stepOtp" style="display:none">
+      <h3>Enter Code</h3>
+      <p id="otpSentTo">Code sent to your email.</p>
+      <div class="alert" id="otpAlert"></div>
+      <label class="field-label">6-Digit Code</label>
+      <div class="otp-row" id="otpRow">
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+        <input type="text" maxlength="1" inputmode="numeric" />
+      </div>
+      <span class="field-error" id="otpErr"></span>
+      <p class="resend-row">Didn't receive it? <button class="resend-btn" id="resendOtp" type="button">Resend code</button></p>
+      <div class="btn-row">
+        <button class="btn-ghost" id="otpBack">Back</button>
+        <button class="btn-gold-sm" id="otpVerify">Verify Code</button>
+      </div>
+    </div>
+
+    <!-- Step 3: new password -->
+    <div id="stepNewPwd" style="display:none">
+      <h3>New Password</h3>
+      <p>Almost done. Set a new password for your account.</p>
+      <div class="alert" id="resetAlert"></div>
+      <div class="field-group" style="margin-bottom:16px">
+        <div class="field">
+          <label class="field-label" for="resetPwd">New Password</label>
+          <div class="field-wrap">
+            <input type="password" id="resetPwd" placeholder="Minimum 8 characters" autocomplete="new-password" />
+            <button class="eye-btn" type="button" id="eyeReset">👁</button>
+          </div>
+          <div class="pwd-strength"><div class="pwd-strength-bar" id="resetStrBar"></div></div>
+          <span class="strength-lbl" id="resetStrLbl"></span>
+          <span class="field-error" id="resetPwdErr"></span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="resetConfirm">Confirm Password</label>
+          <div class="field-wrap">
+            <input type="password" id="resetConfirm" placeholder="Re-enter new password" autocomplete="new-password" />
+            <button class="eye-btn" type="button" id="eyeResetConf">👁</button>
+          </div>
+          <span class="field-error" id="resetConfErr"></span>
+        </div>
+      </div>
+      <button class="btn-gold-sm" style="width:100%;padding:13px" id="resetSubmit" type="button">Update Password</button>
+    </div>
+  </div>
+</div>
+
+<script src="../js/adminLogin.js"></script>
+</body>
+</html>

@@ -268,3 +268,36 @@ INSERT INTO stations (station_name, area_covered, address, phone) VALUES
 ('Kemari Police Station',           'Kemari',           'Kemari, Karachi',                       '021-32851234'),
 ('Garden Police Station',           'Garden',           'Garden Road, Karachi',                  '021-99214000'),
 ('Frere Police Station',            'Frere Town',       'Frere Town, Karachi',                   '021-35221234');
+
+-- ──────────────────────────────────────────────
+-- TABLE: officer_otps
+-- Stores password-reset OTPs for officers.
+-- Separate from citizen otp_verifications for clean separation.
+-- officer_id FK references officers table.
+-- verified = 1 after officerVerifyOtp.php confirms the code.
+-- cleaned up by officerResetPassword.php after successful reset.
+-- ──────────────────────────────────────────────
+CREATE TABLE officer_otps (
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    officer_id   INT NOT NULL,
+    otp          VARCHAR(255) NOT NULL,          -- hashed OTP
+    expires_at   DATETIME NOT NULL,              -- 10 minutes from creation
+    attempts     INT DEFAULT 0,                  -- wrong guesses
+    max_attempts INT DEFAULT 5,
+    verified     TINYINT(1) DEFAULT 0,           -- 1 = OTP confirmed
+    created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (officer_id) REFERENCES officers(officer_id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    INDEX(officer_id)
+);
+
+
+-- ──────────────────────────────────────────────
+-- NOTE: officers table needs an email column.
+-- If not already present, run this ALTER:
+-- ──────────────────────────────────────────────
+ALTER TABLE officers
+    ADD COLUMN email VARCHAR(100) UNIQUE AFTER badge_number;
+ 
+
+
