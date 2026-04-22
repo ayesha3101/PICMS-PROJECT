@@ -87,7 +87,7 @@ $stmt = $conn->prepare("
 ");
 /*END*/
 $stmt->bind_param(
-    "siisssssssi",
+    "siissssssi",
     $cnic, $station_id,
     $category_id, $subcategory_id,
     $incident_area, $incident_landmark,
