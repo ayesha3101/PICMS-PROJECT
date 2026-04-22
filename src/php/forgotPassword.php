@@ -1,8 +1,8 @@
 <?php
 // ══════════════════════════════════════════════
-// forgot_password.php
+// forgotPassword.php
 // Job: check citizen exists by email
-//      then trigger send_otp.php
+//      then trigger sendOTP.php
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';

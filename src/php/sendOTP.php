@@ -1,8 +1,8 @@
 <?php
 // ══════════════════════════════════════════════
-// send_otp.php
+// sendOTP.php
 // ONLY job: generate OTP and send it via email
-// Used by: register.php, forgot_password.php
+// Used by: citizenRegister.php, forgotPassword.php
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';

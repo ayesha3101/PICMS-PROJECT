@@ -89,17 +89,17 @@
         <div class="step-line"></div>
         <div class="step" id="step-ind-2">
           <div class="step-circle">2</div>
-          <span>Location & Station</span>
+          <span>Location &amp; Station</span>
         </div>
         <div class="step-line"></div>
         <div class="step" id="step-ind-3">
           <div class="step-circle">3</div>
-          <span>Additional Info</span>
+          <span>Witnesses</span>
         </div>
         <div class="step-line"></div>
         <div class="step" id="step-ind-4">
           <div class="step-circle">4</div>
-          <span>Review & Submit</span>
+          <span>Review &amp; Submit</span>
         </div>
       </div>
 
@@ -111,18 +111,23 @@
           <div class="step-title">What happened?</div>
           <div class="step-desc">Select the category that best describes your complaint.</div>
 
+          <!-- Hidden fields for IDs sent to PHP -->
+          <input type="hidden" id="category_id" value=""/>
+          <input type="hidden" id="subcategory_id" value=""/>
+
           <div class="field-group">
             <label class="field-label">Complaint Category <span class="req">*</span></label>
             <select id="category" onchange="updateSubcategory()">
               <option value="">— Select category —</option>
-              <option value="Theft / Robbery">Theft / Robbery</option>
-              <option value="Harassment / Threats">Harassment / Threats</option>
-              <option value="Fraud / Cybercrime">Fraud / Cybercrime</option>
-              <option value="Missing Person">Missing Person</option>
-              <option value="Property Dispute">Property Dispute</option>
+              <option value="Theft">Theft</option>
+              <option value="Fraud">Fraud</option>
+              <option value="Harassment">Harassment</option>
               <option value="Domestic Violence">Domestic Violence</option>
-              <option value="Traffic Incident">Traffic Incident</option>
-              <option value="Corruption / Misconduct">Corruption / Misconduct</option>
+              <option value="Missing Person">Missing Person</option>
+              <option value="Drug Related">Drug Related</option>
+              <option value="Assault">Assault</option>
+              <option value="Kidnapping">Kidnapping</option>
+              <option value="Property Dispute">Property Dispute</option>
               <option value="Other">Other</option>
             </select>
             <span class="field-error" id="category-error"></span>
@@ -130,7 +135,7 @@
 
           <div class="field-group" id="subcategory-wrap" style="display:none;">
             <label class="field-label">Sub-category</label>
-            <select id="subcategory">
+            <select id="subcategory" onchange="syncSubcategoryId()">
               <option value="">— Select sub-category —</option>
             </select>
           </div>
@@ -223,14 +228,13 @@
           </div>
         </div>
 
-        <!-- STEP 3: Additional Info -->
+        <!-- STEP 3: Witnesses -->
         <div class="form-step" id="step-3">
-          <div class="step-title">Any additional information?</div>
-          <div class="step-desc">All fields on this step are optional.</div>
+          <div class="step-title">Were there any witnesses?</div>
+          <div class="step-desc">This step is optional. Provide witness details if available.</div>
 
-          <!-- Witnesses -->
           <div class="field-group">
-            <label class="field-label">Were there any witnesses?</label>
+            <label class="field-label">Witnesses present?</label>
             <div class="toggle-row">
               <button class="toggle-btn active" id="witnessNo" onclick="toggleWitness(false)">No</button>
               <button class="toggle-btn" id="witnessYes" onclick="toggleWitness(true)">Yes</button>
@@ -248,16 +252,6 @@
                 <input type="tel" id="witness_contact" placeholder="03XX-XXXXXXX"/>
               </div>
             </div>
-          </div>
-
-          <!-- Anonymous -->
-          <div class="field-group" style="margin-top:8px;">
-            <label class="field-label">Submit anonymously?</label>
-            <div class="toggle-row">
-              <button class="toggle-btn active" id="anonNo" onclick="toggleAnon(false)">No — show my name</button>
-              <button class="toggle-btn" id="anonYes" onclick="toggleAnon(true)">Yes — hide my name</button>
-            </div>
-            <p class="field-hint">If anonymous, officers will contact you only via the phone number on your profile.</p>
           </div>
 
           <div class="form-nav">

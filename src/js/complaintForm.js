@@ -6,7 +6,6 @@
 
 let currentStep = 1;
 let hasWitness  = false;
-let isAnonymous = false;
 
 // ── Area → Station mapping
 //    Matches area_covered values seeded in stations table
@@ -29,21 +28,29 @@ const AREA_STATION_MAP = {
   'Other':           { id: 4,  name: 'Saddar Police Station (Central)' },
 };
 
-// ── Subcategory options per category
-const SUBCATEGORIES = {
-  'Theft / Robbery':          ['Vehicle Theft', 'Mobile Snatching', 'Home Burglary', 'Shoplifting', 'Robbery at Gunpoint', 'Other'],
-  'Harassment / Threats':     ['Verbal Threats', 'Physical Harassment', 'Online Harassment', 'Stalking', 'Other'],
-  'Fraud / Cybercrime':       ['Online Scam', 'Bank Fraud', 'Identity Theft', 'Fake Documents', 'Social Media Fraud', 'Other'],
-  'Missing Person':           ['Child Missing', 'Adult Missing', 'Suspected Abduction', 'Other'],
-  'Property Dispute':         ['Land Grabbing', 'Illegal Possession', 'Boundary Dispute', 'Other'],
-  'Domestic Violence':        ['Physical Abuse', 'Emotional Abuse', 'Financial Abuse', 'Other'],
-  'Traffic Incident':         ['Hit and Run', 'Reckless Driving', 'Drunk Driving', 'Road Rage', 'Other'],
-  'Corruption / Misconduct':  ['Bribery', 'Abuse of Power', 'Police Misconduct', 'Other'],
-  'Other':                    ['Other'],
+// ── Category ID map matching complaint_categories seed data
+const CATEGORY_ID_MAP = {
+  'Theft':             1,
+  'Fraud':             2,
+  'Harassment':        3,
+  'Domestic Violence': 4,
+  'Missing Person':    5,
+  'Drug Related':      6,
+  'Assault':           7,
+  'Kidnapping':        8,
+  'Property Dispute':  9,
+  'Other':             10,
 };
 
-// ── Urgent categories — auto-set priority in PHP
-const URGENT_CATEGORIES = ['Missing Person', 'Domestic Violence'];
+// ── Subcategory options per category (matching DB seed)
+const SUBCATEGORIES = {
+  'Theft':             [{ id: 1, name: 'Vehicle Theft' }, { id: 2, name: 'Mobile Phone Theft' }, { id: 3, name: 'House Burglary' }, { id: 4, name: 'Robbery' }],
+  'Fraud':             [{ id: 5, name: 'Online Fraud' }, { id: 6, name: 'Financial Fraud' }, { id: 7, name: 'Identity Fraud' }],
+  'Harassment':        [{ id: 8, name: 'Street Harassment' }, { id: 9, name: 'Workplace Harassment' }, { id: 10, name: 'Cyber Harassment' }],
+  'Drug Related':      [{ id: 11, name: 'Possession' }, { id: 12, name: 'Trafficking' }],
+  'Assault':           [{ id: 13, name: 'Physical Assault' }, { id: 14, name: 'Armed Assault' }],
+  'Property Dispute':  [{ id: 15, name: 'Land Dispute' }, { id: 16, name: 'Rent Dispute' }],
+};
 
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
@@ -81,21 +88,36 @@ function setNavInfo(fullName) {
 
 // ── Update subcategory dropdown when category changes
 function updateSubcategory() {
-  const cat  = document.getElementById('category').value;
-  const wrap = document.getElementById('subcategory-wrap');
-  const sel  = document.getElementById('subcategory');
+  const catName = document.getElementById('category').value;
+  const wrap    = document.getElementById('subcategory-wrap');
+  const sel     = document.getElementById('subcategory');
 
-  if (!cat || cat === 'Other') { wrap.style.display = 'none'; return; }
+  // Store category_id in hidden field
+  const catId = CATEGORY_ID_MAP[catName] || 0;
+  document.getElementById('category_id').value = catId;
 
-  const subs = SUBCATEGORIES[cat] || [];
+  const subs = SUBCATEGORIES[catName];
+  if (!catName || !subs) {
+    wrap.style.display = 'none';
+    sel.innerHTML = '<option value="">— Select sub-category —</option>';
+    document.getElementById('subcategory_id').value = '';
+    return;
+  }
+
   sel.innerHTML = '<option value="">— Select sub-category —</option>';
   subs.forEach(s => {
-    const opt   = document.createElement('option');
-    opt.value   = s;
-    opt.textContent = s;
+    const opt       = document.createElement('option');
+    opt.value       = s.id;
+    opt.textContent = s.name;
     sel.appendChild(opt);
   });
   wrap.style.display = 'block';
+}
+
+// ── Keep subcategory_id hidden field in sync
+function syncSubcategoryId() {
+  const sel = document.getElementById('subcategory');
+  document.getElementById('subcategory_id').value = sel.value;
 }
 
 // ── Auto-assign station based on selected area
@@ -119,13 +141,6 @@ function toggleWitness(show) {
   document.getElementById('witnessFields').style.display = show ? 'block' : 'none';
   document.getElementById('witnessYes').classList.toggle('active', show);
   document.getElementById('witnessNo').classList.toggle('active', !show);
-}
-
-// ── Anonymous toggle
-function toggleAnon(anon) {
-  isAnonymous = anon;
-  document.getElementById('anonYes').classList.toggle('active', anon);
-  document.getElementById('anonNo').classList.toggle('active', !anon);
 }
 
 // ── Step navigation — next
@@ -165,12 +180,12 @@ function validateStep(step) {
   clearErrors();
 
   if (step === 1) {
-    const cat  = document.getElementById('category').value;
-    const date = document.getElementById('incident_date').value;
-    const desc = document.getElementById('description').value.trim();
+    const catId = document.getElementById('category_id').value;
+    const date  = document.getElementById('incident_date').value;
+    const desc  = document.getElementById('description').value.trim();
     let ok = true;
 
-    if (!cat) { showError('category-error', 'Please select a complaint category'); ok = false; }
+    if (!catId || catId === '0') { showError('category-error', 'Please select a complaint category'); ok = false; }
     if (!date) { showError('date-error', 'Please select the date of the incident'); ok = false; }
     if (desc.length < 20) { showError('desc-error', 'Please provide at least 20 characters of description'); ok = false; }
 
@@ -189,8 +204,9 @@ function validateStep(step) {
 
 // ── Build the review summary grid from all form values
 function buildReviewGrid() {
-  const category  = document.getElementById('category').value;
-  const subcat    = document.getElementById('subcategory').value || '—';
+  const catName   = document.getElementById('category').value;
+  const subSel    = document.getElementById('subcategory');
+  const subName   = subSel.options[subSel.selectedIndex]?.text || '—';
   const date      = document.getElementById('incident_date').value;
   const time      = document.getElementById('incident_time').value || '—';
   const desc      = document.getElementById('description').value.trim();
@@ -200,12 +216,10 @@ function buildReviewGrid() {
   const witness   = hasWitness
     ? (document.getElementById('witness_name').value || 'Yes (unnamed)')
     : 'No';
-  const anon = isAnonymous ? 'Yes' : 'No';
-  const priority = URGENT_CATEGORIES.includes(category) ? '🔴 Urgent' : 'Normal';
 
   document.getElementById('reviewGrid').innerHTML = `
-    <div class="review-item"><div class="review-key">Category</div><div class="review-val">${escHtml(category)}</div></div>
-    <div class="review-item"><div class="review-key">Sub-category</div><div class="review-val">${escHtml(subcat)}</div></div>
+    <div class="review-item"><div class="review-key">Category</div><div class="review-val">${escHtml(catName)}</div></div>
+    <div class="review-item"><div class="review-key">Sub-category</div><div class="review-val">${escHtml(subName)}</div></div>
     <div class="review-item"><div class="review-key">Date</div><div class="review-val">${escHtml(date)}</div></div>
     <div class="review-item"><div class="review-key">Time</div><div class="review-val">${escHtml(time)}</div></div>
     <div class="review-item full"><div class="review-key">Description</div><div class="review-val">${escHtml(desc)}</div></div>
@@ -213,8 +227,6 @@ function buildReviewGrid() {
     <div class="review-item"><div class="review-key">Landmark</div><div class="review-val">${escHtml(landmark)}</div></div>
     <div class="review-item full"><div class="review-key">Assigned Station</div><div class="review-val">${escHtml(station)}</div></div>
     <div class="review-item"><div class="review-key">Witnesses</div><div class="review-val">${escHtml(witness)}</div></div>
-    <div class="review-item"><div class="review-key">Anonymous</div><div class="review-val">${anon}</div></div>
-    <div class="review-item"><div class="review-key">Priority</div><div class="review-val">${priority}</div></div>
   `;
 }
 
@@ -232,18 +244,17 @@ async function submitComplaint() {
   btn.disabled    = true;
 
   const payload = {
-    category:           document.getElementById('category').value,
-    subcategory:        document.getElementById('subcategory').value,
+    category_id:        parseInt(document.getElementById('category_id').value) || 0,
+    subcategory_id:     parseInt(document.getElementById('subcategory_id').value) || 0,
     incident_date:      document.getElementById('incident_date').value,
     incident_time:      document.getElementById('incident_time').value,
     description:        document.getElementById('description').value.trim(),
     incident_area:      document.getElementById('incident_area').value,
     incident_landmark:  document.getElementById('incident_landmark').value.trim(),
-    station_id:         document.getElementById('station_id').value,
+    station_id:         parseInt(document.getElementById('station_id').value) || 0,
     has_witnesses:      hasWitness ? 1 : 0,
     witness_name:       hasWitness ? document.getElementById('witness_name').value.trim() : '',
     witness_contact:    hasWitness ? document.getElementById('witness_contact').value.trim() : '',
-    is_anonymous:       isAnonymous ? 1 : 0,
   };
 
   try {

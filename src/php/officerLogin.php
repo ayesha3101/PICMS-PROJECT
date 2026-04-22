@@ -3,6 +3,7 @@
 // Authenticates SHOs and investigating officers.
 // Accepts badge_number OR email + password.
 // Returns JSON — JS decides redirect based on is_sho + password_changed.
+// is_sho is derived from station_sho_assignments (no such column on officers table).
 
 require_once __DIR__ . '/../config/config.php';
 session_start();
@@ -48,6 +49,16 @@ try {
         exit;
     }
 
+    // ── Determine if this officer is a current SHO
+    //    The officers table has no is_sho column;
+    //    SHO status lives in station_sho_assignments (is_current = 1).
+    $shoStmt = $pdo->prepare("
+        SELECT COUNT(*) FROM station_sho_assignments
+        WHERE officer_id = :id AND is_current = 1
+    ");
+    $shoStmt->execute([':id' => $officer['officer_id']]);
+    $is_sho = (bool) $shoStmt->fetchColumn();
+
     // success — set session
     session_regenerate_id(true);
     $_SESSION['officer_id']       = $officer['officer_id'];
@@ -55,13 +66,14 @@ try {
     $_SESSION['badge_number']     = $officer['badge_number'];
     $_SESSION['rank']             = $officer['rank'];
     $_SESSION['station_id']       = $officer['station_id'];
-    $_SESSION['is_sho']           = (bool) $officer['is_sho'];
+    $_SESSION['role_id']          = $officer['role_id'];
+    $_SESSION['is_sho']           = $is_sho;
     $_SESSION['password_changed'] = (bool) $officer['password_changed'];
     $_SESSION['role']             = 'officer';
 
     echo json_encode([
         'success'          => true,
-        'is_sho'           => (bool) $officer['is_sho'],
+        'is_sho'           => $is_sho,
         'password_changed' => (bool) $officer['password_changed'],
         'name'             => $officer['full_name'],
         'rank'             => $officer['rank'],

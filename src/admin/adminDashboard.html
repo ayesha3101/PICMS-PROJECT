@@ -8,6 +8,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../css/adminDashboard.css" />
+  <link rel="stylesheet" href="../css/adminDashboardPages.css" />
 </head>
 <body>
 
@@ -16,7 +17,7 @@
   <div class="sidebar-top">
     <div class="sidebar-brand">
       <div class="brand-emblem">
-        <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:22px; height:22px; object-fit:contain;"/>
+        <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:22px;height:22px;object-fit:contain;" />
       </div>
       <div class="brand-text">
         <span class="brand-name">PICMS</span>
@@ -28,231 +29,625 @@
   <nav class="sidebar-nav">
     <p class="nav-section-label">Overview</p>
     <a href="#" class="nav-item active" data-page="dashboard">
-      <span class="nav-icon">⊞</span>
-      <span>Dashboard</span>
+      <span class="nav-icon">⊞</span><span>Dashboard</span>
     </a>
 
-    <p class="nav-section-label">Management</p>
+    <p class="nav-section-label">Personnel</p>
     <a href="#" class="nav-item" data-page="officers">
-      <span class="nav-icon">👤</span>
-      <span>Officers</span>
+      <span class="nav-icon">👤</span><span>Officers</span>
     </a>
     <a href="#" class="nav-item" data-page="stations">
-      <span class="nav-icon">🏛</span>
-      <span>Stations</span>
+      <span class="nav-icon">🏛</span><span>Stations</span>
     </a>
     <a href="#" class="nav-item" data-page="sho">
-      <span class="nav-icon">⭐</span>
-      <span>SHO Appointments</span>
+      <span class="nav-icon">⭐</span><span>SHO Management</span>
     </a>
     <a href="#" class="nav-item" data-page="superintendent">
-      <span class="nav-icon">🔒</span>
-      <span>Superintendent Appointments</span>
+      <span class="nav-icon">🔒</span><span>Superintendent</span>
     </a>
 
-    <p class="nav-section-label">System</p>
+    <p class="nav-section-label">Cases</p>
     <a href="#" class="nav-item" data-page="complaints">
-      <span class="nav-icon">📋</span>
-      <span>All Complaints</span>
+      <span class="nav-icon">📋</span><span>All Complaints</span>
     </a>
     <a href="#" class="nav-item" data-page="logs">
-      <span class="nav-icon">📜</span>
-      <span>Activity Logs</span>
+      <span class="nav-icon">📜</span><span>Activity Logs</span>
+    </a>
+
+    <p class="nav-section-label">Account</p>
+    <a href="#" class="nav-item" data-page="profile">
+      <span class="nav-icon">🪪</span><span>My Profile</span>
     </a>
   </nav>
 
   <div class="sidebar-bottom">
     <a href="#" class="nav-item" id="logoutBtn">
-      <span class="nav-icon">↩</span>
-      <span>Sign Out</span>
+      <span class="nav-icon">↩</span><span>Sign Out</span>
     </a>
   </div>
 </aside>
 
-<!-- ════ MAIN CONTENT ════ -->
+<!-- ════ MAIN ════ -->
 <main class="main">
 
-  <!-- Top bar -->
   <header class="topbar">
     <div class="topbar-left">
       <button class="sidebar-toggle" id="sidebarToggle">☰</button>
       <div class="page-title">
         <h1 id="pageTitle">Dashboard</h1>
-        <p id="pageSubtitle">Welcome back, <span id="adminName">Admin</span></p>
+        <p id="pageSubtitle">Welcome back, <span id="adminNameTop">Admin</span></p>
       </div>
     </div>
     <div class="topbar-right">
       <div class="topbar-date" id="topbarDate"></div>
       <div class="admin-chip">
-        <div class="admin-avatar">A</div>
+        <div class="admin-avatar" id="adminAvatarTop">A</div>
         <div class="admin-info">
           <span class="admin-label">Police Chief</span>
-          <span class="admin-badge" id="adminBadge">ADMIN-001</span>
+          <span class="admin-badge" id="adminBadgeTop">—</span>
         </div>
       </div>
     </div>
   </header>
 
-  <!-- Page content -->
   <div class="content" id="mainContent">
 
-    <!-- ── Dashboard page ── -->
+    <!-- ══════════════════════════════
+         PAGE: DASHBOARD
+    ══════════════════════════════ -->
     <div class="page-section active" id="page-dashboard">
-
-      <!-- Stat cards -->
       <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-icon steel">👤</div>
-          <div class="stat-body">
-            <p class="stat-label">Total Officers</p>
-            <p class="stat-value" id="statOfficers">—</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon gold">📋</div>
-          <div class="stat-body">
-            <p class="stat-label">Active Complaints</p>
-            <p class="stat-value" id="statComplaints">—</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon success">✔</div>
-          <div class="stat-body">
-            <p class="stat-label">Resolved This Month</p>
-            <p class="stat-value" id="statResolved">—</p>
-          </div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-icon danger">⚑</div>
-          <div class="stat-body">
-            <p class="stat-label">Urgent Complaints</p>
-            <p class="stat-value" id="statUrgent">—</p>
-          </div>
-        </div>
+        <div class="stat-card"><div class="stat-icon steel">👤</div><div class="stat-body"><p class="stat-label">Total Officers</p><p class="stat-value" id="statOfficers">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon gold">📋</div><div class="stat-body"><p class="stat-label">Active Complaints</p><p class="stat-value" id="statComplaints">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon success">✔</div><div class="stat-body"><p class="stat-label">Resolved This Month</p><p class="stat-value" id="statResolved">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon danger">⚑</div><div class="stat-body"><p class="stat-label">Urgent Complaints</p><p class="stat-value" id="statUrgent">—</p></div></div>
       </div>
-
-      <!-- Two column layout -->
       <div class="dash-grid">
-
-        <!-- Recent complaints -->
         <div class="dash-card">
-          <div class="dash-card-header">
-            <h2>Recent Complaints</h2>
-            <a href="#" class="dash-link">View all →</a>
-          </div>
+          <div class="dash-card-header"><h2>Recent Complaints</h2><a href="#" class="dash-link" data-page="complaints">View all →</a></div>
           <div class="table-wrap">
             <table class="dash-table">
-              <thead>
-                <tr>
-                  <th>Reference</th>
-                  <th>Category</th>
-                  <th>Station</th>
-                  <th>Status</th>
-                  <th>Priority</th>
-                </tr>
-              </thead>
-              <tbody id="complaintsTbody">
-                <tr><td colspan="5" class="table-empty">Loading…</td></tr>
-              </tbody>
+              <thead><tr><th>Reference</th><th>Category</th><th>Station</th><th>Status</th><th>Urgency</th></tr></thead>
+              <tbody id="complaintsTbody"><tr><td colspan="5" class="table-empty">Loading…</td></tr></tbody>
             </table>
           </div>
         </div>
-
-        <!-- Quick actions + station overview -->
         <div class="dash-right">
           <div class="dash-card">
-            <div class="dash-card-header">
-              <h2>Quick Actions</h2>
-            </div>
+            <div class="dash-card-header"><h2>Quick Actions</h2></div>
             <div class="quick-actions">
-              <button class="qa-btn" data-page="officers">
-                <span class="qa-icon">➕</span>
-                <span>Add Officer</span>
-              </button>
-              <button class="qa-btn" data-page="sho">
-                <span class="qa-icon">⭐</span>
-                <span>Appoint SHO</span>
-              </button>
-              <button class="qa-btn" data-page="superintendent">
-                <span class="qa-icon">🔒</span>
-                <span>Appoint Superintendent</span>
-              </button>
-              <button class="qa-btn" data-page="stations">
-                <span class="qa-icon">🏛</span>
-                <span>View Stations</span>
-              </button>
+              <button class="qa-btn" data-page="officers"><span class="qa-icon">➕</span><span>Add Officer</span></button>
+              <button class="qa-btn" data-page="sho"><span class="qa-icon">⭐</span><span>Appoint SHO</span></button>
+              <button class="qa-btn" data-page="superintendent"><span class="qa-icon">🔒</span><span>Appoint Supt.</span></button>
+              <button class="qa-btn" data-page="stations"><span class="qa-icon">🏛</span><span>View Stations</span></button>
             </div>
           </div>
+          <div class="dash-card" style="margin-top:20px;">
+            <div class="dash-card-header"><h2>Stations Overview</h2></div>
+            <div class="station-list" id="stationList"><p class="table-empty">Loading…</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-          <div class="dash-card" style="margin-top: 20px;">
-            <div class="dash-card-header">
-              <h2>Stations Overview</h2>
+    <!-- ══════════════════════════════
+         PAGE: OFFICERS
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-officers">
+      <div class="page-toolbar">
+        <div class="toolbar-filters">
+          <select class="filter-select" id="filterOfficerRank">
+            <option value="">All Ranks</option>
+            <option value="Inspector">Inspector</option>
+            <option value="DSP">DSP</option>
+            <option value="SI">SI</option>
+            <option value="ASI">ASI</option>
+          </select>
+          <select class="filter-select" id="filterOfficerStation">
+            <option value="">All Stations</option>
+          </select>
+          <select class="filter-select" id="filterOfficerRole">
+            <option value="">All Roles</option>
+            <option value="1">Investigating Officer</option>
+            <option value="2">SHO</option>
+            <option value="3">Jail Superintendent</option>
+          </select>
+          <select class="filter-select" id="filterOfficerSort">
+            <option value="alpha">A → Z</option>
+            <option value="alpha_desc">Z → A</option>
+            <option value="caseload_desc">Most Cases</option>
+            <option value="caseload_asc">Fewest Cases</option>
+          </select>
+          <input type="text" class="filter-search" id="searchOfficer" placeholder="Search by name or badge…" />
+        </div>
+        <button class="btn-action-primary" id="btnAddOfficer">+ Add Officer</button>
+      </div>
+
+      <div class="data-table-wrap">
+        <table class="data-table" id="officersTable">
+          <thead>
+            <tr>
+              <th>Officer</th>
+              <th>Badge</th>
+              <th>Rank</th>
+              <th>Role</th>
+              <th>Station</th>
+              <th>Caseload</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="officersTbody">
+            <tr><td colspan="8" class="table-empty"><div class="loading-row"><div class="mini-spinner"></div> Loading officers…</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Officer Detail Drawer -->
+    <div class="side-drawer" id="officerDrawer">
+      <div class="drawer-header">
+        <div>
+          <div class="drawer-eyebrow">Officer Profile</div>
+          <h3 class="drawer-title" id="drawerOfficerName">—</h3>
+          <p class="drawer-sub" id="drawerOfficerBadge">—</p>
+        </div>
+        <button class="drawer-close" id="closeOfficerDrawer">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div class="drawer-section">
+          <div class="drawer-section-title">Officer Details</div>
+          <div class="drawer-row"><span class="dr-key">Rank</span><span class="dr-val" id="drawerRank">—</span></div>
+          <div class="drawer-row"><span class="dr-key">Role</span><span class="dr-val" id="drawerRole">—</span></div>
+          <div class="drawer-row"><span class="dr-key">Station</span><span class="dr-val" id="drawerStation">—</span></div>
+          <div class="drawer-row"><span class="dr-key">Email</span><span class="dr-val" id="drawerEmail">—</span></div>
+          <div class="drawer-row"><span class="dr-key">Active Cases</span><span class="dr-val" id="drawerCaseload">—</span></div>
+          <div class="drawer-row"><span class="dr-key">Status</span><span class="dr-val" id="drawerStatus">—</span></div>
+        </div>
+        <div class="drawer-section">
+          <div class="drawer-section-title">Assigned Cases</div>
+          <div id="drawerCasesList" class="drawer-cases-list">
+            <p class="drawer-empty">No cases assigned.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="drawer-backdrop" id="officerDrawerBackdrop"></div>
+
+    <!-- ══════════════════════════════
+         PAGE: STATIONS
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-stations">
+      <div class="page-toolbar">
+        <div class="toolbar-filters">
+          <input type="text" class="filter-search" id="searchStation" placeholder="Search stations…" />
+        </div>
+      </div>
+      <div class="stations-grid" id="stationsGrid">
+        <div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;"><div class="mini-spinner" style="margin:0 auto 8px;"></div>Loading stations…</div>
+      </div>
+    </div>
+
+    <!-- Station Detail Modal -->
+    <div class="modal-overlay" id="stationModal">
+      <div class="modal-lg">
+        <div class="modal-header">
+          <div>
+            <div class="modal-eyebrow" id="stationModalArea">—</div>
+            <h3 class="modal-title" id="stationModalName">—</h3>
+          </div>
+          <button class="modal-close" id="closeStationModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-two-col">
+            <div>
+              <div class="drawer-section-title">Station Info</div>
+              <div class="drawer-row"><span class="dr-key">Address</span><span class="dr-val" id="smAddress">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Phone</span><span class="dr-val" id="smPhone">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Current SHO</span><span class="dr-val" id="smSHO">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Superintendent</span><span class="dr-val" id="smSuperintendent">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Officers Assigned</span><span class="dr-val" id="smOfficerCount">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Active Cases</span><span class="dr-val" id="smCaseCount">—</span></div>
             </div>
-            <div class="station-list" id="stationList">
-              <p class="table-empty">Loading…</p>
+            <div>
+              <div class="drawer-section-title">Officers at Station</div>
+              <div id="smOfficerList" class="sm-officer-list">
+                <p class="drawer-empty">No officers assigned.</p>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ── Officers page (placeholder) ── -->
-    <div class="page-section" id="page-officers">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">👤</p>
-        <h2>Officers Management</h2>
-        <p>Add, edit, deactivate officers and assign roles. Coming next.</p>
-      </div>
-    </div>
-
-    <!-- ── Stations page (placeholder) ── -->
-    <div class="page-section" id="page-stations">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">🏛</p>
-        <h2>Stations</h2>
-        <p>View all 15 Karachi police stations and their details.</p>
-      </div>
-    </div>
-
-    <!-- ── SHO Appointments (placeholder) ── -->
-    <div class="page-section" id="page-sho">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">⭐</p>
-        <h2>SHO Appointments</h2>
-        <p>Appoint and remove Station House Officers per station.</p>
-      </div>
-    </div>
-
-    <!-- ── Superintendent Appointments (placeholder) ── -->
-    <div class="page-section" id="page-superintendent">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">🔒</p>
-        <h2>Superintendent Appointments</h2>
-        <p>Appoint and remove Jail Superintendents per station.</p>
-      </div>
-    </div>
-
-    <!-- ── Complaints page (placeholder) ── -->
+    <!-- ══════════════════════════════
+         PAGE: COMPLAINTS
+    ══════════════════════════════ -->
     <div class="page-section" id="page-complaints">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">📋</p>
-        <h2>All Complaints</h2>
-        <p>System-wide complaint overview across all stations.</p>
+      <div class="page-toolbar">
+        <div class="toolbar-filters">
+          <select class="filter-select" id="filterComplaintStation">
+            <option value="">All Stations</option>
+          </select>
+          <select class="filter-select" id="filterComplaintStatus">
+            <option value="">All Statuses</option>
+            <option value="Submitted">Submitted</option>
+            <option value="Under Review">Under Review</option>
+            <option value="Accepted">Accepted</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Officer Assigned">Officer Assigned</option>
+            <option value="Investigation Ongoing">Investigation Ongoing</option>
+            <option value="Withdrawal Pending">Withdrawal Pending</option>
+            <option value="Withdrawn">Withdrawn</option>
+            <option value="Resolved">Resolved</option>
+            <option value="Closed">Closed</option>
+          </select>
+          <select class="filter-select" id="filterComplaintCategory">
+            <option value="">All Categories</option>
+            <option value="1">Theft</option>
+            <option value="2">Fraud</option>
+            <option value="3">Harassment</option>
+            <option value="4">Domestic Violence</option>
+            <option value="5">Missing Person</option>
+            <option value="6">Drug Related</option>
+            <option value="7">Assault</option>
+            <option value="8">Kidnapping</option>
+            <option value="9">Property Dispute</option>
+            <option value="10">Other</option>
+          </select>
+          <select class="filter-select" id="filterComplaintUrgency">
+            <option value="">All</option>
+            <option value="1">Urgent Only</option>
+            <option value="0">Non-Urgent</option>
+          </select>
+          <select class="filter-select" id="filterComplaintSort">
+            <option value="recent">Most Recent</option>
+            <option value="oldest">Oldest First</option>
+          </select>
+          <input type="text" class="filter-search" id="searchComplaint" placeholder="Search reference or area…" />
+        </div>
+      </div>
+      <div class="data-table-wrap">
+        <table class="data-table" id="complaintsTable">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Category</th>
+              <th>Station</th>
+              <th>Citizen CNIC</th>
+              <th>Status</th>
+              <th>Urgency</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsTbodyFull">
+            <tr><td colspan="8" class="table-empty"><div class="loading-row"><div class="mini-spinner"></div> Loading…</div></td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
-    <!-- ── Logs page (placeholder) ── -->
+    <!-- Complaint Detail Modal -->
+    <div class="modal-overlay" id="complaintModal">
+      <div class="modal-lg">
+        <div class="modal-header">
+          <div>
+            <div class="modal-eyebrow" id="cmCategory">—</div>
+            <h3 class="modal-title" id="cmRef">—</h3>
+          </div>
+          <button class="modal-close" id="closeComplaintModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="modal-two-col">
+            <div>
+              <div class="drawer-section-title">Complaint Details</div>
+              <div class="drawer-row"><span class="dr-key">Status</span><span class="dr-val" id="cmStatus">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Station</span><span class="dr-val" id="cmStation">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Area</span><span class="dr-val" id="cmArea">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Incident Date</span><span class="dr-val" id="cmDate">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Submitted</span><span class="dr-val" id="cmSubmitted">—</span></div>
+              <div class="drawer-row"><span class="dr-key">Officer</span><span class="dr-val" id="cmOfficer">—</span></div>
+              <div class="drawer-section-title" style="margin-top:14px;">Description</div>
+              <p class="cm-description" id="cmDescription">—</p>
+            </div>
+            <div>
+              <div class="drawer-section-title">Case Timeline</div>
+              <div class="cm-timeline" id="cmTimeline">
+                <p class="drawer-empty">No updates yet.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PAGE: SHO MANAGEMENT
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-sho">
+      <div class="sho-intro">
+        <div class="sho-intro-text">
+          <p class="sho-intro-label">Station House Officers</p>
+          <p class="sho-intro-sub">Each station may have one active SHO at a time. Appointing a new SHO automatically retires the current one.</p>
+        </div>
+      </div>
+
+      <div class="sho-grid" id="shoGrid">
+        <div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">
+          <div class="mini-spinner" style="margin:0 auto 8px;"></div>Loading stations…
+        </div>
+      </div>
+    </div>
+
+    <!-- SHO Appoint Modal -->
+    <div class="modal-overlay" id="shoModal">
+      <div class="modal-sm-form">
+        <div class="modal-header">
+          <div>
+            <div class="modal-eyebrow">SHO Appointment</div>
+            <h3 class="modal-title" id="shoModalStationName">—</h3>
+          </div>
+          <button class="modal-close" id="closeShoModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert-box" id="shoModalAlert" style="display:none;"></div>
+
+          <div id="shoCurrentSection">
+            <div class="drawer-section-title">Current SHO</div>
+            <div id="shoCurrentDisplay" class="sho-current-card">
+              <p class="drawer-empty">No SHO appointed.</p>
+            </div>
+
+            <!-- Remove SHO options (shown only when SHO exists) -->
+            <div id="shoRemoveSection" style="display:none;">
+              <div class="drawer-section-title" style="margin-top:16px;">Remove Current SHO</div>
+              <div class="remove-options">
+                <label class="radio-label">
+                  <input type="radio" name="removeType" value="position" checked />
+                  <span class="radio-custom"></span>
+                  <div><strong>Remove from SHO position only</strong><br/><small>Officer remains active, role changes to Investigating Officer</small></div>
+                </label>
+                <label class="radio-label">
+                  <input type="radio" name="removeType" value="duty" />
+                  <span class="radio-custom"></span>
+                  <div><strong>Remove from duty entirely</strong><br/><small>Officer is deactivated and removed from system</small></div>
+                </label>
+              </div>
+              <div class="field-group-sm" style="margin-top:10px;">
+                <label class="field-label-sm">Reason for removal</label>
+                <input type="text" id="shoRemoveReason" class="filter-input-sm" placeholder="Optional reason…" />
+              </div>
+              <button class="btn-danger-sm" id="btnRemoveSHO">Remove SHO</button>
+            </div>
+          </div>
+
+          <div class="modal-divider"></div>
+
+          <div class="drawer-section-title">Appoint New SHO</div>
+          <div class="field-group-sm">
+            <label class="field-label-sm">Select Officer</label>
+            <select class="filter-select" id="shoOfficerSelect" style="width:100%;">
+              <option value="">— Choose an officer —</option>
+            </select>
+          </div>
+          <div class="sho-officer-preview" id="shoOfficerPreview" style="display:none;">
+            <div class="drawer-row"><span class="dr-key">Rank</span><span class="dr-val" id="previewRank">—</span></div>
+            <div class="drawer-row"><span class="dr-key">Current Role</span><span class="dr-val" id="previewRole">—</span></div>
+            <div class="drawer-row"><span class="dr-key">Active Cases</span><span class="dr-val" id="previewCases">—</span></div>
+          </div>
+          <button class="btn-action-primary" style="width:100%;margin-top:12px;" id="btnAppointSHO">Appoint as SHO</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PAGE: SUPERINTENDENT
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-superintendent">
+      <div class="sho-intro">
+        <div class="sho-intro-text">
+          <p class="sho-intro-label">Jail Superintendents</p>
+          <p class="sho-intro-sub">Each station may have one active Jail Superintendent. Appointing a new one retires the current.</p>
+        </div>
+      </div>
+      <div class="sho-grid" id="superintendentGrid">
+        <div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">
+          <div class="mini-spinner" style="margin:0 auto 8px;"></div>Loading stations…
+        </div>
+      </div>
+    </div>
+
+    <!-- Superintendent Modal (reuses same structure) -->
+    <div class="modal-overlay" id="superintendentModal">
+      <div class="modal-sm-form">
+        <div class="modal-header">
+          <div>
+            <div class="modal-eyebrow">Superintendent Appointment</div>
+            <h3 class="modal-title" id="suptModalStationName">—</h3>
+          </div>
+          <button class="modal-close" id="closeSuptModal">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="alert-box" id="suptModalAlert" style="display:none;"></div>
+          <div class="drawer-section-title">Current Superintendent</div>
+          <div id="suptCurrentDisplay" class="sho-current-card">
+            <p class="drawer-empty">No Superintendent appointed.</p>
+          </div>
+          <div id="suptRemoveSection" style="display:none;">
+            <div class="remove-options" style="margin-top:10px;">
+              <label class="radio-label">
+                <input type="radio" name="suptRemoveType" value="position" checked />
+                <span class="radio-custom"></span>
+                <div><strong>Remove from position only</strong><br/><small>Stays as active officer</small></div>
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="suptRemoveType" value="duty" />
+                <span class="radio-custom"></span>
+                <div><strong>Remove from duty entirely</strong><br/><small>Deactivated from system</small></div>
+              </label>
+            </div>
+            <div class="field-group-sm" style="margin-top:10px;">
+              <input type="text" id="suptRemoveReason" class="filter-input-sm" placeholder="Reason for removal (optional)…" />
+            </div>
+            <button class="btn-danger-sm" id="btnRemoveSupt">Remove Superintendent</button>
+          </div>
+          <div class="modal-divider"></div>
+          <div class="drawer-section-title">Appoint New Superintendent</div>
+          <div class="field-group-sm">
+            <select class="filter-select" id="suptOfficerSelect" style="width:100%;">
+              <option value="">— Choose an officer —</option>
+            </select>
+          </div>
+          <button class="btn-action-primary" style="width:100%;margin-top:12px;" id="btnAppointSupt">Appoint as Superintendent</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PAGE: LOGS
+    ══════════════════════════════ -->
     <div class="page-section" id="page-logs">
       <div class="placeholder-card">
         <p class="placeholder-icon">📜</p>
         <h2>Activity Logs</h2>
-        <p>Full audit trail of admin actions across the system.</p>
+        <p>Full audit trail of admin actions across the system. Coming in next phase.</p>
       </div>
     </div>
 
-  </div>
+    <!-- ══════════════════════════════
+         PAGE: ADMIN PROFILE
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-profile">
+      <div class="profile-layout">
+
+        <!-- Profile card -->
+        <div class="profile-header-card-admin">
+          <div class="profile-avatar-admin" id="profileAvatarAdmin">A</div>
+          <div class="profile-header-info-admin">
+            <div class="profile-name-admin" id="profileNameAdmin">—</div>
+            <div class="profile-badge-admin" id="profileBadgeAdmin">—</div>
+            <div class="profile-role-admin">System Administrator · Karachi Police</div>
+          </div>
+        </div>
+
+        <div class="profile-two-col">
+
+          <!-- Personal Info -->
+          <div class="profile-section-admin">
+            <div class="profile-section-head-admin">
+              <span class="profile-section-title-admin">Account Information</span>
+            </div>
+            <div class="drawer-row"><span class="dr-key">Full Name</span><span class="dr-val" id="pFullName">—</span></div>
+            <div class="drawer-row"><span class="dr-key">Badge Number</span><span class="dr-val" id="pBadge">—</span></div>
+            <div class="drawer-row"><span class="dr-key">Email Address</span><span class="dr-val" id="pEmail">—</span></div>
+            <div class="drawer-row"><span class="dr-key">Role</span><span class="dr-val">System Administrator</span></div>
+          </div>
+
+          <!-- Change Password -->
+          <div class="profile-section-admin">
+            <div class="profile-section-head-admin">
+              <span class="profile-section-title-admin">Change Password</span>
+            </div>
+            <div class="alert-box" id="profileAlert" style="display:none;"></div>
+            <div class="field-group-sm">
+              <label class="field-label-sm">Current Password</label>
+              <div class="pass-wrap-admin">
+                <input type="password" id="pCurrentPwd" class="filter-input-sm" placeholder="Enter current password" />
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pCurrentPwd',this)">👁</button>
+              </div>
+            </div>
+            <div class="field-group-sm">
+              <label class="field-label-sm">New Password</label>
+              <div class="pass-wrap-admin">
+                <input type="password" id="pNewPwd" class="filter-input-sm" placeholder="Minimum 8 characters" />
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pNewPwd',this)">👁</button>
+              </div>
+              <div class="pwd-strength"><div class="pwd-strength-bar" id="profileStrengthBar"></div></div>
+              <span class="strength-lbl" id="profileStrengthLbl"></span>
+            </div>
+            <div class="field-group-sm">
+              <label class="field-label-sm">Confirm New Password</label>
+              <div class="pass-wrap-admin">
+                <input type="password" id="pConfirmPwd" class="filter-input-sm" placeholder="Re-enter new password" />
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pConfirmPwd',this)">👁</button>
+              </div>
+            </div>
+            <button class="btn-action-primary" style="width:100%;margin-top:4px;" id="btnChangePassword">Update Password</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
 </main>
 
+<!-- Add Officer Modal -->
+<div class="modal-overlay" id="addOfficerModal">
+  <div class="modal-sm-form">
+    <div class="modal-header">
+      <div><div class="modal-eyebrow">Personnel</div><h3 class="modal-title">Add New Officer</h3></div>
+      <button class="modal-close" id="closeAddOfficerModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert-box" id="addOfficerAlert" style="display:none;"></div>
+      <div class="field-row-form">
+        <div class="field-group-sm">
+          <label class="field-label-sm">Full Name <span class="req">*</span></label>
+          <input type="text" id="newOfficerName" class="filter-input-sm" placeholder="Full name" />
+        </div>
+        <div class="field-group-sm">
+          <label class="field-label-sm">Badge Number <span class="req">*</span></label>
+          <input type="text" id="newOfficerBadge" class="filter-input-sm" placeholder="e.g. KHI-2025-001" />
+        </div>
+      </div>
+      <div class="field-row-form">
+        <div class="field-group-sm">
+          <label class="field-label-sm">Email <span class="req">*</span></label>
+          <input type="email" id="newOfficerEmail" class="filter-input-sm" placeholder="officer@police.gov" />
+        </div>
+        <div class="field-group-sm">
+          <label class="field-label-sm">Rank <span class="req">*</span></label>
+          <select id="newOfficerRank" class="filter-select" style="width:100%;">
+            <option value="">Select rank</option>
+            <option value="Inspector">Inspector</option>
+            <option value="DSP">DSP</option>
+            <option value="SI">SI</option>
+            <option value="ASI">ASI</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row-form">
+        <div class="field-group-sm">
+          <label class="field-label-sm">Role <span class="req">*</span></label>
+          <select id="newOfficerRole" class="filter-select" style="width:100%;">
+            <option value="">Select role</option>
+            <option value="1">Investigating Officer</option>
+            <option value="2">SHO</option>
+            <option value="3">Jail Superintendent</option>
+          </select>
+        </div>
+        <div class="field-group-sm">
+          <label class="field-label-sm">Station</label>
+          <select id="newOfficerStation" class="filter-select" style="width:100%;">
+            <option value="">Select station</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-group-sm">
+        <label class="field-label-sm">Temporary Password <span class="req">*</span></label>
+        <input type="password" id="newOfficerPwd" class="filter-input-sm" placeholder="Min. 8 characters" />
+        <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">Officer must change this on first login.</small>
+      </div>
+      <div class="btn-row-form">
+        <button class="btn-ghost-form" id="cancelAddOfficer">Cancel</button>
+        <button class="btn-action-primary" id="submitAddOfficer">Add Officer</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="../js/adminDashboard.js"></script>
+<script src="../js/adminDashboardPages.js"></script>
 </body>
 </html>

@@ -1,8 +1,8 @@
 <?php
 // ══════════════════════════════════════════════
-// register.php
+// citizenRegister.php
 // Job: validate + save citizen to DB
-//      then call send_otp.php to send OTP
+//      then call sendOTP.php to send OTP
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
