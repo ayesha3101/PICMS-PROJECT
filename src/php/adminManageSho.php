@@ -14,8 +14,12 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input     = json_decode(file_get_contents('php://input'), true);
-$action    = trim($input['action']     ?? '');
+$action    = trim($input['action']      ?? '');
 $stationId = (int)($input['station_id'] ?? 0);
+
+if (!$stationId) {
+    echo json_encode(['success' => false, 'message' => 'station_id required.']); exit;
+}
 
 try {
     $pdo = new PDO(
@@ -26,32 +30,62 @@ try {
 
     if ($action === 'appoint') {
         $officerId = (int)($input['officer_id'] ?? 0);
-        if (!$stationId || !$officerId) {
-            echo json_encode(['success' => false, 'message' => 'station_id and officer_id required.']); exit;
+        if (!$officerId) {
+            echo json_encode(['success' => false, 'message' => 'officer_id required.']); exit;
         }
 
-        // The trigger before_sho_appoint retires old SHO automatically.
-        $stmt = $pdo->prepare("
+        // Verify officer exists and is active
+        $chk = $pdo->prepare("SELECT officer_id FROM officers WHERE officer_id = :id AND is_active = 1");
+        $chk->execute([':id' => $officerId]);
+        if (!$chk->fetch()) {
+            echo json_encode(['success' => false, 'message' => 'Officer not found or inactive.']); exit;
+        }
+
+        $pdo->beginTransaction();
+
+        // Retire any existing current SHO assignment for this station
+        // Also demote that officer back to role_id=1 (Investigating Officer)
+        $cur = $pdo->prepare("
+            SELECT officer_id FROM station_sho_assignments
+            WHERE station_id = :s AND is_current = 1 LIMIT 1
+        ");
+        $cur->execute([':s' => $stationId]);
+        $existing = $cur->fetch(PDO::FETCH_ASSOC);
+
+        if ($existing) {
+            $pdo->prepare("
+                UPDATE station_sho_assignments
+                SET is_current = 0, removed_at = NOW()
+                WHERE station_id = :s AND is_current = 1
+            ")->execute([':s' => $stationId]);
+
+            // Demote previous SHO back to Investigating Officer
+            $pdo->prepare("UPDATE officers SET role_id = 1 WHERE officer_id = :id")
+                ->execute([':id' => $existing['officer_id']]);
+        }
+
+        // Insert new SHO assignment
+        $pdo->prepare("
             INSERT INTO station_sho_assignments (station_id, officer_id, appointed_by, is_current)
             VALUES (:station, :officer, :admin, 1)
-        ");
-        $stmt->execute([
+        ")->execute([
             ':station' => $stationId,
             ':officer' => $officerId,
             ':admin'   => $_SESSION['admin_id'],
         ]);
 
-        // update officer role_id to SHO (2)
-        $pdo->prepare("UPDATE officers SET role_id = 2 WHERE officer_id = :id")
-            ->execute([':id' => $officerId]);
+        // Promote officer to SHO role (role_id = 2)
+        $pdo->prepare("UPDATE officers SET role_id = 2, station_id = :st WHERE officer_id = :id")
+            ->execute([':st' => $stationId, ':id' => $officerId]);
 
+        $pdo->commit();
         echo json_encode(['success' => true]);
 
     } elseif ($action === 'remove') {
         $removeType = trim($input['remove_type'] ?? 'position');
         $reason     = trim($input['reason']       ?? '');
 
-        // get current SHO officer_id for this station
+        // Get current SHO
         $cur = $pdo->prepare("
             SELECT officer_id FROM station_sho_assignments
             WHERE station_id = :s AND is_current = 1 LIMIT 1
@@ -60,11 +94,13 @@ try {
         $row = $cur->fetch(PDO::FETCH_ASSOC);
 
         if (!$row) {
-            echo json_encode(['success' => false, 'message' => 'No current SHO found.']); exit;
+            echo json_encode(['success' => false, 'message' => 'No current SHO found for this station.']); exit;
         }
         $officerId = $row['officer_id'];
 
-        // mark assignment as retired
+        $pdo->beginTransaction();
+
+        // Retire assignment
         $pdo->prepare("
             UPDATE station_sho_assignments
             SET is_current = 0, removed_at = NOW(), removal_reason = :reason
@@ -72,22 +108,24 @@ try {
         ")->execute([':reason' => $reason, ':s' => $stationId]);
 
         if ($removeType === 'duty') {
-            // deactivate officer entirely
+            // Deactivate officer entirely
             $pdo->prepare("UPDATE officers SET is_active = 0, role_id = 1 WHERE officer_id = :id")
                 ->execute([':id' => $officerId]);
         } else {
-            // just demote back to Investigating Officer
+            // Just demote back to Investigating Officer, keep active
             $pdo->prepare("UPDATE officers SET role_id = 1 WHERE officer_id = :id")
                 ->execute([':id' => $officerId]);
         }
 
+        $pdo->commit();
         echo json_encode(['success' => true]);
 
     } else {
-        echo json_encode(['success' => false, 'message' => 'Unknown action.']);
+        echo json_encode(['success' => false, 'message' => 'Unknown action. Use appoint or remove.']);
     }
 
 } catch (PDOException $e) {
+    if (isset($pdo) && $pdo->inTransaction()) $pdo->rollBack();
     error_log('adminManageSHO: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error: ' . $e->getMessage()]);
 }

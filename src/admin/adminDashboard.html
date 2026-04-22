@@ -116,7 +116,7 @@
           <div class="dash-card">
             <div class="dash-card-header"><h2>Quick Actions</h2></div>
             <div class="quick-actions">
-              <button class="qa-btn" data-page="officers"><span class="qa-icon">➕</span><span>Add Officer</span></button>
+              <button class="qa-btn" data-page="officers"><span class="qa-icon">
               <button class="qa-btn" data-page="sho"><span class="qa-icon">⭐</span><span>Appoint SHO</span></button>
               <button class="qa-btn" data-page="superintendent"><span class="qa-icon">🔒</span><span>Appoint Supt.</span></button>
               <button class="qa-btn" data-page="stations"><span class="qa-icon">🏛</span><span>View Stations</span></button>
@@ -582,70 +582,7 @@
   </div><!-- end content -->
 </main>
 
-<!-- Add Officer Modal -->
-<div class="modal-overlay" id="addOfficerModal">
-  <div class="modal-sm-form">
-    <div class="modal-header">
-      <div><div class="modal-eyebrow">Personnel</div><h3 class="modal-title">Add New Officer</h3></div>
-      <button class="modal-close" id="closeAddOfficerModal">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="alert-box" id="addOfficerAlert" style="display:none;"></div>
-      <div class="field-row-form">
-        <div class="field-group-sm">
-          <label class="field-label-sm">Full Name <span class="req">*</span></label>
-          <input type="text" id="newOfficerName" class="filter-input-sm" placeholder="Full name" />
-        </div>
-        <div class="field-group-sm">
-          <label class="field-label-sm">Badge Number <span class="req">*</span></label>
-          <input type="text" id="newOfficerBadge" class="filter-input-sm" placeholder="e.g. KHI-2025-001" />
-        </div>
-      </div>
-      <div class="field-row-form">
-        <div class="field-group-sm">
-          <label class="field-label-sm">Email <span class="req">*</span></label>
-          <input type="email" id="newOfficerEmail" class="filter-input-sm" placeholder="officer@police.gov" />
-        </div>
-        <div class="field-group-sm">
-          <label class="field-label-sm">Rank <span class="req">*</span></label>
-          <select id="newOfficerRank" class="filter-select" style="width:100%;">
-            <option value="">Select rank</option>
-            <option value="Inspector">Inspector</option>
-            <option value="DSP">DSP</option>
-            <option value="SI">SI</option>
-            <option value="ASI">ASI</option>
-          </select>
-        </div>
-      </div>
-      <div class="field-row-form">
-        <div class="field-group-sm">
-          <label class="field-label-sm">Role <span class="req">*</span></label>
-          <select id="newOfficerRole" class="filter-select" style="width:100%;">
-            <option value="">Select role</option>
-            <option value="1">Investigating Officer</option>
-            <option value="2">SHO</option>
-            <option value="3">Jail Superintendent</option>
-          </select>
-        </div>
-        <div class="field-group-sm">
-          <label class="field-label-sm">Station</label>
-          <select id="newOfficerStation" class="filter-select" style="width:100%;">
-            <option value="">Select station</option>
-          </select>
-        </div>
-      </div>
-      <div class="field-group-sm">
-        <label class="field-label-sm">Temporary Password <span class="req">*</span></label>
-        <input type="password" id="newOfficerPwd" class="filter-input-sm" placeholder="Min. 8 characters" />
-        <small style="color:var(--muted);font-size:11px;margin-top:4px;display:block;">Officer must change this on first login.</small>
-      </div>
-      <div class="btn-row-form">
-        <button class="btn-ghost-form" id="cancelAddOfficer">Cancel</button>
-        <button class="btn-action-primary" id="submitAddOfficer">Add Officer</button>
-      </div>
-    </div>
-  </div>
-</div>
+
 
 <script src="../js/adminDashboard.js"></script>
 <script src="../js/adminDashboardPages.js"></script>

@@ -478,12 +478,15 @@ INSERT INTO complaint_subcategories (category_id, subcategory_name) VALUES
 (9, 'Land Dispute'),
 (9, 'Rent Dispute');
 
--- admin (password: Admin@12345 — forces change on first login)
-INSERT INTO admin (full_name, badge_number, email, password_hash, password_changed) VALUES
-(
-    'Ahmed Shah',
-    'ADMIN-001',
-    'policechief.karachi.picms@gmail.com',
-    '$2y$12$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-    0
-);
+--admin password Admin@1234
+
+INSERT INTO admin (full_name, badge_number, email, password_hash, password_changed)
+VALUES (
+'Ahmed Shah',
+  'ADMIN-001',
+  'policechief.karachi.picms@gmail.com',
+  '$2y$10$qWrVbknbGINiSbVvuFdDF.KfK/IOHTBGbfkZy.PB0WWbTR7nqRP5y',
+  1
+); 
+
+-- i have run everything till here

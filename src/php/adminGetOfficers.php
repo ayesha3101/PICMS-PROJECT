@@ -1,6 +1,7 @@
 <?php
 // adminGetOfficers.php
 // Returns all officers with station name and role name.
+// Admin uses this read-only — officer management (add/edit/delete) is NOT admin's job.
 require_once __DIR__ . '/../config/config.php';
 session_start();
 header('Content-Type: application/json');
@@ -36,6 +37,16 @@ try {
     ");
 
     $officers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Cast types
+    foreach ($officers as &$o) {
+        $o['officer_id']     = (int)$o['officer_id'];
+        $o['station_id']     = $o['station_id'] ? (int)$o['station_id'] : null;
+        $o['role_id']        = (int)$o['role_id'];
+        $o['active_caseload']= (int)$o['active_caseload'];
+        $o['is_active']      = (bool)$o['is_active'];
+    }
+    unset($o);
 
     echo json_encode(['success' => true, 'officers' => $officers]);
 } catch (PDOException $e) {

@@ -1,5 +1,6 @@
 // adminDashboardPages.js — PICMS Admin
-// Officers, Stations, Complaints, SHO, Superintendent, Profile pages.
+// Officers (read-only view), Stations, Complaints, SHO, Superintendent, Profile.
+// Admin CANNOT add/edit/delete officers — only views them and manages SHO/Superintendent roles.
 // All data fetched from real PHP API endpoints — zero mock data.
 
 /* ══════════════════════════════════════
@@ -35,18 +36,19 @@ const PAGE_INIT = {
 };
 
 /* ══════════════════════════════════════
-   OFFICERS PAGE
+   OFFICERS PAGE  (read-only)
 ══════════════════════════════════════ */
 let officersData   = [];
-let stationsCache  = [];   // shared between pages
+let stationsCache  = [];
 let officersLoaded = false;
 
 async function initOfficersPage() {
   if (!officersLoaded) await fetchOfficers();
+  if (!stationsLoaded) await fetchStations();
+  populateOfficerStationFilter();
   renderOfficers(officersData);
   wireOfficerFilters();
   wireOfficerDrawer();
-  wireAddOfficerModal();
 }
 
 async function fetchOfficers() {
@@ -60,10 +62,20 @@ async function fetchOfficers() {
   } catch { /* silent */ }
 }
 
+function populateOfficerStationFilter() {
+  const sel = document.getElementById('filterOfficerStation');
+  if (!sel || sel.options.length > 1) return;
+  stationsCache.forEach(s => {
+    const o = document.createElement('option');
+    o.value = s.station_id; o.textContent = s.station_name;
+    sel.appendChild(o);
+  });
+}
+
 function renderOfficers(list) {
   const tbody = document.getElementById('officersTbody');
   if (!list.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="table-empty">No officers found.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" class="table-empty">No officers found.</td></tr>';
     return;
   }
   tbody.innerHTML = list.map(o => {
@@ -84,13 +96,11 @@ function renderOfficers(list) {
       <td><span class="role-badge ${roleCls}">${escHtml(o.role_name)}</span></td>
       <td style="color:var(--muted);font-size:12px">${escHtml(o.station_name) || '—'}</td>
       <td style="text-align:center;color:${o.active_caseload>5?'#e88080':'var(--offwhite)'}">${o.active_caseload}</td>
-      <td>${o.is_active == 1
+      <td>${o.is_active
         ? '<span class="status-active">Active</span>'
         : '<span class="status-inactive">Inactive</span>'}</td>
-      <td><button class="tbl-action-btn view-officer-btn" data-id="${o.officer_id}">View</button></td>
     </tr>`;
   }).join('');
-  attachOfficerViewBtns();
 }
 
 function wireOfficerFilters() {
@@ -101,16 +111,16 @@ function wireOfficerFilters() {
 }
 
 function applyOfficerFilters() {
-  const rank    = document.getElementById('filterOfficerRank').value;
-  const station = document.getElementById('filterOfficerStation').value;
-  const role    = document.getElementById('filterOfficerRole').value;
-  const sort    = document.getElementById('filterOfficerSort').value;
-  const search  = document.getElementById('searchOfficer').value.trim().toLowerCase();
+  const rank    = document.getElementById('filterOfficerRank')?.value    || '';
+  const station = document.getElementById('filterOfficerStation')?.value || '';
+  const role    = document.getElementById('filterOfficerRole')?.value    || '';
+  const sort    = document.getElementById('filterOfficerSort')?.value    || 'alpha';
+  const search  = (document.getElementById('searchOfficer')?.value || '').trim().toLowerCase();
 
   let filtered = officersData.filter(o => {
-    if (rank    && o.rank             !== rank)    return false;
-    if (station && String(o.station_id) !== station) return false;
-    if (role    && String(o.role_id)   !== role)   return false;
+    if (rank    && o.rank                 !== rank)    return false;
+    if (station && String(o.station_id)   !== station) return false;
+    if (role    && String(o.role_id)      !== role)    return false;
     if (search  && !o.full_name.toLowerCase().includes(search)
                 && !o.badge_number.toLowerCase().includes(search)) return false;
     return true;
@@ -125,14 +135,12 @@ function applyOfficerFilters() {
 }
 
 function wireOfficerDrawer() {
-  attachOfficerViewBtns();
   document.getElementById('closeOfficerDrawer')?.addEventListener('click', closeOfficerDrawer);
   document.getElementById('officerDrawerBackdrop')?.addEventListener('click', closeOfficerDrawer);
-}
-
-function attachOfficerViewBtns() {
-  document.querySelectorAll('.view-officer-btn').forEach(btn => {
-    btn.addEventListener('click', () => openOfficerDrawer(parseInt(btn.dataset.id)));
+  // Row click opens drawer
+  document.getElementById('officersTbody')?.addEventListener('click', e => {
+    const row = e.target.closest('tr[data-officer-id]');
+    if (row) openOfficerDrawer(parseInt(row.dataset.officerId));
   });
 }
 
@@ -147,11 +155,11 @@ function openOfficerDrawer(id) {
   document.getElementById('drawerStation').textContent  = o.station_name || '—';
   document.getElementById('drawerEmail').textContent    = o.email;
   document.getElementById('drawerCaseload').textContent = `${o.active_caseload} active cases`;
-  document.getElementById('drawerStatus').innerHTML = o.is_active == 1
+  document.getElementById('drawerStatus').innerHTML = o.is_active
     ? '<span class="status-active">Active</span>'
     : '<span class="status-inactive">Inactive</span>';
   document.getElementById('drawerCasesList').innerHTML =
-    '<p class="drawer-empty">Case details available in Complaints section.</p>';
+    '<p class="drawer-empty">Open Complaints section to view case details.</p>';
   document.getElementById('officerDrawer').classList.add('open');
   document.getElementById('officerDrawerBackdrop').classList.add('visible');
 }
@@ -161,75 +169,6 @@ function closeOfficerDrawer() {
   document.getElementById('officerDrawerBackdrop').classList.remove('visible');
 }
 
-function wireAddOfficerModal() {
-  document.getElementById('btnAddOfficer')?.addEventListener('click', () => {
-    openAddOfficerModal();
-  });
-  document.getElementById('closeAddOfficerModal')?.addEventListener('click', () => {
-    document.getElementById('addOfficerModal').classList.remove('active');
-  });
-  document.getElementById('cancelAddOfficer')?.addEventListener('click', () => {
-    document.getElementById('addOfficerModal').classList.remove('active');
-  });
-  document.getElementById('addOfficerModal')?.addEventListener('click', e => {
-    if (e.target === document.getElementById('addOfficerModal'))
-      document.getElementById('addOfficerModal').classList.remove('active');
-  });
-  document.getElementById('submitAddOfficer')?.addEventListener('click', handleAddOfficer);
-}
-
-function openAddOfficerModal() {
-  hideAlert('addOfficerAlert');
-  ['newOfficerName','newOfficerBadge','newOfficerEmail','newOfficerPwd'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  // Populate station dropdown from cache
-  const addStn = document.getElementById('newOfficerStation');
-  if (addStn && stationsCache.length) {
-    addStn.innerHTML = '<option value="">No station (unassigned)</option>' +
-      stationsCache.map(s => `<option value="${s.station_id}">${escHtml(s.station_name)}</option>`).join('');
-  }
-  document.getElementById('addOfficerModal').classList.add('active');
-}
-
-async function handleAddOfficer() {
-  hideAlert('addOfficerAlert');
-  const name    = document.getElementById('newOfficerName').value.trim();
-  const badge   = document.getElementById('newOfficerBadge').value.trim();
-  const email   = document.getElementById('newOfficerEmail').value.trim();
-  const rank    = document.getElementById('newOfficerRank').value;
-  const role    = document.getElementById('newOfficerRole').value;
-  const station = document.getElementById('newOfficerStation').value;
-  const pwd     = document.getElementById('newOfficerPwd').value;
-
-  if (!name || !badge || !email || !rank || !role || pwd.length < 8) {
-    showAlert('addOfficerAlert', 'error', 'All fields required. Password min 8 chars.'); return;
-  }
-
-  const btn = document.getElementById('submitAddOfficer');
-  btn.disabled = true; btn.textContent = 'Adding…';
-  try {
-    const res  = await fetch('../php/adminAddOfficer.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ full_name: name, badge_number: badge, email, rank,
-                             role_id: parseInt(role), station_id: parseInt(station)||0, password: pwd }),
-    });
-    const data = await res.json();
-    if (data.success) {
-      showAlert('addOfficerAlert', 'success', 'Officer added successfully!');
-      officersLoaded = false; // force refresh next time
-      setTimeout(() => {
-        document.getElementById('addOfficerModal').classList.remove('active');
-        fetchOfficers().then(() => renderOfficers(officersData));
-      }, 1200);
-    } else {
-      showAlert('addOfficerAlert', 'error', data.message || 'Failed to add officer.');
-    }
-  } catch { showAlert('addOfficerAlert', 'error', 'Connection error.'); }
-  finally { btn.disabled = false; btn.textContent = 'Add Officer'; }
-}
-
 /* ══════════════════════════════════════
    STATIONS PAGE
 ══════════════════════════════════════ */
@@ -237,11 +176,13 @@ let stationsLoaded = false;
 
 async function initStationsPage() {
   if (!stationsLoaded) await fetchStations();
+  if (!officersLoaded) await fetchOfficers();
   renderStations(stationsCache);
   document.getElementById('searchStation')?.addEventListener('input', function() {
     const q = this.value.trim().toLowerCase();
     renderStations(stationsCache.filter(s =>
-      s.station_name.toLowerCase().includes(q) || s.area_covered.toLowerCase().includes(q)
+      s.station_name.toLowerCase().includes(q) ||
+      (s.area_covered||'').toLowerCase().includes(q)
     ));
   });
 }
@@ -253,15 +194,6 @@ async function fetchStations() {
     if (data.success) {
       stationsCache  = data.stations;
       stationsLoaded = true;
-      // also populate officer-page station filter
-      const sel = document.getElementById('filterOfficerStation');
-      if (sel && sel.options.length < 2) {
-        stationsCache.forEach(s => {
-          const o = document.createElement('option');
-          o.value = s.station_id; o.textContent = s.station_name;
-          sel.appendChild(o);
-        });
-      }
     }
   } catch { /* silent */ }
 }
@@ -305,7 +237,7 @@ function renderStations(list) {
 function openStationModal(id) {
   const s = stationsCache.find(x => x.station_id == id);
   if (!s) return;
-  document.getElementById('stationModalArea').textContent = s.area_covered;
+  document.getElementById('stationModalArea').textContent = s.area_covered || '';
   document.getElementById('stationModalName').textContent = s.station_name;
   document.getElementById('smAddress').textContent        = s.address || '—';
   document.getElementById('smPhone').textContent          = s.phone   || '—';
@@ -348,7 +280,7 @@ let complaintsLoaded = false;
 
 async function initComplaintsPage() {
   if (!stationsLoaded) await fetchStations();
-  // populate station filter
+  // Populate station filter
   const stSel = document.getElementById('filterComplaintStation');
   if (stSel && stSel.options.length < 2) {
     stationsCache.forEach(s => {
@@ -357,7 +289,6 @@ async function initComplaintsPage() {
       stSel.appendChild(o);
     });
   }
-
   if (!complaintsLoaded) await fetchComplaints();
   renderComplaintsTable(complaintsData);
   wireComplaintFilters();
@@ -410,18 +341,18 @@ function wireComplaintFilters() {
 }
 
 function applyComplaintFilters() {
-  const station  = document.getElementById('filterComplaintStation').value;
-  const status   = document.getElementById('filterComplaintStatus').value;
-  const category = document.getElementById('filterComplaintCategory').value;
-  const urgency  = document.getElementById('filterComplaintUrgency').value;
-  const sort     = document.getElementById('filterComplaintSort').value;
-  const search   = document.getElementById('searchComplaint').value.trim().toLowerCase();
+  const station  = document.getElementById('filterComplaintStation')?.value  || '';
+  const status   = document.getElementById('filterComplaintStatus')?.value   || '';
+  const category = document.getElementById('filterComplaintCategory')?.value || '';
+  const urgency  = document.getElementById('filterComplaintUrgency')?.value  || '';
+  const sort     = document.getElementById('filterComplaintSort')?.value     || 'recent';
+  const search   = (document.getElementById('searchComplaint')?.value || '').trim().toLowerCase();
 
   let filtered = complaintsData.filter(c => {
-    if (station  && String(c.station_id)  !== station)  return false;
-    if (status   && c.status             !== status)    return false;
-    if (category && String(c.category_id) !== category) return false;
-    if (urgency  && String(c.is_urgent ? '1' : '0') !== urgency) return false;
+    if (station  && String(c.station_id)                  !== station)  return false;
+    if (status   && c.status                              !== status)   return false;
+    if (category && String(c.category_id)                 !== category) return false;
+    if (urgency  && String(c.is_urgent ? '1' : '0')       !== urgency)  return false;
     if (search   && !c.reference_number.toLowerCase().includes(search)
                  && !(c.incident_area||'').toLowerCase().includes(search)) return false;
     return true;
@@ -445,7 +376,7 @@ function openComplaintModal(id) {
   document.getElementById('cmDate').textContent        = formatDate(c.submitted_at);
   document.getElementById('cmSubmitted').textContent   = fmtDateTime(c.submitted_at);
   document.getElementById('cmOfficer').textContent     = c.assigned_officer || 'Not yet assigned';
-  document.getElementById('cmDescription').textContent = '(Open case detail page to view full description)';
+  document.getElementById('cmDescription').textContent = '(Full description visible in officer/SHO dashboard)';
 
   const tl = document.getElementById('cmTimeline');
   if (!c.timeline || !c.timeline.length) {
@@ -476,6 +407,7 @@ document.getElementById('complaintModal')?.addEventListener('click', e => {
 
 /* ══════════════════════════════════════
    SHO MANAGEMENT PAGE
+   Admin appoints/removes SHO from ANY active officer
 ══════════════════════════════════════ */
 let shoActiveStationId = null;
 
@@ -487,6 +419,10 @@ async function initSHOPage() {
 
 function renderSHOGrid() {
   const grid = document.getElementById('shoGrid');
+  if (!stationsCache.length) {
+    grid.innerHTML = '<div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">No stations found.</div>';
+    return;
+  }
   grid.innerHTML = stationsCache.map(s => `
     <div class="sho-station-card">
       <div class="ssc-name">${escHtml(s.station_name)}</div>
@@ -510,15 +446,22 @@ function openSHOModal(stationId) {
   shoActiveStationId = stationId;
   const s = stationsCache.find(x => x.station_id == stationId);
   if (!s) return;
+
   document.getElementById('shoModalStationName').textContent = s.station_name;
   hideAlert('shoModalAlert');
-  document.getElementById('shoRemoveReason').value = '';
+  const reasonEl = document.getElementById('shoRemoveReason');
+  if (reasonEl) reasonEl.value = '';
 
+  // Current SHO display
   const curDisplay    = document.getElementById('shoCurrentDisplay');
   const removeSection = document.getElementById('shoRemoveSection');
   if (s.sho_name) {
-    curDisplay.innerHTML = `<div class="drawer-row">
-      <span class="dr-key">Name</span><span class="dr-val">${escHtml(s.sho_name)}</span></div>
+    // Find the current SHO officer details
+    const shoOfficer = officersData.find(o => o.full_name === s.sho_name && o.role_id == 2);
+    curDisplay.innerHTML = `
+      <div class="drawer-row"><span class="dr-key">Name</span><span class="dr-val">${escHtml(s.sho_name)}</span></div>
+      ${shoOfficer ? `<div class="drawer-row"><span class="dr-key">Badge</span><span class="dr-val">${escHtml(shoOfficer.badge_number)}</span></div>
+      <div class="drawer-row"><span class="dr-key">Rank</span><span class="dr-val">${escHtml(shoOfficer.rank)}</span></div>` : ''}
       <div class="drawer-row"><span class="dr-key">Station</span><span class="dr-val">${escHtml(s.station_name)}</span></div>`;
     removeSection.style.display = 'block';
   } else {
@@ -526,40 +469,47 @@ function openSHOModal(stationId) {
     removeSection.style.display = 'none';
   }
 
-  // Eligible: active officers NOT currently SHO (role_id != 2 OR not current)
+  // Officer dropdown — ALL active officers eligible (admin picks anyone)
+  // Officers already serving as SHO at another station are shown but labelled
   const sel = document.getElementById('shoOfficerSelect');
-  sel.innerHTML = '<option value="">— Choose an officer —</option>';
+  sel.innerHTML = '<option value="">— Select an officer to appoint —</option>';
   document.getElementById('shoOfficerPreview').style.display = 'none';
 
-  officersData
-    .filter(o => o.is_active == 1 && o.role_id != 2)
-    .sort((a,b) => a.full_name.localeCompare(b.full_name))
-    .forEach(o => {
-      const opt = document.createElement('option');
-      opt.value = o.officer_id;
-      opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
-      sel.appendChild(opt);
-    });
+  const activeOfficers = officersData
+    .filter(o => o.is_active)
+    .sort((a,b) => a.full_name.localeCompare(b.full_name));
+
+  activeOfficers.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o.officer_id;
+    let label = `${o.full_name} (${o.rank} · ${o.badge_number})`;
+    if (o.role_id == 2) label += ' — currently SHO';
+    if (o.role_id == 3) label += ' — currently Superintendent';
+    opt.textContent = label;
+    sel.appendChild(opt);
+  });
 
   document.getElementById('shoModal').classList.add('active');
 }
 
 document.getElementById('shoOfficerSelect')?.addEventListener('change', function() {
-  const id = parseInt(this.value);
+  const id      = parseInt(this.value);
   const preview = document.getElementById('shoOfficerPreview');
   if (!id) { preview.style.display = 'none'; return; }
   const o = officersData.find(x => x.officer_id == id);
   if (!o) return;
-  document.getElementById('previewRank').textContent  = o.rank;
-  document.getElementById('previewRole').textContent  = o.role_name;
-  document.getElementById('previewCases').textContent = o.active_caseload;
+  document.getElementById('previewRank').textContent    = o.rank;
+  document.getElementById('previewRole').textContent    = o.role_name;
+  document.getElementById('previewStation').textContent = o.station_name || 'Unassigned';
+  document.getElementById('previewCases').textContent   = o.active_caseload;
   preview.style.display = 'block';
 });
 
 document.getElementById('btnAppointSHO')?.addEventListener('click', async function() {
   hideAlert('shoModalAlert');
   const officerId = parseInt(document.getElementById('shoOfficerSelect').value);
-  if (!officerId) { showAlert('shoModalAlert','error','Please select an officer.'); return; }
+  if (!officerId) { showAlert('shoModalAlert','error','Please select an officer to appoint.'); return; }
+
   this.disabled = true; this.textContent = 'Appointing…';
   try {
     const res  = await fetch('../php/adminManageSHO.php', {
@@ -572,16 +522,17 @@ document.getElementById('btnAppointSHO')?.addEventListener('click', async functi
       officersLoaded = false; stationsLoaded = false;
       await Promise.all([fetchOfficers(), fetchStations()]);
       renderSHOGrid();
-      setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1200);
-    } else { showAlert('shoModalAlert','error', data.message || 'Failed to appoint.'); }
-  } catch { showAlert('shoModalAlert','error','Connection error.'); }
+      setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1400);
+    } else { showAlert('shoModalAlert','error', data.message || 'Failed to appoint SHO.'); }
+  } catch { showAlert('shoModalAlert','error','Connection error. Please try again.'); }
   finally { this.disabled = false; this.textContent = 'Appoint as SHO'; }
 });
 
 document.getElementById('btnRemoveSHO')?.addEventListener('click', async function() {
   hideAlert('shoModalAlert');
   const removeType = document.querySelector('input[name="removeType"]:checked')?.value || 'position';
-  const reason     = document.getElementById('shoRemoveReason').value.trim();
+  const reason     = document.getElementById('shoRemoveReason')?.value.trim() || '';
+
   this.disabled = true; this.textContent = 'Removing…';
   try {
     const res  = await fetch('../php/adminManageSHO.php', {
@@ -590,13 +541,13 @@ document.getElementById('btnRemoveSHO')?.addEventListener('click', async functio
     });
     const data = await res.json();
     if (data.success) {
-      showAlert('shoModalAlert','success','SHO removed.');
+      showAlert('shoModalAlert','success','SHO removed successfully.');
       officersLoaded = false; stationsLoaded = false;
       await Promise.all([fetchOfficers(), fetchStations()]);
       renderSHOGrid();
-      setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1200);
-    } else { showAlert('shoModalAlert','error', data.message || 'Failed to remove.'); }
-  } catch { showAlert('shoModalAlert','error','Connection error.'); }
+      setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1400);
+    } else { showAlert('shoModalAlert','error', data.message || 'Failed to remove SHO.'); }
+  } catch { showAlert('shoModalAlert','error','Connection error. Please try again.'); }
   finally { this.disabled = false; this.textContent = 'Remove SHO'; }
 });
 
@@ -610,6 +561,7 @@ document.getElementById('shoModal')?.addEventListener('click', e => {
 
 /* ══════════════════════════════════════
    SUPERINTENDENT PAGE
+   Admin appoints/removes Superintendent from ANY active officer
 ══════════════════════════════════════ */
 let suptActiveStationId = null;
 
@@ -621,6 +573,10 @@ async function initSuperintendentPage() {
 
 function renderSuptGrid() {
   const grid = document.getElementById('superintendentGrid');
+  if (!stationsCache.length) {
+    grid.innerHTML = '<div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">No stations found.</div>';
+    return;
+  }
   grid.innerHTML = stationsCache.map(s => `
     <div class="sho-station-card">
       <div class="ssc-name">${escHtml(s.station_name)}</div>
@@ -644,29 +600,38 @@ function openSuptModal(stationId) {
   suptActiveStationId = stationId;
   const s = stationsCache.find(x => x.station_id == stationId);
   if (!s) return;
+
   document.getElementById('suptModalStationName').textContent = s.station_name;
   hideAlert('suptModalAlert');
 
   const curDisplay    = document.getElementById('suptCurrentDisplay');
   const removeSection = document.getElementById('suptRemoveSection');
   if (s.superintendent_name) {
-    curDisplay.innerHTML = `<div class="drawer-row">
-      <span class="dr-key">Name</span><span class="dr-val">${escHtml(s.superintendent_name)}</span></div>`;
+    const suptOfficer = officersData.find(o => o.full_name === s.superintendent_name && o.role_id == 3);
+    curDisplay.innerHTML = `
+      <div class="drawer-row"><span class="dr-key">Name</span><span class="dr-val">${escHtml(s.superintendent_name)}</span></div>
+      ${suptOfficer ? `<div class="drawer-row"><span class="dr-key">Badge</span><span class="dr-val">${escHtml(suptOfficer.badge_number)}</span></div>
+      <div class="drawer-row"><span class="dr-key">Rank</span><span class="dr-val">${escHtml(suptOfficer.rank)}</span></div>` : ''}`;
     removeSection.style.display = 'block';
   } else {
     curDisplay.innerHTML = '<p class="drawer-empty">No Superintendent appointed.</p>';
     removeSection.style.display = 'none';
   }
 
+  // Officer dropdown — ALL active officers
   const sel = document.getElementById('suptOfficerSelect');
-  sel.innerHTML = '<option value="">— Choose an officer —</option>';
+  sel.innerHTML = '<option value="">— Select an officer to appoint —</option>';
+
   officersData
-    .filter(o => o.is_active == 1 && o.role_id != 3)
+    .filter(o => o.is_active)
     .sort((a,b) => a.full_name.localeCompare(b.full_name))
     .forEach(o => {
       const opt = document.createElement('option');
       opt.value = o.officer_id;
-      opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
+      let label = `${o.full_name} (${o.rank} · ${o.badge_number})`;
+      if (o.role_id == 2) label += ' — currently SHO';
+      if (o.role_id == 3) label += ' — currently Superintendent';
+      opt.textContent = label;
       sel.appendChild(opt);
     });
 
@@ -676,7 +641,8 @@ function openSuptModal(stationId) {
 document.getElementById('btnAppointSupt')?.addEventListener('click', async function() {
   hideAlert('suptModalAlert');
   const oid = parseInt(document.getElementById('suptOfficerSelect').value);
-  if (!oid) { showAlert('suptModalAlert','error','Please select an officer.'); return; }
+  if (!oid) { showAlert('suptModalAlert','error','Please select an officer to appoint.'); return; }
+
   this.disabled = true; this.textContent = 'Appointing…';
   try {
     const res  = await fetch('../php/adminManageSuperintendent.php', {
@@ -689,20 +655,22 @@ document.getElementById('btnAppointSupt')?.addEventListener('click', async funct
       officersLoaded = false; stationsLoaded = false;
       await Promise.all([fetchOfficers(), fetchStations()]);
       renderSuptGrid();
-      setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1200);
-    } else { showAlert('suptModalAlert','error', data.message || 'Failed.'); }
-  } catch { showAlert('suptModalAlert','error','Connection error.'); }
+      setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1400);
+    } else { showAlert('suptModalAlert','error', data.message || 'Failed to appoint.'); }
+  } catch { showAlert('suptModalAlert','error','Connection error. Please try again.'); }
   finally { this.disabled = false; this.textContent = 'Appoint as Superintendent'; }
 });
 
 document.getElementById('btnRemoveSupt')?.addEventListener('click', async function() {
   hideAlert('suptModalAlert');
   const removeType = document.querySelector('input[name="suptRemoveType"]:checked')?.value || 'position';
+  const reason     = document.getElementById('suptRemoveReason')?.value.trim() || '';
+
   this.disabled = true; this.textContent = 'Removing…';
   try {
     const res  = await fetch('../php/adminManageSuperintendent.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'remove', station_id: suptActiveStationId, remove_type: removeType }),
+      body: JSON.stringify({ action: 'remove', station_id: suptActiveStationId, remove_type: removeType, reason }),
     });
     const data = await res.json();
     if (data.success) {
@@ -710,9 +678,9 @@ document.getElementById('btnRemoveSupt')?.addEventListener('click', async functi
       officersLoaded = false; stationsLoaded = false;
       await Promise.all([fetchOfficers(), fetchStations()]);
       renderSuptGrid();
-      setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1200);
-    } else { showAlert('suptModalAlert','error', data.message || 'Failed.'); }
-  } catch { showAlert('suptModalAlert','error','Connection error.'); }
+      setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1400);
+    } else { showAlert('suptModalAlert','error', data.message || 'Failed to remove.'); }
+  } catch { showAlert('suptModalAlert','error','Connection error. Please try again.'); }
   finally { this.disabled = false; this.textContent = 'Remove Superintendent'; }
 });
 
@@ -741,8 +709,7 @@ async function initProfilePage() {
     document.getElementById('profileBadgeAdmin').textContent  = badge;
     document.getElementById('pFullName').textContent          = name;
     document.getElementById('pBadge').textContent             = badge;
-    // email not returned by checkSession — fetch separately if needed
-    document.getElementById('pEmail').textContent             = '(see admin record)';
+    document.getElementById('pEmail').textContent             = '(contact system administrator)';
   } catch { /* silent */ }
 
   document.getElementById('pNewPwd')?.addEventListener('input', function() {
@@ -768,9 +735,11 @@ async function handleChangePassword() {
   const current = document.getElementById('pCurrentPwd').value;
   const newPwd  = document.getElementById('pNewPwd').value;
   const confirm = document.getElementById('pConfirmPwd').value;
-  if (!current || !newPwd || !confirm) { showAlert('profileAlert','error','All fields required.'); return; }
-  if (newPwd.length < 8) { showAlert('profileAlert','error','Min 8 characters.'); return; }
+
+  if (!current || !newPwd || !confirm) { showAlert('profileAlert','error','All fields are required.'); return; }
+  if (newPwd.length < 8) { showAlert('profileAlert','error','Password must be at least 8 characters.'); return; }
   if (newPwd !== confirm) { showAlert('profileAlert','error','Passwords do not match.'); return; }
+
   const btn = document.getElementById('btnChangePassword');
   btn.disabled = true; btn.textContent = 'Updating…';
   try {
@@ -786,8 +755,8 @@ async function handleChangePassword() {
       document.getElementById('pConfirmPwd').value = '';
       document.getElementById('profileStrengthBar').style.width = '0';
       document.getElementById('profileStrengthLbl').textContent = '';
-    } else { showAlert('profileAlert','error', data.message || 'Failed.'); }
-  } catch { showAlert('profileAlert','error','Connection error.'); }
+    } else { showAlert('profileAlert','error', data.message || 'Failed to update password.'); }
+  } catch { showAlert('profileAlert','error','Connection error. Please try again.'); }
   finally { btn.disabled = false; btn.textContent = 'Update Password'; }
 }
 
@@ -797,4 +766,3 @@ function toggleAdminPwd(inputId, btn) {
   inp.type = show ? 'text' : 'password';
   btn.textContent = show ? '🙈' : '👁';
 }
-

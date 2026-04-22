@@ -192,8 +192,8 @@ document.getElementById('confirmPwdBtn').addEventListener('click', async functio
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ new_password: np })
     });
-    const data = await res.json();
-
+    const text = await res.text();
+    console.log("SERVER RESPONSE:", text);
     if (data.success) {
       firstLoginModal.classList.remove('active');
       window.location.href = 'adminDashboard.html';
@@ -338,6 +338,7 @@ document.getElementById('otpVerify').addEventListener('click', async function ()
       setAlert('otpAlert', 'error', data.message || 'Incorrect code. Please try again.');
     }
   } catch {
+    console.error("ERROR:", err);
     setAlert('otpAlert', 'error', 'Connection error. Please try again.');
   } finally {
     this.disabled = false; this.textContent = 'Verify Code';
