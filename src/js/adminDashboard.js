@@ -180,9 +180,11 @@ async function loadDashboard() {
           + ${data.stations.length - 5} more stations</p>`;
       }
     } else {
-      list.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px">No stations found.</p>';
+      list.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px 0">No stations found.</p>';
     }
-  } catch { /* silent */ }
+  } catch {
+    list.innerHTML = '<p style="font-size:12px;color:var(--muted);padding:8px 0">—</p>';
+  }
 }
 
 loadDashboard();

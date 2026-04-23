@@ -29,40 +29,45 @@
   <nav class="sidebar-nav">
     <p class="nav-section-label">Overview</p>
     <a href="#" class="nav-item active" data-page="dashboard">
-      <span class="nav-icon">⊞</span><span>Dashboard</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+      <span>Dashboard</span>
     </a>
 
     <p class="nav-section-label">Personnel</p>
     <a href="#" class="nav-item" data-page="officers">
-      <span class="nav-icon">👤</span><span>Officers</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>Officers</span>
     </a>
     <a href="#" class="nav-item" data-page="stations">
-      <span class="nav-icon">🏛</span><span>Stations</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+      <span>Stations</span>
     </a>
     <a href="#" class="nav-item" data-page="sho">
-      <span class="nav-icon">⭐</span><span>SHO Management</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span>SHO Management</span>
     </a>
     <a href="#" class="nav-item" data-page="superintendent">
-      <span class="nav-icon">🔒</span><span>Superintendent</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span>Superintendent</span>
     </a>
 
     <p class="nav-section-label">Cases</p>
     <a href="#" class="nav-item" data-page="complaints">
-      <span class="nav-icon">📋</span><span>All Complaints</span>
-    </a>
-    <a href="#" class="nav-item" data-page="logs">
-      <span class="nav-icon">📜</span><span>Activity Logs</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      <span>All Complaints</span>
     </a>
 
     <p class="nav-section-label">Account</p>
     <a href="#" class="nav-item" data-page="profile">
-      <span class="nav-icon">🪪</span><span>My Profile</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>My Profile</span>
     </a>
   </nav>
 
   <div class="sidebar-bottom">
     <a href="#" class="nav-item" id="logoutBtn">
-      <span class="nav-icon">↩</span><span>Sign Out</span>
+      <svg class="nav-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      <span>Sign Out</span>
     </a>
   </div>
 </aside>
@@ -97,10 +102,10 @@
     ══════════════════════════════ -->
     <div class="page-section active" id="page-dashboard">
       <div class="stats-grid">
-        <div class="stat-card"><div class="stat-icon steel">👤</div><div class="stat-body"><p class="stat-label">Total Officers</p><p class="stat-value" id="statOfficers">—</p></div></div>
-        <div class="stat-card"><div class="stat-icon gold">📋</div><div class="stat-body"><p class="stat-label">Active Complaints</p><p class="stat-value" id="statComplaints">—</p></div></div>
-        <div class="stat-card"><div class="stat-icon success">✔</div><div class="stat-body"><p class="stat-label">Resolved This Month</p><p class="stat-value" id="statResolved">—</p></div></div>
-        <div class="stat-card"><div class="stat-icon danger">⚑</div><div class="stat-body"><p class="stat-label">Urgent Complaints</p><p class="stat-value" id="statUrgent">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon steel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div><div class="stat-body"><p class="stat-label">Total Officers</p><p class="stat-value" id="statOfficers">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon gold"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div><div class="stat-body"><p class="stat-label">Active Complaints</p><p class="stat-value" id="statComplaints">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon success"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20,6 9,17 4,12"/></svg></div><div class="stat-body"><p class="stat-label">Resolved This Month</p><p class="stat-value" id="statResolved">—</p></div></div>
+        <div class="stat-card"><div class="stat-icon danger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div class="stat-body"><p class="stat-label">Urgent Complaints</p><p class="stat-value" id="statUrgent">—</p></div></div>
       </div>
       <div class="dash-grid">
         <div class="dash-card">
@@ -116,10 +121,22 @@
           <div class="dash-card">
             <div class="dash-card-header"><h2>Quick Actions</h2></div>
             <div class="quick-actions">
-              <button class="qa-btn" data-page="officers"><span class="qa-icon">
-              <button class="qa-btn" data-page="sho"><span class="qa-icon">⭐</span><span>Appoint SHO</span></button>
-              <button class="qa-btn" data-page="superintendent"><span class="qa-icon">🔒</span><span>Appoint Supt.</span></button>
-              <button class="qa-btn" data-page="stations"><span class="qa-icon">🏛</span><span>View Stations</span></button>
+              <button class="qa-btn" data-page="officers">
+                <svg class="qa-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="23" y1="11" x2="17" y2="11"/><line x1="20" y1="8" x2="20" y2="14"/></svg>
+                <span>Officers</span>
+              </button>
+              <button class="qa-btn" data-page="sho">
+                <svg class="qa-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                <span>Appoint SHO</span>
+              </button>
+              <button class="qa-btn" data-page="superintendent">
+                <svg class="qa-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                <span>Superintendent</span>
+              </button>
+              <button class="qa-btn" data-page="stations">
+                <svg class="qa-icon-svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+                <span>Stations</span>
+              </button>
             </div>
           </div>
           <div class="dash-card" style="margin-top:20px;">
@@ -160,7 +177,6 @@
           </select>
           <input type="text" class="filter-search" id="searchOfficer" placeholder="Search by name or badge…" />
         </div>
-        <button class="btn-action-primary" id="btnAddOfficer">+ Add Officer</button>
       </div>
 
       <div class="data-table-wrap">
@@ -366,18 +382,7 @@
          PAGE: SHO MANAGEMENT
     ══════════════════════════════ -->
     <div class="page-section" id="page-sho">
-      <div class="sho-intro">
-        <div class="sho-intro-text">
-          <p class="sho-intro-label">Station House Officers</p>
-          <p class="sho-intro-sub">Each station may have one active SHO at a time. Appointing a new SHO automatically retires the current one.</p>
-        </div>
-      </div>
-
-      <div class="sho-grid" id="shoGrid">
-        <div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">
-          <div class="mini-spinner" style="margin:0 auto 8px;"></div>Loading stations…
-        </div>
-      </div>
+      <div class="sho-grid" id="shoGrid"></div>
     </div>
 
     <!-- SHO Appoint Modal -->
@@ -445,17 +450,7 @@
          PAGE: SUPERINTENDENT
     ══════════════════════════════ -->
     <div class="page-section" id="page-superintendent">
-      <div class="sho-intro">
-        <div class="sho-intro-text">
-          <p class="sho-intro-label">Jail Superintendents</p>
-          <p class="sho-intro-sub">Each station may have one active Jail Superintendent. Appointing a new one retires the current.</p>
-        </div>
-      </div>
-      <div class="sho-grid" id="superintendentGrid">
-        <div class="table-empty" style="padding:40px;text-align:center;grid-column:1/-1;">
-          <div class="mini-spinner" style="margin:0 auto 8px;"></div>Loading stations…
-        </div>
-      </div>
+      <div class="sho-grid" id="superintendentGrid"></div>
     </div>
 
     <!-- Superintendent Modal (reuses same structure) -->
@@ -504,16 +499,6 @@
       </div>
     </div>
 
-    <!-- ══════════════════════════════
-         PAGE: LOGS
-    ══════════════════════════════ -->
-    <div class="page-section" id="page-logs">
-      <div class="placeholder-card">
-        <p class="placeholder-icon">📜</p>
-        <h2>Activity Logs</h2>
-        <p>Full audit trail of admin actions across the system. Coming in next phase.</p>
-      </div>
-    </div>
 
     <!-- ══════════════════════════════
          PAGE: ADMIN PROFILE
@@ -554,14 +539,14 @@
               <label class="field-label-sm">Current Password</label>
               <div class="pass-wrap-admin">
                 <input type="password" id="pCurrentPwd" class="filter-input-sm" placeholder="Enter current password" />
-                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pCurrentPwd',this)">👁</button>
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pCurrentPwd',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
             </div>
             <div class="field-group-sm">
               <label class="field-label-sm">New Password</label>
               <div class="pass-wrap-admin">
                 <input type="password" id="pNewPwd" class="filter-input-sm" placeholder="Minimum 8 characters" />
-                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pNewPwd',this)">👁</button>
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pNewPwd',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
               <div class="pwd-strength"><div class="pwd-strength-bar" id="profileStrengthBar"></div></div>
               <span class="strength-lbl" id="profileStrengthLbl"></span>
@@ -570,7 +555,7 @@
               <label class="field-label-sm">Confirm New Password</label>
               <div class="pass-wrap-admin">
                 <input type="password" id="pConfirmPwd" class="filter-input-sm" placeholder="Re-enter new password" />
-                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pConfirmPwd',this)">👁</button>
+                <button type="button" class="eye-toggle-admin" onclick="toggleAdminPwd('pConfirmPwd',this)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
               </div>
             </div>
             <button class="btn-action-primary" style="width:100%;margin-top:4px;" id="btnChangePassword">Update Password</button>
@@ -581,7 +566,6 @@
 
   </div><!-- end content -->
 </main>
-
 
 
 <script src="../js/adminDashboard.js"></script>
