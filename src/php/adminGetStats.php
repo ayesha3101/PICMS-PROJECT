@@ -10,32 +10,28 @@ if (empty($_SESSION['admin_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+    $officers = (int) $conn->query("
+        SELECT COUNT(*) FROM officers WHERE is_active = 1
+    ")->fetch_row()[0];
 
-    $officers = (int) $pdo->query("SELECT COUNT(*) FROM officers WHERE is_active = 1")->fetchColumn();
-
-    $activeComplaints = (int) $pdo->query("
+    $activeComplaints = (int) $conn->query("
         SELECT COUNT(*) FROM complaints
         WHERE status NOT IN ('Resolved','Closed','Rejected','Withdrawn')
-    ")->fetchColumn();
+    ")->fetch_row()[0];
 
-    $resolved = (int) $pdo->query("
+    $resolved = (int) $conn->query("
         SELECT COUNT(*) FROM complaints
         WHERE status = 'Resolved'
           AND MONTH(submitted_at) = MONTH(NOW())
           AND YEAR(submitted_at)  = YEAR(NOW())
-    ")->fetchColumn();
+    ")->fetch_row()[0];
 
-    $urgent = (int) $pdo->query("
+    $urgent = (int) $conn->query("
         SELECT COUNT(*) FROM complaints c
         JOIN complaint_categories cc ON c.category_id = cc.category_id
         WHERE cc.is_urgent = 1
           AND c.status NOT IN ('Resolved','Closed','Rejected','Withdrawn')
-    ")->fetchColumn();
+    ")->fetch_row()[0];
 
     echo json_encode([
         'success'           => true,
@@ -44,7 +40,7 @@ try {
         'resolved'          => $resolved,
         'urgent'            => $urgent,
     ]);
-} catch (PDOException $e) {
+} catch (Exception $e) {
     error_log('adminGetStats: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error.']);
 }

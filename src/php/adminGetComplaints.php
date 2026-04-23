@@ -10,13 +10,7 @@ if (empty($_SESSION['admin_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-
-    $stmt = $pdo->query("
+    $stmt = $conn->prepare("
         SELECT
             c.complaint_id,
             c.reference_number,
@@ -41,26 +35,28 @@ try {
         LEFT JOIN stations s ON c.station_id = s.station_id
         ORDER BY c.submitted_at DESC
     ");
-
-    $complaints = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $complaints = $result->fetch_all(MYSQLI_ASSOC);
 
     // fetch timeline for each complaint
-    $timelineStmt = $pdo->prepare("
+    $timelineStmt = $conn->prepare("
         SELECT status, note, updated_by, updated_at
         FROM case_updates
-        WHERE complaint_id = :id
+        WHERE complaint_id = ?
         ORDER BY updated_at ASC
     ");
 
     foreach ($complaints as &$complaint) {
-        $timelineStmt->execute([':id' => $complaint['complaint_id']]);
-        $complaint['timeline'] = $timelineStmt->fetchAll(PDO::FETCH_ASSOC);
+        $timelineStmt->bind_param('i', $complaint['complaint_id']);
+        $timelineStmt->execute();
+        $complaint['timeline'] = $timelineStmt->get_result()->fetch_all(MYSQLI_ASSOC);
         $complaint['is_urgent'] = (bool) $complaint['is_urgent'];
     }
     unset($complaint);
 
     echo json_encode(['success' => true, 'complaints' => $complaints]);
-} catch (PDOException $e) {
+} catch (Exception $e) {
     error_log('adminGetComplaints: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error.']);
 }

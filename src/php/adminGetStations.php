@@ -10,13 +10,7 @@ if (empty($_SESSION['admin_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-
-    $stmt = $pdo->query("
+    $result = $conn->query("
         SELECT
             s.station_id,
             s.station_name,
@@ -39,10 +33,10 @@ try {
         ORDER BY s.station_name ASC
     ");
 
-    $stations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $stations = $result->fetch_all(MYSQLI_ASSOC);
 
     echo json_encode(['success' => true, 'stations' => $stations]);
-} catch (PDOException $e) {
+} catch (Exception $e) {
     error_log('adminGetStations: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error.']);
 }

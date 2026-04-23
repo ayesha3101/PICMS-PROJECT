@@ -11,13 +11,7 @@ if (empty($_SESSION['admin_id']) || $_SESSION['role'] !== 'admin') {
 }
 
 try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
-
-    $stmt = $pdo->query("
+    $result = $conn->query("
         SELECT
             o.officer_id,
             o.full_name,
@@ -36,20 +30,20 @@ try {
         ORDER BY o.full_name ASC
     ");
 
-    $officers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $officers = $result->fetch_all(MYSQLI_ASSOC);
 
     // Cast types
     foreach ($officers as &$o) {
-        $o['officer_id']     = (int)$o['officer_id'];
-        $o['station_id']     = $o['station_id'] ? (int)$o['station_id'] : null;
-        $o['role_id']        = (int)$o['role_id'];
-        $o['active_caseload']= (int)$o['active_caseload'];
-        $o['is_active']      = (bool)$o['is_active'];
+        $o['officer_id']      = (int)$o['officer_id'];
+        $o['station_id']      = $o['station_id'] ? (int)$o['station_id'] : null;
+        $o['role_id']         = (int)$o['role_id'];
+        $o['active_caseload'] = (int)$o['active_caseload'];
+        $o['is_active']       = (bool)$o['is_active'];
     }
     unset($o);
 
     echo json_encode(['success' => true, 'officers' => $officers]);
-} catch (PDOException $e) {
+} catch (Exception $e) {
     error_log('adminGetOfficers: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error.']);
 }
