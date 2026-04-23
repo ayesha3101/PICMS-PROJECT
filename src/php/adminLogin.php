@@ -25,21 +25,19 @@ if (empty($password) || (empty($badge) && empty($email))) {
 }
 
 try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+    global $conn;
 
     if (!empty($badge)) {
-        $stmt = $pdo->prepare("SELECT * FROM admin WHERE badge_number = :val LIMIT 1");
-        $stmt->execute([':val' => $badge]);
+        $stmt = $conn->prepare("SELECT * FROM admin WHERE badge_number = ? LIMIT 1");
+        $stmt->bind_param("s", $badge);
     } else {
-        $stmt = $pdo->prepare("SELECT * FROM admin WHERE email = :val LIMIT 1");
-        $stmt->execute([':val' => $email]);
+        $stmt = $conn->prepare("SELECT * FROM admin WHERE email = ? LIMIT 1");
+        $stmt->bind_param("s", $email);
     }
 
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $admin = $result->fetch_assoc();
 
     // generic message — never reveal whether badge/email exists
     if (!$admin || !password_verify($password, $admin['password_hash'])) {
@@ -61,7 +59,7 @@ try {
         'name'             => $admin['full_name'],
     ]);
 
-} catch (PDOException $e) {
+} catch (Exception $e) {
     error_log('adminLogin.php error: ' . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
 }
