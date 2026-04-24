@@ -1,25 +1,661 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SHO Dashboard | PICMS</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SHO Dashboard — PICMS Karachi Police</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #0d1c2e; color: #f5f0e8; }
-    .card { max-width: 900px; margin: 40px auto; padding: 24px; background: #152435; border: 1px solid #1e3248; border-radius: 8px; }
-    .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .btn { display: inline-block; padding: 10px 14px; background: #c9a84c; color: #08121f; text-decoration: none; border-radius: 6px; font-weight: 600; }
-    p { color: #b8c2cf; }
+    :root {
+      --navy:         #08121f;
+      --navy-mid:     #0d1c2e;
+      --navy-surface: #111f30;
+      --navy-card:    #152435;
+      --navy-border:  #1e3248;
+      --gold:         #c9a84c;
+      --gold-light:   #e0c06a;
+      --gold-dim:     #8a6e30;
+      --offwhite:     #f5f0e8;
+      --cream:        #ede5d4;
+      --muted:        #6e8098;
+      --border:       #1e3248;
+      --danger:       #d95f5f;
+      --success:      #4caf80;
+      --sidebar-w:    230px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--offwhite); }
+
+    /* SIDEBAR */
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--navy-mid);
+      border-right: 1px solid var(--navy-border);
+      display: flex; flex-direction: column; z-index: 50;
+    }
+    .sidebar-top {
+      padding: 22px 18px 18px;
+      border-bottom: 1px solid var(--navy-border);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-emblem {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--offwhite); }
+    .brand-role { font-size: 9.5px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
+    .nav-label {
+      font-size: 9px; font-weight: 600; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--muted); opacity: 0.6;
+      padding: 10px 8px 5px;
+    }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px; border-radius: 6px;
+      font-size: 12.5px; color: var(--muted); font-weight: 400;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      margin-bottom: 2px; border: none; background: none;
+      width: 100%; text-align: left; font-family: 'Outfit', sans-serif;
+    }
+    .nav-item svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 1.6; flex-shrink: 0; transition: stroke 0.15s; }
+    .nav-item:hover { background: var(--navy-surface); color: var(--offwhite); }
+    .nav-item:hover svg { stroke: var(--offwhite); }
+    .nav-item.active { background: rgba(201,168,76,0.08); color: var(--gold); }
+    .nav-item.active svg { stroke: var(--gold); }
+    .nav-item.danger { color: var(--muted); }
+    .nav-item.danger:hover { color: var(--danger); background: rgba(217,95,95,0.06); }
+    .nav-item.danger:hover svg { stroke: var(--danger); }
+    .nav-divider { height: 1px; background: var(--navy-border); margin: 8px 0; }
+    .sidebar-bottom { padding: 10px; border-top: 1px solid var(--navy-border); }
+    .officer-chip {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px 10px; border-radius: 6px;
+      background: var(--navy-surface); margin-bottom: 8px;
+    }
+    .officer-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(30,61,92,0.5); border: 1px solid rgba(30,61,92,0.8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: var(--gold); flex-shrink: 0;
+    }
+    .officer-info .officer-name { font-size: 12px; color: var(--offwhite); font-weight: 500; }
+    .officer-info .officer-badge { font-size: 10px; color: var(--muted); }
+
+    /* MAIN */
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 60px;
+      background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar-left h1 { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--offwhite); }
+    .topbar-left p { font-size: 11px; color: var(--muted); }
+    .topbar-date { font-size: 11px; color: var(--muted); }
+    .content { flex: 1; padding: 26px; }
+
+    /* PAGE SECTIONS */
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* STATS */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 14px; margin-bottom: 22px;
+    }
+    .stat-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 10px; padding: 16px 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon {
+      width: 40px; height: 40px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .stat-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
+    .si-gold    { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); }
+    .si-gold svg { stroke: var(--gold); }
+    .si-blue    { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); }
+    .si-blue svg { stroke: #60a5fa; }
+    .si-green   { background: rgba(76,175,128,0.1); border: 1px solid rgba(76,175,128,0.25); }
+    .si-green svg { stroke: var(--success); }
+    .si-red     { background: rgba(217,95,95,0.1); border: 1px solid rgba(217,95,95,0.25); }
+    .si-red svg { stroke: var(--danger); }
+    .stat-label { font-size: 10.5px; color: var(--muted); margin-bottom: 3px; }
+    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--offwhite); line-height: 1; }
+
+    /* TABLE */
+    .section-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 10px; overflow: hidden; margin-bottom: 20px;
+    }
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--navy-border);
+    }
+    .section-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--offwhite); }
+    .table-filters { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .filter-sel {
+      background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
+      font-size: 11.5px; color: var(--offwhite); outline: none; cursor: pointer;
+      appearance: none;
+    }
+    .filter-inp {
+      background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
+      font-size: 11.5px; color: var(--offwhite); outline: none; width: 180px;
+    }
+    .filter-inp::placeholder { color: rgba(110,128,152,0.5); }
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th {
+      text-align: left; padding: 10px 14px;
+      font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); border-bottom: 1px solid var(--navy-border); background: var(--navy-mid);
+    }
+    td { padding: 11px 14px; color: var(--offwhite); border-bottom: 1px solid rgba(30,50,72,0.35); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--navy-surface); }
+    .empty-row { text-align: center; color: var(--muted); padding: 32px !important; font-size: 12px; font-style: italic; }
+
+    /* BADGES */
+    .badge {
+      display: inline-block; padding: 2px 8px; border-radius: 20px;
+      font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em;
+    }
+    .b-submitted   { background: rgba(110,128,152,0.15); color: var(--muted); }
+    .b-review      { background: rgba(201,168,76,0.12); color: var(--gold); }
+    .b-accepted    { background: rgba(76,175,128,0.12); color: #6fcba0; }
+    .b-rejected    { background: rgba(217,95,95,0.12); color: #e88080; }
+    .b-assigned    { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .b-ongoing     { background: rgba(59,130,246,0.12); color: #93c5fd; }
+    .b-resolved    { background: rgba(76,175,128,0.18); color: #4caf80; }
+    .b-urgent      { background: rgba(217,95,95,0.15); color: #e88080; }
+    .b-pending-appt { background: rgba(201,168,76,0.12); color: var(--gold); }
+    .b-confirmed   { background: rgba(76,175,128,0.12); color: #6fcba0; }
+    .b-cancelled   { background: rgba(217,95,95,0.12); color: #e88080; }
+    .b-completed   { background: rgba(76,175,128,0.18); color: #4caf80; }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 5px;
+      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+    }
+    .btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .btn-ghost { background: none; border-color: var(--navy-border); color: var(--muted); }
+    .btn-ghost:hover { border-color: var(--gold-dim); color: var(--gold); }
+    .btn-gold { background: var(--gold); color: var(--navy); font-weight: 600; }
+    .btn-gold:hover { background: var(--gold-light); }
+    .btn-danger { background: rgba(217,95,95,0.1); border-color: rgba(217,95,95,0.35); color: #e88080; }
+    .btn-danger:hover { background: rgba(217,95,95,0.2); }
+    .btn-sm { padding: 5px 10px; font-size: 10.5px; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,10,18,0.88); backdrop-filter: blur(8px);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.18s ease; }
+    .modal {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 12px; width: 100%; max-width: 520px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      animation: slideUp 0.22s ease both;
+    }
+    .modal-lg { max-width: 680px; }
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--navy-border);
+    }
+    .modal-eyebrow { font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 3px; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--offwhite); }
+    .modal-close {
+      background: none; border: 1px solid var(--navy-border); border-radius: 4px;
+      width: 27px; height: 27px; color: var(--muted); cursor: pointer;
+      font-size: 13px; transition: all 0.15s; flex-shrink: 0;
+    }
+    .modal-close:hover { color: var(--offwhite); border-color: var(--gold-dim); }
+    .modal-body { padding: 20px 24px; }
+    .modal-footer {
+      display: flex; gap: 8px; justify-content: flex-end;
+      padding: 14px 24px; border-top: 1px solid var(--navy-border);
+    }
+
+    /* FORM */
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-dim); margin-bottom: 5px; }
+    .field input, .field select, .field textarea {
+      width: 100%; background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 6px; padding: 10px 12px; font-family: 'Outfit', sans-serif;
+      font-size: 13px; color: var(--offwhite); outline: none;
+      transition: border-color 0.18s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--gold-dim); }
+    .field input::placeholder, .field textarea::placeholder { color: rgba(110,128,152,0.5); }
+    .field textarea { resize: vertical; min-height: 70px; line-height: 1.5; }
+    .field select { appearance: none; cursor: pointer; }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-note { font-size: 10.5px; color: var(--muted); margin-top: 4px; line-height: 1.5; }
+    .field-error { font-size: 10.5px; color: var(--danger); margin-top: 4px; min-height: 14px; display: block; }
+
+    /* ALERT */
+    .alert { padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; border: 1px solid transparent; display: none; }
+    .alert.show { display: block; }
+    .alert-error   { background: rgba(217,95,95,0.1); border-color: rgba(217,95,95,0.3); color: #e88080; }
+    .alert-success { background: rgba(76,175,128,0.1); border-color: rgba(76,175,128,0.3); color: #6fcba0; }
+    .alert-info    { background: rgba(30,61,92,0.2); border-color: rgba(30,61,92,0.5); color: #7aabdf; }
+
+    /* DETAIL ROWS */
+    .detail-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 9px 0; border-bottom: 1px solid rgba(30,50,72,0.35); font-size: 12.5px; gap: 12px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .dr-key { color: var(--muted); flex-shrink: 0; }
+    .dr-val { color: var(--offwhite); text-align: right; }
+
+    /* SCHEDULE GRID */
+    .schedule-conflict { background: rgba(217,95,95,0.08); border: 1px solid rgba(217,95,95,0.25); border-radius: 6px; padding: 10px 12px; margin-top: 6px; font-size: 11.5px; color: #e88080; display: none; }
+    .schedule-ok { background: rgba(76,175,128,0.08); border: 1px solid rgba(76,175,128,0.25); border-radius: 6px; padding: 10px 12px; margin-top: 6px; font-size: 11.5px; color: #6fcba0; display: none; }
+
+    /* SPINNER */
+    .spinner { width: 14px; height: 14px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; display: inline-block; }
+
+    /* APPT TIMELINE */
+    .appt-history { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .appt-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 10px 12px; background: var(--navy-surface);
+      border: 1px solid var(--navy-border); border-radius: 6px;
+    }
+    .appt-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+    .appt-dot.pending   { background: var(--gold); }
+    .appt-dot.confirmed { background: var(--success); }
+    .appt-dot.completed { background: #6fcba0; }
+    .appt-dot.cancelled { background: var(--danger); }
+    .appt-info { flex: 1; }
+    .appt-date { font-size: 12px; font-weight: 500; color: var(--offwhite); margin-bottom: 2px; }
+    .appt-meta { font-size: 10.5px; color: var(--muted); }
+
+    /* OFFICER ASSIGN */
+    .officer-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .officer-card {
+      background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: all 0.15s;
+    }
+    .officer-card:hover { border-color: var(--gold-dim); }
+    .officer-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.06); }
+    .oc-name { font-size: 13px; font-weight: 500; color: var(--offwhite); margin-bottom: 3px; }
+    .oc-meta { font-size: 10.5px; color: var(--muted); }
+    .oc-cases { font-size: 10.5px; color: var(--gold-dim); margin-top: 3px; }
+
+    /* COMPLAINT DETAIL IN MODAL */
+    .detail-section-title { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--navy-border); }
+
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin    { to { transform: rotate(360deg); } }
+
+    @media (max-width: 900px) {
+      .sidebar { transform: translateX(-100%); }
+      .main { margin-left: 0; }
+      .stats-row { grid-template-columns: 1fr 1fr; }
+    }
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="head">
-      <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:34px;height:34px;object-fit:contain;" />
-      <h1 style="margin:0;font-size:1.2rem;">SHO Dashboard</h1>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <div class="brand-emblem">
+        <img src="../../assets/policeLogo.png" style="width:28px;height:28px;object-fit:contain;"/>
+      </div>
+      <div>
+        <div class="brand-name">PICMS</div>
+        <div class="brand-role">SHO Portal</div>
+      </div>
     </div>
-    <p>This is a basic placeholder page so SHO redirects do not fail.</p>
-    <a class="btn" href="officerLogin.html">Back to Officer Login</a>
-  </main>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Overview</div>
+    <button class="nav-item active" data-page="complaints">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Station Complaints
+    </button>
+    <button class="nav-item" data-page="appointments">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Appointments
+    </button>
+    <div class="nav-divider"></div>
+    <div class="nav-label">Account</div>
+    <button class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      My Profile
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="officer-chip">
+      <div class="officer-avatar" id="shoInitials">—</div>
+      <div class="officer-info">
+        <div class="officer-name" id="shoName">Loading…</div>
+        <div class="officer-badge" id="shoBadge">—</div>
+      </div>
+    </div>
+    <button class="nav-item danger" id="logoutBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 id="pageTitle">Station Complaints</h1>
+      <p id="pageSubtitle">Review and manage complaints assigned to your station</p>
+    </div>
+    <div class="topbar-date" id="topbarDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══ PAGE: COMPLAINTS ═══ -->
+    <div class="page-section active" id="page-complaints">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon si-gold"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+          <div><div class="stat-label">Total</div><div class="stat-value" id="sTotal">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-blue"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+          <div><div class="stat-label">Pending Review</div><div class="stat-value" id="sPending">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-green"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+          <div><div class="stat-label">Officer Assigned</div><div class="stat-value" id="sAssigned">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-red"><svg viewBox="0 0 24 24"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div>
+          <div><div class="stat-label">Urgent</div><div class="stat-value" id="sUrgent">—</div></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-head">
+          <h2>Station Complaints</h2>
+          <div class="table-filters">
+            <select class="filter-sel" id="filterStatus">
+              <option value="">All Statuses</option>
+              <option value="Submitted">Submitted</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Officer Assigned">Officer Assigned</option>
+              <option value="Investigation Ongoing">Investigation Ongoing</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+            <select class="filter-sel" id="filterUrgency">
+              <option value="">All</option>
+              <option value="1">Urgent</option>
+              <option value="0">Normal</option>
+            </select>
+            <input class="filter-inp" type="text" id="searchComplaint" placeholder="Search reference or area…"/>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Category</th>
+              <th>Area</th>
+              <th>Status</th>
+              <th>Urgency</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="complaintsTbody">
+            <tr><td colspan="7" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: APPOINTMENTS ═══ -->
+    <div class="page-section" id="page-appointments">
+      <div class="section-card">
+        <div class="section-head">
+          <h2>Appointments</h2>
+          <div class="table-filters">
+            <select class="filter-sel" id="filterApptStatus">
+              <option value="">All Statuses</option>
+              <option value="Pending">Pending</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Citizen CNIC</th>
+              <th>Date & Time</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Miss Count</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="apptTbody">
+            <tr><td colspan="7" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PAGE: PROFILE ═══ -->
+    <div class="page-section" id="page-profile">
+      <div class="section-card" style="max-width:500px;">
+        <div class="section-head"><h2>My Profile</h2></div>
+        <div style="padding:20px 24px;">
+          <div class="detail-row"><span class="dr-key">Name</span><span class="dr-val" id="pName">—</span></div>
+          <div class="detail-row"><span class="dr-key">Badge</span><span class="dr-val" id="pBadge">—</span></div>
+          <div class="detail-row"><span class="dr-key">Rank</span><span class="dr-val" id="pRank">—</span></div>
+          <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="pStation">—</span></div>
+          <div class="detail-row"><span class="dr-key">Email</span><span class="dr-val" id="pEmail">—</span></div>
+          <div class="detail-row"><span class="dr-key">Role</span><span class="dr-val">Station House Officer (SHO)</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end content -->
+</main>
+
+<!-- ═══ COMPLAINT DETAIL MODAL ═══ -->
+<div class="modal-overlay" id="complaintModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow" id="mdCategory">—</div>
+        <div class="modal-title" id="mdRef">—</div>
+      </div>
+      <button class="modal-close" id="closeComplaintModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert" id="mdAlert"></div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div class="detail-section-title">Complaint Details</div>
+          <div class="detail-row"><span class="dr-key">Status</span><span class="dr-val" id="mdStatus">—</span></div>
+          <div class="detail-row"><span class="dr-key">Area</span><span class="dr-val" id="mdArea">—</span></div>
+          <div class="detail-row"><span class="dr-key">Incident Date</span><span class="dr-val" id="mdDate">—</span></div>
+          <div class="detail-row"><span class="dr-key">Citizen CNIC</span><span class="dr-val" id="mdCnic">—</span></div>
+          <div class="detail-row"><span class="dr-key">Assigned Officer</span><span class="dr-val" id="mdOfficer">—</span></div>
+          <div class="detail-row"><span class="dr-key">Urgency</span><span class="dr-val" id="mdUrgency">—</span></div>
+          <div class="detail-section-title" style="margin-top:14px;">Description</div>
+          <p style="font-size:12.5px;color:var(--offwhite);line-height:1.7;padding:10px;background:var(--navy-surface);border-radius:6px;border:1px solid var(--navy-border);" id="mdDescription">—</p>
+        </div>
+        <div>
+          <div class="detail-section-title">Appointment History</div>
+          <div class="appt-history" id="mdApptHistory">
+            <p style="font-size:12px;color:var(--muted);font-style:italic;">No appointments yet.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION AREA -->
+      <div id="mdActions" style="margin-top:18px;padding-top:16px;border-top:1px solid var(--navy-border);">
+        <!-- Filled by JS based on complaint state -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SET APPOINTMENT MODAL ═══ -->
+<div class="modal-overlay" id="apptModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Schedule Appointment</div>
+        <div class="modal-title" id="apptModalRef">—</div>
+      </div>
+      <button class="modal-close" id="closeApptModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert" id="apptAlert"></div>
+      <div class="field">
+        <label>Appointment Date</label>
+        <input type="date" id="apptDate"/>
+        <span class="field-note">Must be a future date.</span>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Start Time</label>
+          <input type="time" id="apptStart"/>
+        </div>
+        <div class="field">
+          <label>End Time</label>
+          <input type="time" id="apptEnd"/>
+        </div>
+      </div>
+      <div class="field">
+        <label>Location</label>
+        <input type="text" id="apptLocation" placeholder="e.g. SHO Office, Ground Floor"/>
+      </div>
+      <div class="schedule-conflict" id="scheduleConflict">
+        ⚠ Schedule conflict detected. Please choose a different time slot.
+      </div>
+      <div class="schedule-ok" id="scheduleOk">
+        ✓ Time slot is available.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelApptModal">Cancel</button>
+      <button class="btn btn-gold" id="confirmApptBtn">Schedule Appointment</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ASSIGN OFFICER MODAL ═══ -->
+<div class="modal-overlay" id="assignModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Assign Investigating Officer</div>
+        <div class="modal-title" id="assignModalRef">—</div>
+      </div>
+      <button class="modal-close" id="closeAssignModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert" id="assignAlert"></div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:14px;">Select an available officer from your station to investigate this case.</p>
+      <div class="officer-cards" id="officerCards">
+        <p style="color:var(--muted);font-size:12px;font-style:italic;grid-column:1/-1;">Loading officers…</p>
+      </div>
+      <input type="hidden" id="selectedOfficerId"/>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" id="cancelAssignModal">Cancel</button>
+      <button class="btn btn-gold" id="confirmAssignBtn">Assign Officer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MARK APPOINTMENT MODAL ═══ -->
+<div class="modal-overlay" id="markApptModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Update Appointment</div>
+        <div class="modal-title" id="markApptRef">—</div>
+      </div>
+      <button class="modal-close" id="closeMarkApptModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert" id="markApptAlert"></div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">What was the outcome of this appointment?</p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-gold" id="btnMarkComplete" style="justify-content:center;padding:12px;">
+          ✓ Mark as Completed — Citizen Attended
+        </button>
+        <button class="btn btn-danger" id="btnMarkCancelled" style="justify-content:center;padding:12px;">
+          ✕ Mark as Cancelled — Citizen Did Not Appear
+        </button>
+      </div>
+      <p style="font-size:11px;color:var(--muted);margin-top:12px;line-height:1.6;" id="missWarning"></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ ACCEPT/REJECT COMPLAINT MODAL ═══ -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Review Complaint</div>
+        <div class="modal-title" id="reviewModalRef">—</div>
+      </div>
+      <button class="modal-close" id="closeReviewModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="alert" id="reviewAlert"></div>
+      <p style="font-size:12.5px;color:var(--muted);margin-bottom:16px;">Review this complaint and decide whether to accept or reject it.</p>
+      <div class="field" id="rejectionField" style="display:none;">
+        <label>Rejection Reason</label>
+        <textarea id="rejectionReason" placeholder="Provide reason for rejection…"></textarea>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button class="btn btn-gold" id="btnAccept" style="justify-content:center;padding:12px;">
+          ✓ Accept Complaint
+        </button>
+        <button class="btn btn-danger" id="btnReject" style="justify-content:center;padding:12px;">
+          ✕ Reject Complaint
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/shoDashboard.js"></script>
 </body>
 </html>

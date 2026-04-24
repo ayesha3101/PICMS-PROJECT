@@ -1,25 +1,402 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Officer Dashboard | PICMS</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Officer Dashboard — PICMS Karachi Police</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    body { margin: 0; font-family: Arial, sans-serif; background: #0d1c2e; color: #f5f0e8; }
-    .card { max-width: 900px; margin: 40px auto; padding: 24px; background: #152435; border: 1px solid #1e3248; border-radius: 8px; }
-    .head { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .btn { display: inline-block; padding: 10px 14px; background: #c9a84c; color: #08121f; text-decoration: none; border-radius: 6px; font-weight: 600; }
-    p { color: #b8c2cf; }
+    :root {
+      --navy:         #08121f;
+      --navy-mid:     #0d1c2e;
+      --navy-surface: #111f30;
+      --navy-card:    #152435;
+      --navy-border:  #1e3248;
+      --steel:        #1e3d5c;
+      --gold:         #c9a84c;
+      --gold-light:   #e0c06a;
+      --gold-dim:     #8a6e30;
+      --offwhite:     #f5f0e8;
+      --cream:        #ede5d4;
+      --muted:        #6e8098;
+      --border:       #1e3248;
+      --danger:       #d95f5f;
+      --success:      #4caf80;
+      --sidebar-w:    230px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--offwhite); }
+
+    .sidebar {
+      position: fixed; top: 0; left: 0;
+      width: var(--sidebar-w); height: 100vh;
+      background: var(--navy-mid); border-right: 1px solid var(--navy-border);
+      display: flex; flex-direction: column; z-index: 50;
+    }
+    .sidebar-top { padding: 22px 18px 18px; border-bottom: 1px solid var(--navy-border); }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-emblem {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: rgba(30,61,92,0.3); border: 1px solid rgba(30,61,92,0.7);
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--offwhite); }
+    .brand-role { font-size: 9.5px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .sidebar-nav { flex: 1; padding: 14px 10px; }
+    .nav-label { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); opacity: 0.6; padding: 10px 8px 5px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 9px 10px; border-radius: 6px;
+      font-size: 12.5px; color: var(--muted); font-weight: 400;
+      text-decoration: none; cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+      margin-bottom: 2px; border: none; background: none;
+      width: 100%; text-align: left; font-family: 'Outfit', sans-serif;
+    }
+    .nav-item svg { width: 14px; height: 14px; stroke: var(--muted); fill: none; stroke-width: 1.6; flex-shrink: 0; transition: stroke 0.15s; }
+    .nav-item:hover { background: var(--navy-surface); color: var(--offwhite); }
+    .nav-item:hover svg { stroke: var(--offwhite); }
+    .nav-item.active { background: rgba(30,61,92,0.25); color: #7aabdf; }
+    .nav-item.active svg { stroke: #7aabdf; }
+    .nav-item.danger:hover { color: var(--danger); background: rgba(217,95,95,0.06); }
+    .nav-item.danger:hover svg { stroke: var(--danger); }
+    .nav-divider { height: 1px; background: var(--navy-border); margin: 8px 0; }
+
+    .sidebar-bottom { padding: 10px; border-top: 1px solid var(--navy-border); }
+    .officer-chip {
+      display: flex; align-items: center; gap: 9px;
+      padding: 10px; border-radius: 6px; background: var(--navy-surface); margin-bottom: 8px;
+    }
+    .officer-avatar {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(30,61,92,0.4); border: 1px solid rgba(30,61,92,0.7);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; font-weight: 600; color: #7aabdf; flex-shrink: 0;
+    }
+    .officer-name { font-size: 12px; color: var(--offwhite); font-weight: 500; }
+    .officer-badge { font-size: 10px; color: var(--muted); }
+
+    .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 28px; height: 60px;
+      background: var(--navy-mid); border-bottom: 1px solid var(--navy-border);
+      position: sticky; top: 0; z-index: 40;
+    }
+    .topbar h1 { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--offwhite); }
+    .topbar p { font-size: 11px; color: var(--muted); }
+    .topbar-date { font-size: 11px; color: var(--muted); }
+    .content { flex: 1; padding: 26px; }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    /* STATS */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 14px; margin-bottom: 22px;
+    }
+    .stat-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 10px; padding: 16px 18px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
+    .si-steel { background: rgba(30,61,92,0.3); border: 1px solid rgba(30,61,92,0.6); }
+    .si-steel svg { stroke: #7aabdf; }
+    .si-gold  { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); }
+    .si-gold svg { stroke: var(--gold); }
+    .si-green { background: rgba(76,175,128,0.1); border: 1px solid rgba(76,175,128,0.25); }
+    .si-green svg { stroke: var(--success); }
+    .stat-label { font-size: 10.5px; color: var(--muted); margin-bottom: 3px; }
+    .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--offwhite); line-height: 1; }
+
+    /* CARDS */
+    .section-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 10px; overflow: hidden; margin-bottom: 20px;
+    }
+    .section-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--navy-border);
+    }
+    .section-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--offwhite); }
+
+    .filter-sel {
+      background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
+      font-size: 11.5px; color: var(--offwhite); outline: none; cursor: pointer; appearance: none;
+    }
+    .filter-inp {
+      background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
+      font-size: 11.5px; color: var(--offwhite); outline: none; width: 180px;
+    }
+    .filter-inp::placeholder { color: rgba(110,128,152,0.5); }
+
+    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+    th {
+      text-align: left; padding: 10px 14px;
+      font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); border-bottom: 1px solid var(--navy-border); background: var(--navy-mid);
+    }
+    td { padding: 11px 14px; color: var(--offwhite); border-bottom: 1px solid rgba(30,50,72,0.35); vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--navy-surface); }
+    .empty-row { text-align: center; color: var(--muted); padding: 32px !important; font-size: 12px; font-style: italic; }
+
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; }
+    .b-submitted   { background: rgba(110,128,152,0.15); color: var(--muted); }
+    .b-review      { background: rgba(201,168,76,0.12); color: var(--gold); }
+    .b-accepted    { background: rgba(76,175,128,0.12); color: #6fcba0; }
+    .b-assigned    { background: rgba(139,92,246,0.12); color: #a78bfa; }
+    .b-ongoing     { background: rgba(59,130,246,0.12); color: #93c5fd; }
+    .b-resolved    { background: rgba(76,175,128,0.18); color: #4caf80; }
+    .b-urgent      { background: rgba(217,95,95,0.15); color: #e88080; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; border-radius: 5px;
+      font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 500;
+      cursor: pointer; transition: all 0.15s; border: 1px solid transparent;
+    }
+    .btn svg { width: 11px; height: 11px; stroke: currentColor; fill: none; stroke-width: 2; }
+    .btn-ghost { background: none; border-color: var(--navy-border); color: var(--muted); }
+    .btn-ghost:hover { border-color: rgba(30,61,92,0.6); color: #7aabdf; }
+    .btn-steel { background: rgba(30,61,92,0.3); border-color: rgba(30,61,92,0.6); color: #7aabdf; }
+    .btn-sm { padding: 5px 10px; font-size: 10.5px; }
+
+    /* MODAL */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(5,10,18,0.88); backdrop-filter: blur(8px);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; animation: fadeIn 0.18s ease; }
+    .modal {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 12px; width: 100%; max-width: 640px;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+      animation: slideUp 0.22s ease both;
+    }
+    .modal-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 20px 24px 16px; border-bottom: 1px solid var(--navy-border);
+    }
+    .modal-eyebrow { font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #7aabdf; margin-bottom: 3px; }
+    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--offwhite); }
+    .modal-close {
+      background: none; border: 1px solid var(--navy-border); border-radius: 4px;
+      width: 27px; height: 27px; color: var(--muted); cursor: pointer;
+      font-size: 13px; transition: all 0.15s; flex-shrink: 0;
+    }
+    .modal-close:hover { color: var(--offwhite); border-color: rgba(30,61,92,0.6); }
+    .modal-body { padding: 20px 24px; }
+
+    .detail-section-title { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--navy-border); }
+    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(30,50,72,0.35); font-size: 12.5px; gap: 12px; }
+    .detail-row:last-child { border-bottom: none; }
+    .dr-key { color: var(--muted); flex-shrink: 0; }
+    .dr-val { color: var(--offwhite); text-align: right; }
+
+    .timeline { display: flex; flex-direction: column; gap: 0; }
+    .tl-item { display: flex; gap: 12px; padding-bottom: 14px; position: relative; }
+    .tl-item:not(:last-child)::before { content: ''; position: absolute; left: 6px; top: 18px; width: 1px; bottom: 0; background: var(--navy-border); }
+    .tl-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--navy-border); background: var(--navy-card); flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
+    .tl-dot.done { background: rgba(30,61,92,0.6); border-color: rgba(30,61,92,0.8); }
+    .tl-dot.current { background: #7aabdf; border-color: #7aabdf; }
+    .tl-status { font-size: 12.5px; font-weight: 500; color: var(--offwhite); }
+    .tl-note   { font-size: 11px; color: var(--muted); line-height: 1.5; }
+    .tl-meta   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* PROFILE */
+    .profile-card {
+      display: flex; align-items: center; gap: 20px;
+      background: var(--navy-mid); border: 1px solid var(--navy-border);
+      border-radius: 10px; padding: 22px 26px; margin-bottom: 16px;
+    }
+    .profile-avatar-lg {
+      width: 56px; height: 56px; border-radius: 50%;
+      background: rgba(30,61,92,0.4); border: 2px solid rgba(30,61,92,0.8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 600; color: #7aabdf; flex-shrink: 0;
+    }
+    .profile-name { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 600; color: var(--offwhite); margin-bottom: 3px; }
+    .profile-sub  { font-size: 12px; color: var(--muted); }
+
+    @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes spin    { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
-  <main class="card">
-    <div class="head">
-      <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:34px;height:34px;object-fit:contain;" />
-      <h1 style="margin:0;font-size:1.2rem;">Officer Dashboard</h1>
+
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="brand">
+      <div class="brand-emblem">
+        <img src="../../assets/policeLogo.png" style="width:28px;height:28px;object-fit:contain;"/>
+      </div>
+      <div>
+        <div class="brand-name">PICMS</div>
+        <div class="brand-role">Officer Portal</div>
+      </div>
     </div>
-    <p>This is a basic placeholder page so officer login redirects do not fail.</p>
-    <a class="btn" href="officerLogin.html">Back to Officer Login</a>
-  </main>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-label">Cases</div>
+    <button class="nav-item active" data-page="cases">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      My Assigned Cases
+    </button>
+    <div class="nav-divider"></div>
+    <div class="nav-label">Account</div>
+    <button class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      My Profile
+    </button>
+  </nav>
+
+  <div class="sidebar-bottom">
+    <div class="officer-chip">
+      <div class="officer-avatar" id="offInitials">—</div>
+      <div>
+        <div class="officer-name" id="offName">Loading…</div>
+        <div class="officer-badge" id="offBadge">—</div>
+      </div>
+    </div>
+    <button class="nav-item danger" id="logoutBtn">
+      <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </button>
+  </div>
+</aside>
+
+<main class="main">
+  <header class="topbar">
+    <div>
+      <h1 id="pageTitle">My Assigned Cases</h1>
+      <p id="pageSubtitle">Cases assigned to you for investigation</p>
+    </div>
+    <div class="topbar-date" id="topbarDate"></div>
+  </header>
+
+  <div class="content">
+
+    <!-- ═══ CASES PAGE ═══ -->
+    <div class="page-section active" id="page-cases">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon si-steel"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg></div>
+          <div><div class="stat-label">Total Assigned</div><div class="stat-value" id="oTotal">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-gold"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg></div>
+          <div><div class="stat-label">Active</div><div class="stat-value" id="oActive">—</div></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon si-green"><svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg></div>
+          <div><div class="stat-label">Resolved</div><div class="stat-value" id="oResolved">—</div></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-head">
+          <h2>Assigned Cases</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="filter-sel" id="filterCaseStatus">
+              <option value="">All Statuses</option>
+              <option value="Officer Assigned">Assigned</option>
+              <option value="Investigation Ongoing">Ongoing</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+            <input class="filter-inp" type="text" id="searchCase" placeholder="Search reference…"/>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Category</th>
+              <th>Area</th>
+              <th>Station</th>
+              <th>Status</th>
+              <th>Urgency</th>
+              <th>Assigned</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="casesTbody">
+            <tr><td colspan="8" class="empty-row">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ═══ PROFILE PAGE ═══ -->
+    <div class="page-section" id="page-profile">
+      <div class="profile-card">
+        <div class="profile-avatar-lg" id="pAvatarLg">—</div>
+        <div>
+          <div class="profile-name" id="pFullName">—</div>
+          <div class="profile-sub" id="pBadgeSub">—</div>
+        </div>
+      </div>
+      <div class="section-card" style="max-width:460px;">
+        <div class="section-head"><h2>Account Details</h2></div>
+        <div style="padding:16px 20px;">
+          <div class="detail-row"><span class="dr-key">Name</span><span class="dr-val" id="pName">—</span></div>
+          <div class="detail-row"><span class="dr-key">Badge</span><span class="dr-val" id="pBadge">—</span></div>
+          <div class="detail-row"><span class="dr-key">Rank</span><span class="dr-val" id="pRank">—</span></div>
+          <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="pStation">—</span></div>
+          <div class="detail-row"><span class="dr-key">Email</span><span class="dr-val" id="pEmail">—</span></div>
+          <div class="detail-row"><span class="dr-key">Role</span><span class="dr-val">Investigating Officer</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- CASE DETAIL MODAL -->
+<div class="modal-overlay" id="caseModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow" id="cmCategory">—</div>
+        <div class="modal-title" id="cmRef">—</div>
+      </div>
+      <button class="modal-close" id="closeCaseModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+        <div>
+          <div class="detail-section-title">Complaint Details</div>
+          <div class="detail-row"><span class="dr-key">Status</span><span class="dr-val" id="cmStatus">—</span></div>
+          <div class="detail-row"><span class="dr-key">Area</span><span class="dr-val" id="cmArea">—</span></div>
+          <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="cmStation">—</span></div>
+          <div class="detail-row"><span class="dr-key">Incident Date</span><span class="dr-val" id="cmDate">—</span></div>
+          <div class="detail-row"><span class="dr-key">Citizen CNIC</span><span class="dr-val" id="cmCnic">—</span></div>
+          <div class="detail-section-title" style="margin-top:14px;">Description</div>
+          <p style="font-size:12.5px;color:var(--offwhite);line-height:1.7;padding:10px;background:var(--navy-surface);border-radius:6px;border:1px solid var(--navy-border);" id="cmDescription">—</p>
+        </div>
+        <div>
+          <div class="detail-section-title">Case Timeline</div>
+          <div class="timeline" id="cmTimeline">
+            <p style="font-size:12px;color:var(--muted);font-style:italic;">Loading…</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../js/officerDashboard.js"></script>
 </body>
 </html>
