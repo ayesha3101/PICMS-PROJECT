@@ -1,6 +1,6 @@
 
 
-
+set foreign_key_checks=0;
 
 CREATE TABLE officer_roles (
     role_id   INT AUTO_INCREMENT PRIMARY KEY,
@@ -478,7 +478,7 @@ INSERT INTO complaint_subcategories (category_id, subcategory_name) VALUES
 (9, 'Land Dispute'),
 (9, 'Rent Dispute');
 
---admin password Admin@1234
+-- admin password Admin@1234
 
 INSERT INTO admin (full_name, badge_number, email, password_hash, password_changed)
 VALUES (
@@ -488,5 +488,5 @@ VALUES (
   '$2y$10$qWrVbknbGINiSbVvuFdDF.KfK/IOHTBGbfkZy.PB0WWbTR7nqRP5y',
   1
 ); 
-
+set foreign_key_checks=1;
 -- i have run everything till here

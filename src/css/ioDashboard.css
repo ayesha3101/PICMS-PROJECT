@@ -1,0 +1,15 @@
+/*
+   Investigating Officer Dashboard
+   Imports adminDashboard.css token system.
+   Only IO-specific overrides go here.*/
+
+/* Brand role label colour for IO */
+.brand-role {
+  color: var(--gold-dim);
+}
+
+/* Topbar rank label */
+#officerRankTop {
+  color: var(--gold-dim);
+  font-size: 10px;
+}
