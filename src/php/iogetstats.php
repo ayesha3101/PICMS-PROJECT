@@ -1,9 +1,9 @@
 <?php
+// ioGetStats.php — IO Dashboard Stats
 require_once __DIR__ . '/../config/config.php';
 session_start();
 header('Content-Type: application/json');
 
-// BASICALLY THIS is the Authorization check for Investigating Officers (role_id=1)
 if (
     empty($_SESSION['officer_id']) ||
     $_SESSION['role'] !== 'officer' ||
@@ -13,52 +13,36 @@ if (
     exit;
 }
 
-try {
-    global $conn;
-    $officerId = (int)$_SESSION['officer_id'];
+$officerId = (int)$_SESSION['officer_id'];
 
-    $query = "
-        SELECT
-            c.complaint_id,
-            c.reference_number,
-            c.cnic,
-            c.status,
-            c.submitted_at,
-            c.incident_area,
-            cc.category_name,
-            cc.is_urgent,
-            ca.assigned_at
-        FROM case_assignments ca
-        JOIN complaints c  ON ca.complaint_id = c.complaint_id
-        JOIN complaint_categories cc ON c.category_id = cc.category_id
-        WHERE ca.officer_id = ?
-          AND ca.is_current  = 1
-        ORDER BY ca.assigned_at DESC
-        LIMIT 5
-    ";
+// Total cases assigned to this IO
+$result     = $conn->query("SELECT COUNT(*) AS cnt FROM case_assignments WHERE officer_id = $officerId");
+$totalCases = (int)$result->fetch_assoc()['cnt'];
 
-    $stmt = $conn->prepare($query);
+// Active cases
+$result     = $conn->query("
+    SELECT COUNT(*) AS cnt
+    FROM case_assignments ca
+    JOIN complaints c ON ca.complaint_id = c.complaint_id
+    WHERE ca.officer_id = $officerId
+      AND ca.is_current = 1
+      AND c.status IN ('Officer Assigned', 'Investigation Ongoing')
+");
+$activeCases = (int)$result->fetch_assoc()['cnt'];
 
-    if (!$stmt) {
-        throw new Exception("Prepare failed: " . $conn->error);
-    }
+// Resolved cases
+$result       = $conn->query("
+    SELECT COUNT(*) AS cnt
+    FROM case_assignments ca
+    JOIN complaints c ON ca.complaint_id = c.complaint_id
+    WHERE ca.officer_id = $officerId
+      AND c.status IN ('Resolved', 'Closed')
+");
+$resolvedCases = (int)$result->fetch_assoc()['cnt'];
 
-    // Binding parameters ("i" for integer) and execute
-    $stmt->bind_param("i", $officerId);
-    $stmt->execute();
-
-    // getting results as an array of associative arrays
-    $result = $stmt->get_result();
-    $cases = [];
-    while ($row = $result->fetch_assoc()) {
-        $cases[] = $row;
-    }
-
-    // Returns the response to  json 
-    echo json_encode(['success' => true, 'cases' => $cases]);
-
-    $stmt->close();
-} catch (Exception $e) {
-    error_log('ioGetStats.php: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Server error.']);
-}
+echo json_encode([
+    'success'       => true,
+    'totalCases'    => $totalCases,
+    'activeCases'   => $activeCases,
+    'resolvedCases' => $resolvedCases,
+]);
