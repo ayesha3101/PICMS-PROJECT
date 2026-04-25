@@ -1,10 +1,20 @@
 // officerDashboard.js — Investigating Officer Dashboard
 
-// ── HELPERS 
+// ── SESSION CHECK (REQ-IO-3) ──────────────────────────────
+async function checkSession() {
+  try {
+    const res  = await fetch('../php/ioCheckSession.php');
+    const data = await res.json();
+    if (!data.success) window.location.href = 'officerLogin.html';
+  } catch (e) {
+    window.location.href = 'officerLogin.html';
+  }
+}
+
+// ── HELPERS ───────────────────────────────────────────────
 function formatDate(str) {
   if (!str) return '—';
-  const d = new Date(str);
-  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  return new Date(str).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
 
 function statusBadge(status) {
@@ -20,20 +30,29 @@ function statusBadge(status) {
     'Resolved':              'b-resolved',
     'Closed':                'b-resolved',
   };
-  const cls = map[status] || 'b-submitted';
-  return `<span class="badge ${cls}">${status}</span>`;
+  return `<span class="badge ${map[status] || 'b-submitted'}">${status}</span>`;
+}
+
+function showAlert(id, type, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `um-alert ${type}`;
+  el.textContent = msg;
+}
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  if (el) { el.className = 'um-alert'; el.textContent = ''; }
 }
 
 // ── TOPBAR DATE ───────────────────────────────────────────
 function setDate() {
   const el = document.getElementById('topbarDate');
-  if (!el) return;
-  el.textContent = new Date().toLocaleDateString('en-US', {
+  if (el) el.textContent = new Date().toLocaleDateString('en-US', {
     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
   });
 }
 
-// ── LOAD PROFILE (name, badge, rank, station) ─────────────
+// ── LOAD PROFILE ─────────────────────────────────────────
 async function loadProfile() {
   try {
     const res  = await fetch('../php/ioGetProfile.php');
@@ -41,20 +60,19 @@ async function loadProfile() {
     if (!data.success) return;
 
     // Sidebar chip
-    document.getElementById('offName').textContent     = data.full_name     || '—';
-    document.getElementById('offBadge').textContent    = data.badge_number  || '—';
+    document.getElementById('offName').textContent     = data.full_name    || '—';
+    document.getElementById('offBadge').textContent    = data.badge_number || '—';
     document.getElementById('offInitials').textContent = (data.full_name || 'O').charAt(0).toUpperCase();
 
     // Profile page
-    document.getElementById('pAvatarLg').textContent   = (data.full_name || 'O').charAt(0).toUpperCase();
-    document.getElementById('pFullName').textContent   = data.full_name    || '—';
-    document.getElementById('pBadgeSub').textContent   = `${data.rank || ''} · ${data.badge_number || ''}`;
-    document.getElementById('pName').textContent       = data.full_name    || '—';
-    document.getElementById('pBadge').textContent      = data.badge_number || '—';
-    document.getElementById('pRank').textContent       = data.rank         || '—';
-    document.getElementById('pStation').textContent    = data.station_name || '—';
-    document.getElementById('pEmail').textContent      = data.email        || '—';
-
+    document.getElementById('pAvatarLg').textContent  = (data.full_name || 'O').charAt(0).toUpperCase();
+    document.getElementById('pFullName').textContent  = data.full_name    || '—';
+    document.getElementById('pBadgeSub').textContent  = `${data.rank || ''} · ${data.badge_number || ''}`;
+    document.getElementById('pName').textContent      = data.full_name    || '—';
+    document.getElementById('pBadge').textContent     = data.badge_number || '—';
+    document.getElementById('pRank').textContent      = data.rank         || '—';
+    document.getElementById('pStation').textContent   = data.station_name || '—';
+    document.getElementById('pEmail').textContent     = data.email        || '—';
   } catch (e) {
     console.error('Profile load error:', e);
   }
@@ -66,7 +84,6 @@ async function loadStats() {
     const res  = await fetch('../php/ioGetStats.php');
     const data = await res.json();
     if (!data.success) return;
-
     document.getElementById('oTotal').textContent    = data.totalCases;
     document.getElementById('oActive').textContent   = data.activeCases;
     document.getElementById('oResolved').textContent = data.resolvedCases;
@@ -75,7 +92,7 @@ async function loadStats() {
   }
 }
 
-// ── LOAD ALL CASES (cases table) ──────────────────────────
+// ── LOAD CASES ────────────────────────────────────────────
 let allCases = [];
 
 async function loadCases() {
@@ -83,13 +100,11 @@ async function loadCases() {
   try {
     const res  = await fetch('../php/ioGetCases.php');
     const data = await res.json();
-
     if (!data.success || !data.cases.length) {
       tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No cases assigned yet.</td></tr>';
       allCases = [];
       return;
     }
-
     allCases = data.cases;
     renderCases(allCases);
   } catch (e) {
@@ -103,20 +118,25 @@ function renderCases(cases) {
     tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No cases found.</td></tr>';
     return;
   }
-
   tbody.innerHTML = cases.map(c => `
     <tr>
       <td>${c.reference_number}</td>
       <td>${c.category_name}${c.is_urgent == 1 ? ' <span class="badge b-urgent">Urgent</span>' : ''}</td>
-      <td>${c.incident_area || '—'}</td>
-      <td>${c.station_name || '—'}</td>
+      <td>${c.incident_area  || '—'}</td>
+      <td>${c.station_name   || '—'}</td>
       <td>${statusBadge(c.status)}</td>
-      <td>${c.is_urgent == 1 ? '<span class="badge b-urgent">Urgent</span>' : '<span class="badge b-submitted">Normal</span>'}</td>
+      <td>${c.is_urgent == 1
+        ? '<span class="badge b-urgent">Urgent</span>'
+        : '<span class="badge b-submitted">Normal</span>'}</td>
       <td>${formatDate(c.assigned_at)}</td>
-      <td>
+      <td style="display:flex;gap:5px;flex-wrap:wrap;">
         <button class="btn btn-steel btn-sm" onclick="openCaseModal(${c.complaint_id})">
           <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           View
+        </button>
+        <button class="btn btn-gold btn-sm" onclick="openUpdateModal(${c.complaint_id},'${c.reference_number}','${c.status}')">
+          <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Update
         </button>
       </td>
     </tr>
@@ -132,34 +152,27 @@ function setupFilters() {
 function applyFilters() {
   const status = document.getElementById('filterCaseStatus').value;
   const search = document.getElementById('searchCase').value.trim().toLowerCase();
-
   let filtered = allCases;
-
-  if (status) {
-    filtered = filtered.filter(c => c.status === status);
-  }
-  if (search) {
-    filtered = filtered.filter(c =>
-      c.reference_number.toLowerCase().includes(search) ||
-      (c.incident_area || '').toLowerCase().includes(search)
-    );
-  }
-
+  if (status) filtered = filtered.filter(c => c.status === status);
+  if (search) filtered = filtered.filter(c =>
+    c.reference_number.toLowerCase().includes(search) ||
+    (c.incident_area || '').toLowerCase().includes(search)
+  );
   renderCases(filtered);
 }
 
-// ── CASE DETAIL MODAL ─────────────────────────────────────
+// ── CASE DETAIL MODAL (REQ-IO-5) ──────────────────────────
 async function openCaseModal(complaintId) {
   document.getElementById('caseModal').classList.add('open');
-  document.getElementById('cmRef').textContent      = 'Loading…';
-  document.getElementById('cmCategory').textContent = '—';
-  document.getElementById('cmStatus').textContent   = '—';
-  document.getElementById('cmArea').textContent     = '—';
-  document.getElementById('cmStation').textContent  = '—';
-  document.getElementById('cmDate').textContent     = '—';
-  document.getElementById('cmCnic').textContent     = '—';
+  document.getElementById('cmRef').textContent         = 'Loading…';
+  document.getElementById('cmCategory').textContent    = '—';
+  document.getElementById('cmStatus').innerHTML        = '—';
+  document.getElementById('cmArea').textContent        = '—';
+  document.getElementById('cmStation').textContent     = '—';
+  document.getElementById('cmDate').textContent        = '—';
+  document.getElementById('cmCnic').textContent        = '—';
   document.getElementById('cmDescription').textContent = '—';
-  document.getElementById('cmTimeline').innerHTML   = '<p style="font-size:12px;color:var(--muted);">Loading…</p>';
+  document.getElementById('cmTimeline').innerHTML      = '<p style="font-size:12px;color:var(--muted);">Loading…</p>';
 
   try {
     const res  = await fetch(`../php/ioGetCaseDetail.php?id=${complaintId}`);
@@ -176,7 +189,6 @@ async function openCaseModal(complaintId) {
     document.getElementById('cmCnic').textContent        = c.cnic             || '—';
     document.getElementById('cmDescription').textContent = c.description      || 'No description provided.';
 
-    // Timeline
     const timeline = document.getElementById('cmTimeline');
     if (data.updates && data.updates.length) {
       timeline.innerHTML = data.updates.map((u, i, arr) => `
@@ -192,7 +204,6 @@ async function openCaseModal(complaintId) {
     } else {
       timeline.innerHTML = '<p style="font-size:12px;color:var(--muted);font-style:italic;">No updates yet.</p>';
     }
-
   } catch (e) {
     document.getElementById('cmRef').textContent = 'Failed to load case.';
   }
@@ -205,13 +216,65 @@ document.getElementById('caseModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
 
+// ── CASE UPDATE MODAL (REQ-IO-4) ──────────────────────────
+let _updateComplaintId = null;
+
+function openUpdateModal(complaintId, refNumber, currentStatus) {
+  _updateComplaintId = complaintId;
+  document.getElementById('umRef').textContent   = refNumber;
+  document.getElementById('umCurrent').innerHTML = statusBadge(currentStatus);
+  document.getElementById('umStatus').value      = '';
+  document.getElementById('umNote').value        = '';
+  clearAlert('umAlert');
+  document.getElementById('updateModal').classList.add('open');
+}
+
+document.getElementById('closeUpdateModal').addEventListener('click', () => {
+  document.getElementById('updateModal').classList.remove('open');
+});
+document.getElementById('updateModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('open');
+});
+
+document.getElementById('submitUpdateBtn').addEventListener('click', async function () {
+  clearAlert('umAlert');
+  const status = document.getElementById('umStatus').value;
+  const note   = document.getElementById('umNote').value.trim();
+
+  if (!status) {
+    showAlert('umAlert', 'error', 'Please select a new status.');
+    return;
+  }
+
+  this.disabled     = true;
+  this.textContent  = 'Submitting…';
+
+  try {
+    const res  = await fetch('../php/ioCaseUpdate.php', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ complaint_id: _updateComplaintId, status, note }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('updateModal').classList.remove('open');
+      await loadCases();
+      await loadStats();
+    } else {
+      showAlert('umAlert', 'error', data.message || 'Failed to update case.');
+    }
+  } catch (e) {
+    showAlert('umAlert', 'error', 'Connection error. Please try again.');
+  } finally {
+    this.disabled    = false;
+    this.textContent = 'Submit Update';
+  }
+});
+
 // ── PAGE NAVIGATION ───────────────────────────────────────
 function setupNav() {
-  const pageMap = {
-    cases:   'page-cases',
-    profile: 'page-profile',
-  };
-
+  const pageMap  = { cases: 'page-cases', profile: 'page-profile' };
   const titleMap = {
     cases:   { title: 'My Assigned Cases', sub: 'Cases assigned to you for investigation' },
     profile: { title: 'My Profile',        sub: 'View your account details' },
@@ -220,12 +283,9 @@ function setupNav() {
   function switchPage(key) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-
     const section = document.getElementById(pageMap[key]);
     if (section) section.classList.add('active');
-
     document.querySelectorAll(`[data-page="${key}"]`).forEach(n => n.classList.add('active'));
-
     const info = titleMap[key] || { title: key, sub: '' };
     document.getElementById('pageTitle').textContent    = info.title;
     document.getElementById('pageSubtitle').textContent = info.sub;
@@ -239,7 +299,6 @@ function setupNav() {
     });
   });
 
-  // Logout
   document.getElementById('logoutBtn')?.addEventListener('click', e => {
     e.preventDefault();
     fetch('../php/officerLogout.php').finally(() => {
@@ -249,7 +308,8 @@ function setupNav() {
 }
 
 // ── INIT ──────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  await checkSession();
   setDate();
   loadProfile();
   loadStats();

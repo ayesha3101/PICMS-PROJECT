@@ -76,7 +76,7 @@
       display: flex; align-items: center; justify-content: center;
       font-size: 11px; font-weight: 600; color: #7aabdf; flex-shrink: 0;
     }
-    .officer-name { font-size: 12px; color: var(--offwhite); font-weight: 500; }
+    .officer-name  { font-size: 12px; color: var(--offwhite); font-weight: 500; }
     .officer-badge { font-size: 10px; color: var(--muted); }
 
     .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
@@ -87,7 +87,7 @@
       position: sticky; top: 0; z-index: 40;
     }
     .topbar h1 { font-family: 'Cormorant Garamond', serif; font-size: 19px; font-weight: 600; color: var(--offwhite); }
-    .topbar p { font-size: 11px; color: var(--muted); }
+    .topbar p  { font-size: 11px; color: var(--muted); }
     .topbar-date { font-size: 11px; color: var(--muted); }
     .content { flex: 1; padding: 26px; }
 
@@ -95,10 +95,7 @@
     .page-section.active { display: block; }
 
     /* STATS */
-    .stats-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 14px; margin-bottom: 22px;
-    }
+    .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
     .stat-card {
       background: var(--navy-card); border: 1px solid var(--navy-border);
       border-radius: 10px; padding: 16px 18px;
@@ -106,24 +103,18 @@
     }
     .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .stat-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
-    .si-steel { background: rgba(30,61,92,0.3); border: 1px solid rgba(30,61,92,0.6); }
+    .si-steel { background: rgba(30,61,92,0.3);   border: 1px solid rgba(30,61,92,0.6);   }
     .si-steel svg { stroke: #7aabdf; }
     .si-gold  { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); }
-    .si-gold svg { stroke: var(--gold); }
+    .si-gold  svg { stroke: var(--gold); }
     .si-green { background: rgba(76,175,128,0.1); border: 1px solid rgba(76,175,128,0.25); }
     .si-green svg { stroke: var(--success); }
     .stat-label { font-size: 10.5px; color: var(--muted); margin-bottom: 3px; }
     .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--offwhite); line-height: 1; }
 
     /* CARDS */
-    .section-card {
-      background: var(--navy-card); border: 1px solid var(--navy-border);
-      border-radius: 10px; overflow: hidden; margin-bottom: 20px;
-    }
-    .section-head {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 20px; border-bottom: 1px solid var(--navy-border);
-    }
+    .section-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+    .section-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--navy-border); }
     .section-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--offwhite); }
 
     .filter-sel {
@@ -150,13 +141,13 @@
     .empty-row { text-align: center; color: var(--muted); padding: 32px !important; font-size: 12px; font-style: italic; }
 
     .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; }
-    .b-submitted   { background: rgba(110,128,152,0.15); color: var(--muted); }
-    .b-review      { background: rgba(201,168,76,0.12); color: var(--gold); }
-    .b-accepted    { background: rgba(76,175,128,0.12); color: #6fcba0; }
-    .b-assigned    { background: rgba(139,92,246,0.12); color: #a78bfa; }
-    .b-ongoing     { background: rgba(59,130,246,0.12); color: #93c5fd; }
-    .b-resolved    { background: rgba(76,175,128,0.18); color: #4caf80; }
-    .b-urgent      { background: rgba(217,95,95,0.15); color: #e88080; }
+    .b-submitted { background: rgba(110,128,152,0.15); color: var(--muted); }
+    .b-review    { background: rgba(201,168,76,0.12);  color: var(--gold); }
+    .b-accepted  { background: rgba(76,175,128,0.12);  color: #6fcba0; }
+    .b-assigned  { background: rgba(139,92,246,0.12);  color: #a78bfa; }
+    .b-ongoing   { background: rgba(59,130,246,0.12);  color: #93c5fd; }
+    .b-resolved  { background: rgba(76,175,128,0.18);  color: #4caf80; }
+    .b-urgent    { background: rgba(217,95,95,0.15);   color: #e88080; }
 
     .btn {
       display: inline-flex; align-items: center; gap: 5px;
@@ -168,6 +159,8 @@
     .btn-ghost { background: none; border-color: var(--navy-border); color: var(--muted); }
     .btn-ghost:hover { border-color: rgba(30,61,92,0.6); color: #7aabdf; }
     .btn-steel { background: rgba(30,61,92,0.3); border-color: rgba(30,61,92,0.6); color: #7aabdf; }
+    .btn-gold  { background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.3); color: var(--gold); }
+    .btn-gold:hover { background: rgba(201,168,76,0.2); }
     .btn-sm { padding: 5px 10px; font-size: 10.5px; }
 
     /* MODAL */
@@ -184,12 +177,13 @@
       box-shadow: 0 24px 64px rgba(0,0,0,0.6);
       animation: slideUp 0.22s ease both;
     }
+    .modal-sm { max-width: 460px; }
     .modal-header {
       display: flex; align-items: flex-start; justify-content: space-between;
       padding: 20px 24px 16px; border-bottom: 1px solid var(--navy-border);
     }
     .modal-eyebrow { font-size: 9.5px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #7aabdf; margin-bottom: 3px; }
-    .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--offwhite); }
+    .modal-title   { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--offwhite); }
     .modal-close {
       background: none; border: 1px solid var(--navy-border); border-radius: 4px;
       width: 27px; height: 27px; color: var(--muted); cursor: pointer;
@@ -204,15 +198,41 @@
     .dr-key { color: var(--muted); flex-shrink: 0; }
     .dr-val { color: var(--offwhite); text-align: right; }
 
+    /* TIMELINE */
     .timeline { display: flex; flex-direction: column; gap: 0; }
     .tl-item { display: flex; gap: 12px; padding-bottom: 14px; position: relative; }
     .tl-item:not(:last-child)::before { content: ''; position: absolute; left: 6px; top: 18px; width: 1px; bottom: 0; background: var(--navy-border); }
     .tl-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--navy-border); background: var(--navy-card); flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
-    .tl-dot.done { background: rgba(30,61,92,0.6); border-color: rgba(30,61,92,0.8); }
+    .tl-dot.done    { background: rgba(30,61,92,0.6); border-color: rgba(30,61,92,0.8); }
     .tl-dot.current { background: #7aabdf; border-color: #7aabdf; }
     .tl-status { font-size: 12.5px; font-weight: 500; color: var(--offwhite); }
     .tl-note   { font-size: 11px; color: var(--muted); line-height: 1.5; }
     .tl-meta   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* UPDATE FORM */
+    .form-field { margin-bottom: 16px; }
+    .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
+    .form-select, .form-textarea {
+      width: 100%; background: var(--navy-surface); border: 1px solid var(--navy-border);
+      border-radius: 6px; padding: 10px 12px; font-family: 'Outfit', sans-serif;
+      font-size: 12.5px; color: var(--offwhite); outline: none;
+    }
+    .form-select { appearance: none; cursor: pointer; }
+    .form-select:focus, .form-textarea:focus { border-color: var(--gold-dim); }
+    .form-textarea { resize: vertical; line-height: 1.6; }
+    .btn-submit {
+      width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 6px;
+      font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase; color: var(--navy);
+      cursor: pointer; transition: background 0.2s;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--gold-light); }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ALERT */
+    .um-alert { display: none; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; border: 1px solid transparent; }
+    .um-alert.error   { display: block; background: rgba(217,95,95,0.1);  border-color: rgba(217,95,95,0.3);  color: #e88080; }
+    .um-alert.success { display: block; background: rgba(76,175,128,0.1); border-color: rgba(76,175,128,0.3); color: #6fcba0; }
 
     /* PROFILE */
     .profile-card {
@@ -231,11 +251,11 @@
 
     @keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
     @keyframes slideUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes spin    { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
 
+<!-- ════ SIDEBAR ════ -->
 <aside class="sidebar">
   <div class="sidebar-top">
     <div class="brand">
@@ -267,7 +287,7 @@
     <div class="officer-chip">
       <div class="officer-avatar" id="offInitials">—</div>
       <div>
-        <div class="officer-name" id="offName">Loading…</div>
+        <div class="officer-name"  id="offName">Loading…</div>
         <div class="officer-badge" id="offBadge">—</div>
       </div>
     </div>
@@ -278,6 +298,7 @@
   </div>
 </aside>
 
+<!-- ════ MAIN ════ -->
 <main class="main">
   <header class="topbar">
     <div>
@@ -345,32 +366,32 @@
         <div class="profile-avatar-lg" id="pAvatarLg">—</div>
         <div>
           <div class="profile-name" id="pFullName">—</div>
-          <div class="profile-sub" id="pBadgeSub">—</div>
+          <div class="profile-sub"  id="pBadgeSub">—</div>
         </div>
       </div>
       <div class="section-card" style="max-width:460px;">
         <div class="section-head"><h2>Account Details</h2></div>
         <div style="padding:16px 20px;">
-          <div class="detail-row"><span class="dr-key">Name</span><span class="dr-val" id="pName">—</span></div>
-          <div class="detail-row"><span class="dr-key">Badge</span><span class="dr-val" id="pBadge">—</span></div>
-          <div class="detail-row"><span class="dr-key">Rank</span><span class="dr-val" id="pRank">—</span></div>
+          <div class="detail-row"><span class="dr-key">Name</span>   <span class="dr-val" id="pName">—</span></div>
+          <div class="detail-row"><span class="dr-key">Badge</span>  <span class="dr-val" id="pBadge">—</span></div>
+          <div class="detail-row"><span class="dr-key">Rank</span>   <span class="dr-val" id="pRank">—</span></div>
           <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="pStation">—</span></div>
-          <div class="detail-row"><span class="dr-key">Email</span><span class="dr-val" id="pEmail">—</span></div>
-          <div class="detail-row"><span class="dr-key">Role</span><span class="dr-val">Investigating Officer</span></div>
+          <div class="detail-row"><span class="dr-key">Email</span>  <span class="dr-val" id="pEmail">—</span></div>
+          <div class="detail-row"><span class="dr-key">Role</span>   <span class="dr-val">Investigating Officer</span></div>
         </div>
       </div>
     </div>
 
-  </div>
+  </div><!-- end content -->
 </main>
 
-<!-- CASE DETAIL MODAL -->
+<!-- ════ CASE DETAIL MODAL ════ -->
 <div class="modal-overlay" id="caseModal">
   <div class="modal">
     <div class="modal-header">
       <div>
         <div class="modal-eyebrow" id="cmCategory">—</div>
-        <div class="modal-title" id="cmRef">—</div>
+        <div class="modal-title"   id="cmRef">—</div>
       </div>
       <button class="modal-close" id="closeCaseModal">✕</button>
     </div>
@@ -378,11 +399,11 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
         <div>
           <div class="detail-section-title">Complaint Details</div>
-          <div class="detail-row"><span class="dr-key">Status</span><span class="dr-val" id="cmStatus">—</span></div>
-          <div class="detail-row"><span class="dr-key">Area</span><span class="dr-val" id="cmArea">—</span></div>
-          <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="cmStation">—</span></div>
+          <div class="detail-row"><span class="dr-key">Status</span>       <span class="dr-val" id="cmStatus">—</span></div>
+          <div class="detail-row"><span class="dr-key">Area</span>         <span class="dr-val" id="cmArea">—</span></div>
+          <div class="detail-row"><span class="dr-key">Station</span>      <span class="dr-val" id="cmStation">—</span></div>
           <div class="detail-row"><span class="dr-key">Incident Date</span><span class="dr-val" id="cmDate">—</span></div>
-          <div class="detail-row"><span class="dr-key">Citizen CNIC</span><span class="dr-val" id="cmCnic">—</span></div>
+          <div class="detail-row"><span class="dr-key">Citizen CNIC</span> <span class="dr-val" id="cmCnic">—</span></div>
           <div class="detail-section-title" style="margin-top:14px;">Description</div>
           <p style="font-size:12.5px;color:var(--offwhite);line-height:1.7;padding:10px;background:var(--navy-surface);border-radius:6px;border:1px solid var(--navy-border);" id="cmDescription">—</p>
         </div>
@@ -393,6 +414,50 @@
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ CASE UPDATE MODAL ════ -->
+<div class="modal-overlay" id="updateModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div>
+        <div class="modal-eyebrow">Case Update</div>
+        <div class="modal-title" id="umRef">—</div>
+      </div>
+      <button class="modal-close" id="closeUpdateModal">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="detail-row" style="margin-bottom:16px;">
+        <span class="dr-key">Current Status</span>
+        <span class="dr-val" id="umCurrent">—</span>
+      </div>
+
+      <div id="umAlert" class="um-alert"></div>
+
+      <div class="form-field">
+        <label class="form-label">New Status <span style="color:var(--danger)">*</span></label>
+        <select id="umStatus" class="form-select">
+          <option value="">— Select status —</option>
+          <option value="Investigation Ongoing">Investigation Ongoing</option>
+          <option value="Resolved">Resolved</option>
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label">Update Note</label>
+        <textarea
+          id="umNote"
+          class="form-textarea"
+          rows="4"
+          placeholder="Describe the update — evidence found, trial held, witness interviewed, etc."
+        ></textarea>
+      </div>
+
+      <button class="btn-submit" id="submitUpdateBtn">Submit Update</button>
+
     </div>
   </div>
 </div>
