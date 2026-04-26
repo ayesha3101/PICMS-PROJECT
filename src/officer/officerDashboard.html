@@ -29,6 +29,7 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; font-family: 'Outfit', sans-serif; background: var(--navy); color: var(--offwhite); }
 
+    /* ── SIDEBAR ── */
     .sidebar {
       position: fixed; top: 0; left: 0;
       width: var(--sidebar-w); height: 100vh;
@@ -44,15 +45,13 @@
     }
     .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--offwhite); }
     .brand-role { font-size: 9.5px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-
-    .sidebar-nav { flex: 1; padding: 14px 10px; }
+    .sidebar-nav { flex: 1; padding: 14px 10px; overflow-y: auto; }
     .nav-label { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); opacity: 0.6; padding: 10px 8px 5px; }
     .nav-item {
       display: flex; align-items: center; gap: 9px;
       padding: 9px 10px; border-radius: 6px;
       font-size: 12.5px; color: var(--muted); font-weight: 400;
-      text-decoration: none; cursor: pointer;
-      transition: background 0.15s, color 0.15s;
+      cursor: pointer; transition: background 0.15s, color 0.15s;
       margin-bottom: 2px; border: none; background: none;
       width: 100%; text-align: left; font-family: 'Outfit', sans-serif;
     }
@@ -64,7 +63,6 @@
     .nav-item.danger:hover { color: var(--danger); background: rgba(217,95,95,0.06); }
     .nav-item.danger:hover svg { stroke: var(--danger); }
     .nav-divider { height: 1px; background: var(--navy-border); margin: 8px 0; }
-
     .sidebar-bottom { padding: 10px; border-top: 1px solid var(--navy-border); }
     .officer-chip {
       display: flex; align-items: center; gap: 9px;
@@ -79,6 +77,7 @@
     .officer-name  { font-size: 12px; color: var(--offwhite); font-weight: 500; }
     .officer-badge { font-size: 10px; color: var(--muted); }
 
+    /* ── MAIN ── */
     .main { margin-left: var(--sidebar-w); min-height: 100vh; display: flex; flex-direction: column; }
     .topbar {
       display: flex; align-items: center; justify-content: space-between;
@@ -90,11 +89,10 @@
     .topbar p  { font-size: 11px; color: var(--muted); }
     .topbar-date { font-size: 11px; color: var(--muted); }
     .content { flex: 1; padding: 26px; }
-
     .page-section { display: none; }
     .page-section.active { display: block; }
 
-    /* STATS */
+    /* ── STATS ── */
     .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 22px; }
     .stat-card {
       background: var(--navy-card); border: 1px solid var(--navy-border);
@@ -103,7 +101,7 @@
     }
     .stat-icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
     .stat-icon svg { width: 17px; height: 17px; fill: none; stroke-width: 1.8; }
-    .si-steel { background: rgba(30,61,92,0.3);   border: 1px solid rgba(30,61,92,0.6);   }
+    .si-steel { background: rgba(30,61,92,0.3);   border: 1px solid rgba(30,61,92,0.6); }
     .si-steel svg { stroke: #7aabdf; }
     .si-gold  { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.25); }
     .si-gold  svg { stroke: var(--gold); }
@@ -112,22 +110,39 @@
     .stat-label { font-size: 10.5px; color: var(--muted); margin-bottom: 3px; }
     .stat-value { font-family: 'Cormorant Garamond', serif; font-size: 26px; font-weight: 600; color: var(--offwhite); line-height: 1; }
 
-    /* CARDS */
+    /* ── CARDS / TABLES ── */
     .section-card { background: var(--navy-card); border: 1px solid var(--navy-border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
-    .section-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--navy-border); }
+    .section-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--navy-border); flex-wrap: wrap; gap: 10px; }
     .section-head h2 { font-family: 'Cormorant Garamond', serif; font-size: 16px; font-weight: 600; color: var(--offwhite); }
+    .filters-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 
     .filter-sel {
       background: var(--navy-surface); border: 1px solid var(--navy-border);
-      border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
-      font-size: 11.5px; color: var(--offwhite); outline: none; cursor: pointer; appearance: none;
+      border-radius: 5px; padding: 6px 28px 6px 10px; font-family: 'Outfit', sans-serif;
+      font-size: 11.5px; color: var(--offwhite); outline: none; cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e8098' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 9px center;
+      transition: border-color 0.15s;
     }
+    .filter-sel:hover, .filter-sel:focus { border-color: rgba(30,61,92,0.8); }
+
     .filter-inp {
       background: var(--navy-surface); border: 1px solid var(--navy-border);
       border-radius: 5px; padding: 6px 10px; font-family: 'Outfit', sans-serif;
-      font-size: 11.5px; color: var(--offwhite); outline: none; width: 180px;
+      font-size: 11.5px; color: var(--offwhite); outline: none; width: 170px;
+      transition: border-color 0.15s;
     }
-    .filter-inp::placeholder { color: rgba(110,128,152,0.5); }
+    .filter-inp:focus { border-color: rgba(30,61,92,0.8); }
+    .filter-inp::placeholder { color: rgba(110,128,152,0.45); }
+
+    .filter-clear {
+      background: none; border: 1px solid var(--navy-border); border-radius: 5px;
+      padding: 5px 10px; font-family: 'Outfit', sans-serif; font-size: 11px;
+      color: var(--muted); cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .filter-clear:hover { border-color: var(--danger); color: var(--danger); }
 
     table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
     th {
@@ -140,6 +155,7 @@
     tr:hover td { background: var(--navy-surface); }
     .empty-row { text-align: center; color: var(--muted); padding: 32px !important; font-size: 12px; font-style: italic; }
 
+    /* ── BADGES ── */
     .badge { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 9.5px; font-weight: 600; letter-spacing: 0.05em; }
     .b-submitted { background: rgba(110,128,152,0.15); color: var(--muted); }
     .b-review    { background: rgba(201,168,76,0.12);  color: var(--gold); }
@@ -149,6 +165,7 @@
     .b-resolved  { background: rgba(76,175,128,0.18);  color: #4caf80; }
     .b-urgent    { background: rgba(217,95,95,0.15);   color: #e88080; }
 
+    /* ── BUTTONS ── */
     .btn {
       display: inline-flex; align-items: center; gap: 5px;
       padding: 6px 12px; border-radius: 5px;
@@ -159,11 +176,91 @@
     .btn-ghost { background: none; border-color: var(--navy-border); color: var(--muted); }
     .btn-ghost:hover { border-color: rgba(30,61,92,0.6); color: #7aabdf; }
     .btn-steel { background: rgba(30,61,92,0.3); border-color: rgba(30,61,92,0.6); color: #7aabdf; }
+    .btn-steel:hover { background: rgba(30,61,92,0.5); }
     .btn-gold  { background: rgba(201,168,76,0.12); border-color: rgba(201,168,76,0.3); color: var(--gold); }
     .btn-gold:hover { background: rgba(201,168,76,0.2); }
     .btn-sm { padding: 5px 10px; font-size: 10.5px; }
+    .btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
-    /* MODAL */
+    /* ── CASE UPDATES PAGE ── */
+    .update-card {
+      background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 10px; margin-bottom: 14px; overflow: hidden;
+    }
+    .update-card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px; cursor: pointer;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .update-card-head:hover { background: var(--navy-surface); }
+    .update-card-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .update-card-ref { font-family: 'Cormorant Garamond', serif; font-size: 15px; font-weight: 600; color: var(--offwhite); }
+    .update-card-cat { font-size: 11px; color: var(--muted); }
+    .update-card-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+    .chevron {
+      width: 16px; height: 16px; stroke: var(--muted); fill: none; stroke-width: 2;
+      transition: transform 0.2s;
+    }
+    .update-card.expanded .chevron { transform: rotate(180deg); }
+    .update-card-body { display: none; border-top: 1px solid var(--navy-border); }
+    .update-card.expanded .update-card-body { display: block; }
+    .update-body-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+    .update-panel { padding: 16px 18px; }
+    .update-panel + .update-panel { border-left: 1px solid var(--navy-border); }
+
+    /* ── TIMELINE ── */
+    .timeline { display: flex; flex-direction: column; }
+    .tl-item { display: flex; gap: 12px; padding-bottom: 14px; position: relative; }
+    .tl-item:not(:last-child)::before { content: ''; position: absolute; left: 6px; top: 18px; width: 1px; bottom: 0; background: var(--navy-border); }
+    .tl-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--navy-border); background: var(--navy-card); flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
+    .tl-dot.done    { background: rgba(30,61,92,0.6); border-color: rgba(30,61,92,0.8); }
+    .tl-dot.current { background: #7aabdf; border-color: #7aabdf; }
+    .tl-status { font-size: 12.5px; font-weight: 500; color: var(--offwhite); }
+    .tl-note   { font-size: 11px; color: var(--muted); line-height: 1.5; margin-top: 2px; }
+    .tl-meta   { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .tl-empty  { font-size: 12px; color: var(--muted); font-style: italic; }
+
+    /* ── UPDATE FORM (inline in card) ── */
+    .inline-update-form { padding: 16px 18px; border-top: 1px solid var(--navy-border); background: var(--navy-surface); }
+    .inline-form-title { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .inline-form-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+    .form-field { margin-bottom: 0; flex: 1; min-width: 160px; }
+    .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 5px; }
+    .form-select, .form-textarea {
+      width: 100%; background: var(--navy-card); border: 1px solid var(--navy-border);
+      border-radius: 6px; padding: 9px 12px; font-family: 'Outfit', sans-serif;
+      font-size: 12px; color: var(--offwhite); outline: none;
+      transition: border-color 0.15s;
+    }
+    .form-select {
+      appearance: none; cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236e8098' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    }
+    .form-select:focus, .form-textarea:focus { border-color: var(--gold-dim); }
+    .form-textarea { resize: vertical; line-height: 1.6; flex: 2; min-width: 220px; }
+    .btn-submit-inline {
+      padding: 9px 18px; background: var(--gold); border: none; border-radius: 6px;
+      font-family: 'Outfit', sans-serif; font-size: 11.5px; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--navy);
+      cursor: pointer; transition: background 0.2s; white-space: nowrap; align-self: flex-end;
+    }
+    .btn-submit-inline:hover:not(:disabled) { background: var(--gold-light); }
+    .btn-submit-inline:disabled { opacity: 0.5; cursor: not-allowed; }
+    .inline-alert { font-size: 11.5px; padding: 7px 12px; border-radius: 5px; margin-top: 10px; border: 1px solid transparent; display: none; }
+    .inline-alert.error   { display: block; background: rgba(217,95,95,0.1);  border-color: rgba(217,95,95,0.3);  color: #e88080; }
+    .inline-alert.success { display: block; background: rgba(76,175,128,0.1); border-color: rgba(76,175,128,0.3); color: #6fcba0; }
+    .resolved-notice { font-size: 11.5px; color: #4caf80; font-style: italic; padding: 10px 0 0; }
+
+    /* ── DETAIL ROW (modals + profile) ── */
+    .detail-section-title { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--navy-border); }
+    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(30,50,72,0.35); font-size: 12.5px; gap: 12px; }
+    .detail-row:last-child { border-bottom: none; }
+    .dr-key { color: var(--muted); flex-shrink: 0; }
+    .dr-val { color: var(--offwhite); text-align: right; }
+
+    /* ── MODAL ── */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(5,10,18,0.88); backdrop-filter: blur(8px);
@@ -177,7 +274,6 @@
       box-shadow: 0 24px 64px rgba(0,0,0,0.6);
       animation: slideUp 0.22s ease both;
     }
-    .modal-sm { max-width: 460px; }
     .modal-header {
       display: flex; align-items: flex-start; justify-content: space-between;
       padding: 20px 24px 16px; border-bottom: 1px solid var(--navy-border);
@@ -192,34 +288,11 @@
     .modal-close:hover { color: var(--offwhite); border-color: rgba(30,61,92,0.6); }
     .modal-body { padding: 20px 24px; }
 
-    .detail-section-title { font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; padding-bottom: 7px; border-bottom: 1px solid var(--navy-border); }
-    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid rgba(30,50,72,0.35); font-size: 12.5px; gap: 12px; }
-    .detail-row:last-child { border-bottom: none; }
-    .dr-key { color: var(--muted); flex-shrink: 0; }
-    .dr-val { color: var(--offwhite); text-align: right; }
-
-    /* TIMELINE */
-    .timeline { display: flex; flex-direction: column; gap: 0; }
-    .tl-item { display: flex; gap: 12px; padding-bottom: 14px; position: relative; }
-    .tl-item:not(:last-child)::before { content: ''; position: absolute; left: 6px; top: 18px; width: 1px; bottom: 0; background: var(--navy-border); }
-    .tl-dot { width: 13px; height: 13px; border-radius: 50%; border: 2px solid var(--navy-border); background: var(--navy-card); flex-shrink: 0; margin-top: 2px; position: relative; z-index: 1; }
-    .tl-dot.done    { background: rgba(30,61,92,0.6); border-color: rgba(30,61,92,0.8); }
-    .tl-dot.current { background: #7aabdf; border-color: #7aabdf; }
-    .tl-status { font-size: 12.5px; font-weight: 500; color: var(--offwhite); }
-    .tl-note   { font-size: 11px; color: var(--muted); line-height: 1.5; }
-    .tl-meta   { font-size: 10px; color: var(--muted); margin-top: 2px; }
-
-    /* UPDATE FORM */
-    .form-field { margin-bottom: 16px; }
-    .form-label { font-size: 10px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 6px; }
-    .form-select, .form-textarea {
-      width: 100%; background: var(--navy-surface); border: 1px solid var(--navy-border);
-      border-radius: 6px; padding: 10px 12px; font-family: 'Outfit', sans-serif;
-      font-size: 12.5px; color: var(--offwhite); outline: none;
-    }
-    .form-select { appearance: none; cursor: pointer; }
-    .form-select:focus, .form-textarea:focus { border-color: var(--gold-dim); }
-    .form-textarea { resize: vertical; line-height: 1.6; }
+    /* ── UPDATE MODAL (quick modal path) ── */
+    .modal-sm { max-width: 460px; }
+    .um-alert { display: none; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; border: 1px solid transparent; }
+    .um-alert.error   { display: block; background: rgba(217,95,95,0.1);  border-color: rgba(217,95,95,0.3);  color: #e88080; }
+    .um-alert.success { display: block; background: rgba(76,175,128,0.1); border-color: rgba(76,175,128,0.3); color: #6fcba0; }
     .btn-submit {
       width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 6px;
       font-family: 'Outfit', sans-serif; font-size: 12px; font-weight: 600;
@@ -229,12 +302,7 @@
     .btn-submit:hover:not(:disabled) { background: var(--gold-light); }
     .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
 
-    /* ALERT */
-    .um-alert { display: none; padding: 10px 14px; border-radius: 6px; font-size: 12px; margin-bottom: 14px; border: 1px solid transparent; }
-    .um-alert.error   { display: block; background: rgba(217,95,95,0.1);  border-color: rgba(217,95,95,0.3);  color: #e88080; }
-    .um-alert.success { display: block; background: rgba(76,175,128,0.1); border-color: rgba(76,175,128,0.3); color: #6fcba0; }
-
-    /* PROFILE */
+    /* ── PROFILE ── */
     .profile-card {
       display: flex; align-items: center; gap: 20px;
       background: var(--navy-mid); border: 1px solid var(--navy-border);
@@ -274,6 +342,10 @@
     <button class="nav-item active" data-page="cases">
       <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
       My Assigned Cases
+    </button>
+    <button class="nav-item" data-page="updates">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Case Updates
     </button>
     <div class="nav-divider"></div>
     <div class="nav-label">Account</div>
@@ -330,14 +402,20 @@
       <div class="section-card">
         <div class="section-head">
           <h2>Assigned Cases</h2>
-          <div style="display:flex;gap:8px;align-items:center;">
+          <div class="filters-row">
             <select class="filter-sel" id="filterCaseStatus">
               <option value="">All Statuses</option>
               <option value="Officer Assigned">Assigned</option>
               <option value="Investigation Ongoing">Ongoing</option>
               <option value="Resolved">Resolved</option>
             </select>
-            <input class="filter-inp" type="text" id="searchCase" placeholder="Search reference…"/>
+            <select class="filter-sel" id="filterCaseUrgency">
+              <option value="">All Urgency</option>
+              <option value="1">Urgent</option>
+              <option value="0">Normal</option>
+            </select>
+            <input class="filter-inp" type="text" id="searchCase" placeholder="Search reference or area…"/>
+            <button class="filter-clear" id="clearCasesFilter">Clear</button>
           </div>
         </div>
         <table>
@@ -346,17 +424,43 @@
               <th>Reference</th>
               <th>Category</th>
               <th>Area</th>
-              <th>Station</th>
               <th>Status</th>
               <th>Urgency</th>
-              <th>Assigned</th>
+              <th>Assigned On</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody id="casesTbody">
-            <tr><td colspan="8" class="empty-row">Loading…</td></tr>
+            <tr><td colspan="7" class="empty-row">Loading…</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ═══ CASE UPDATES PAGE ═══ -->
+    <div class="page-section" id="page-updates">
+      <div class="section-card" style="margin-bottom:18px;">
+        <div class="section-head">
+          <h2>Case Updates</h2>
+          <div class="filters-row">
+            <select class="filter-sel" id="filterUpdStatus">
+              <option value="">All Statuses</option>
+              <option value="Officer Assigned">Assigned</option>
+              <option value="Investigation Ongoing">Ongoing</option>
+              <option value="Resolved">Resolved</option>
+            </select>
+            <select class="filter-sel" id="filterUpdUrgency">
+              <option value="">All Urgency</option>
+              <option value="1">Urgent Only</option>
+              <option value="0">Normal Only</option>
+            </select>
+            <input class="filter-inp" type="text" id="searchUpd" placeholder="Search reference or area…"/>
+            <button class="filter-clear" id="clearUpdFilter">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div id="updatesList">
+        <div style="text-align:center;color:var(--muted);padding:40px;font-size:12px;font-style:italic;">Loading cases…</div>
       </div>
     </div>
 
@@ -382,7 +486,7 @@
       </div>
     </div>
 
-  </div><!-- end content -->
+  </div>
 </main>
 
 <!-- ════ CASE DETAIL MODAL ════ -->
@@ -410,7 +514,7 @@
         <div>
           <div class="detail-section-title">Case Timeline</div>
           <div class="timeline" id="cmTimeline">
-            <p style="font-size:12px;color:var(--muted);font-style:italic;">Loading…</p>
+            <p class="tl-empty">Loading…</p>
           </div>
         </div>
       </div>
@@ -418,7 +522,7 @@
   </div>
 </div>
 
-<!-- ════ CASE UPDATE MODAL ════ -->
+<!-- ════ QUICK UPDATE MODAL (from Cases page) ════ -->
 <div class="modal-overlay" id="updateModal">
   <div class="modal modal-sm">
     <div class="modal-header">
@@ -429,15 +533,12 @@
       <button class="modal-close" id="closeUpdateModal">✕</button>
     </div>
     <div class="modal-body">
-
       <div class="detail-row" style="margin-bottom:16px;">
         <span class="dr-key">Current Status</span>
         <span class="dr-val" id="umCurrent">—</span>
       </div>
-
       <div id="umAlert" class="um-alert"></div>
-
-      <div class="form-field">
+      <div class="form-field" style="margin-bottom:16px;">
         <label class="form-label">New Status <span style="color:var(--danger)">*</span></label>
         <select id="umStatus" class="form-select">
           <option value="">— Select status —</option>
@@ -445,23 +546,15 @@
           <option value="Resolved">Resolved</option>
         </select>
       </div>
-
-      <div class="form-field">
+      <div class="form-field" style="margin-bottom:16px;">
         <label class="form-label">Update Note</label>
-        <textarea
-          id="umNote"
-          class="form-textarea"
-          rows="4"
-          placeholder="Describe the update — evidence found, trial held, witness interviewed, etc."
-        ></textarea>
+        <textarea id="umNote" class="form-textarea" rows="4" placeholder="Evidence found, witness interviewed, trial held, etc."></textarea>
       </div>
-
       <button class="btn-submit" id="submitUpdateBtn">Submit Update</button>
-
     </div>
   </div>
 </div>
 
-<script src="../js/officerDashboard.js"></script>
+<script src="../js/ioDashboard.js"></script>
 </body>
 </html>

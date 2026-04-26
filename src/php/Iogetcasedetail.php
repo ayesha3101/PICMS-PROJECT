@@ -1,5 +1,6 @@
 <?php
-// ioGetCaseDetail.php — Single case detail + timeline
+// ioGetCaseDetail.php — Single case detail + timeline.
+// Enforces: case must be assigned to this IO AND at their station.
 require_once __DIR__ . '/../config/config.php';
 session_start();
 header('Content-Type: application/json');
@@ -14,6 +15,7 @@ if (
 }
 
 $officerId   = (int)$_SESSION['officer_id'];
+$stationId   = (int)($_SESSION['station_id'] ?? 0);
 $complaintId = (int)($_GET['id'] ?? 0);
 
 if (!$complaintId) {
@@ -21,18 +23,22 @@ if (!$complaintId) {
     exit;
 }
 
-// Verify this case belongs to this IO
+// Verify: assigned to this IO AND belongs to their station
 $check = $conn->prepare("
-    SELECT COUNT(*) AS cnt FROM case_assignments
-    WHERE complaint_id = ? AND officer_id = ?
+    SELECT COUNT(*) AS cnt
+    FROM case_assignments ca
+    JOIN complaints c ON ca.complaint_id = c.complaint_id
+    WHERE ca.complaint_id = ?
+      AND ca.officer_id   = ?
+      AND c.station_id    = ?
 ");
-$check->bind_param('ii', $complaintId, $officerId);
+$check->bind_param('iii', $complaintId, $officerId, $stationId);
 $check->execute();
 $cnt = (int)$check->get_result()->fetch_assoc()['cnt'];
 $check->close();
 
 if (!$cnt) {
-    echo json_encode(['success' => false, 'message' => 'Case not found.']);
+    echo json_encode(['success' => false, 'message' => 'Case not found or access denied.']);
     exit;
 }
 
@@ -63,7 +69,7 @@ $stmt->execute();
 $case = $stmt->get_result()->fetch_assoc();
 $stmt->close();
 
-// Timeline / case updates
+// Timeline
 $tStmt = $conn->prepare("
     SELECT status, note, updated_by, updated_at
     FROM case_updates

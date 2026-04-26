@@ -360,13 +360,14 @@ function setLoading(btnId, loading) {
 }
 
 /* ── ROLE → DASHBOARD ROUTING ──
+   Determined solely by officers.role_id (FK to officer_roles):
    role_id 1 = Investigating Officer  → officerDashboard.html
-   role_id 2 = SHO (is_sho=true)     → shoDashboard.html
+   role_id 2 = SHO                   → shoDashboard.html
    role_id 3 = Jail Superintendent   → superintendentDashboard.html
 */
 function getDashboardUrl(data) {
-  if (data.is_sho || data.role_id === 2) return 'shoDashboard.html';
-  if (data.role_id === 3)                return 'superintendentDashboard.html';
+  if (data.role_id === 2) return 'shoDashboard.html';
+  if (data.role_id === 3) return 'superintendentDashboard.html';
   return 'officerDashboard.html';
 }
 

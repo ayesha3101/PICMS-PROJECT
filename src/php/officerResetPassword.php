@@ -2,6 +2,7 @@
 // officerResetPassword.php
 // Final step of forgot password flow — updates password after OTP verified.
 // Requires session flag officer_otp_verified = true set by officerVerifyOTP.php.
+// Uses mysqli via $conn from config.php.
 
 require_once __DIR__ . '/../config/config.php';
 session_start();
@@ -12,7 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-// must have completed OTP step
+// Must have completed OTP verification step
 if (empty($_SESSION['officer_otp_verified']) || empty($_SESSION['otp_officer_id'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorised. Please complete verification first.']);
     exit;
@@ -26,35 +27,31 @@ if (strlen($newPassword) < 8) {
     exit;
 }
 
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+$hash      = password_hash($newPassword, PASSWORD_DEFAULT);
+$officerId = (int) $_SESSION['otp_officer_id'];
 
-    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+// Update password — also set password_changed = 1 in case this was a first-login officer
+$stmt = $conn->prepare("
+    UPDATE officers
+    SET password_hash = ?, password_changed = 1
+    WHERE officer_id = ?
+");
+$stmt->bind_param('si', $hash, $officerId);
 
-    // update password — also set password_changed = 1 in case this was a first-login officer
-    $pdo->prepare("
-        UPDATE officers
-        SET password_hash = :hash, password_changed = 1
-        WHERE officer_id = :id
-    ")->execute([
-        ':hash' => $hash,
-        ':id'   => $_SESSION['otp_officer_id']
-    ]);
-
-    // clean up OTPs for this officer
-    $pdo->prepare("DELETE FROM officer_otps WHERE officer_id = :id")
-        ->execute([':id' => $_SESSION['otp_officer_id']]);
-
-    // clear session flags
-    unset($_SESSION['officer_otp_verified'], $_SESSION['otp_officer_id']);
-
-    echo json_encode(['success' => true]);
-
-} catch (PDOException $e) {
-    error_log('officerResetPassword.php error: ' . $e->getMessage());
+if (!$stmt->execute()) {
+    $stmt->close();
     echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
+    exit;
 }
+$stmt->close();
+
+// Clean up OTPs for this officer
+$delStmt = $conn->prepare("DELETE FROM officer_otps WHERE officer_id = ?");
+$delStmt->bind_param('i', $officerId);
+$delStmt->execute();
+$delStmt->close();
+
+// Clear session flags
+unset($_SESSION['officer_otp_verified'], $_SESSION['otp_officer_id']);
+
+echo json_encode(['success' => true]);

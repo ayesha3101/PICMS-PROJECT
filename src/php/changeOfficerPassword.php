@@ -3,19 +3,19 @@
 // Called immediately after first login when password_changed = 0.
 // Sets new password hash and flips password_changed to 1.
 // Requires active officer session.
+// Uses mysqli via $conn from config.php.
 
 require_once __DIR__ . '/../config/config.php';
 session_start();
-
 header('Content-Type: application/json');
 
-// must be logged in as officer
+// Must be logged in as officer
 if (empty($_SESSION['officer_id']) || $_SESSION['role'] !== 'officer') {
     echo json_encode(['success' => false, 'message' => 'Unauthorised.']);
     exit;
 }
 
-// must still be on first login (extra guard — prevents re-calling this after already changed)
+// Extra guard — prevent re-calling after password already changed
 if (!empty($_SESSION['password_changed'])) {
     echo json_encode(['success' => false, 'message' => 'Password already set.']);
     exit;
@@ -34,34 +34,27 @@ if (strlen($newPassword) < 8) {
     exit;
 }
 
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+$hash      = password_hash($newPassword, PASSWORD_DEFAULT);
+$officerId = (int) $_SESSION['officer_id'];
 
-    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+$stmt = $conn->prepare("
+    UPDATE officers
+    SET password_hash = ?, password_changed = 1
+    WHERE officer_id = ?
+");
+$stmt->bind_param('si', $hash, $officerId);
 
-    $stmt = $pdo->prepare("
-        UPDATE officers
-        SET password_hash = :hash, password_changed = 1
-        WHERE officer_id = :id
-    ");
-    $stmt->execute([
-        ':hash' => $hash,
-        ':id'   => $_SESSION['officer_id']
-    ]);
-
-    // update session so subsequent checks reflect the change
-    $_SESSION['password_changed'] = true;
-
-    echo json_encode([
-        'success' => true,
-        'is_sho'  => (bool) $_SESSION['is_sho'],
-    ]);
-
-} catch (PDOException $e) {
-    error_log('changeOfficerPassword.php error: ' . $e->getMessage());
+if (!$stmt->execute()) {
+    $stmt->close();
     echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
+    exit;
 }
+$stmt->close();
+
+// Update session so subsequent checks reflect the change
+$_SESSION['password_changed'] = true;
+
+echo json_encode([
+    'success' => true,
+    'role_id' => (int) ($_SESSION['role_id'] ?? 1),
+]);

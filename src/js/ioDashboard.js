@@ -1,12 +1,12 @@
-// officerDashboard.js — Investigating Officer Dashboard
+// ioDashboard.js — Investigating Officer Dashboard
 
-// ── SESSION CHECK (REQ-IO-3) ──────────────────────────────
+// ── SESSION CHECK ─────────────────────────────────────────
 async function checkSession() {
   try {
-    const res  = await fetch('../php/ioCheckSession.php');
+    const res  = await fetch('../php/Iochecksession.php');
     const data = await res.json();
     if (!data.success) window.location.href = 'officerLogin.html';
-  } catch (e) {
+  } catch {
     window.location.href = 'officerLogin.html';
   }
 }
@@ -33,6 +33,11 @@ function statusBadge(status) {
   return `<span class="badge ${map[status] || 'b-submitted'}">${status}</span>`;
 }
 
+function esc(str) {
+  // Escape for use inside HTML attribute strings (onclick args)
+  return String(str).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
 function showAlert(id, type, msg) {
   const el = document.getElementById(id);
   if (!el) return;
@@ -55,17 +60,15 @@ function setDate() {
 // ── LOAD PROFILE ─────────────────────────────────────────
 async function loadProfile() {
   try {
-    const res  = await fetch('../php/ioGetProfile.php');
+    const res  = await fetch('../php/IOgetprofile.php');
     const data = await res.json();
     if (!data.success) return;
 
-    // Sidebar chip
     document.getElementById('offName').textContent     = data.full_name    || '—';
     document.getElementById('offBadge').textContent    = data.badge_number || '—';
     document.getElementById('offInitials').textContent = (data.full_name || 'O').charAt(0).toUpperCase();
 
-    // Profile page
-    document.getElementById('pAvatarLg').textContent  = (data.full_name || 'O').charAt(0).toUpperCase();
+    document.getElementById('pAvatarLg').textContent = (data.full_name || 'O').charAt(0).toUpperCase();
     document.getElementById('pFullName').textContent  = data.full_name    || '—';
     document.getElementById('pBadgeSub').textContent  = `${data.rank || ''} · ${data.badge_number || ''}`;
     document.getElementById('pName').textContent      = data.full_name    || '—';
@@ -81,7 +84,7 @@ async function loadProfile() {
 // ── LOAD STATS ────────────────────────────────────────────
 async function loadStats() {
   try {
-    const res  = await fetch('../php/ioGetStats.php');
+    const res  = await fetch('../php/iogetstats.php');
     const data = await res.json();
     if (!data.success) return;
     document.getElementById('oTotal').textContent    = data.totalCases;
@@ -92,38 +95,54 @@ async function loadStats() {
   }
 }
 
-// ── LOAD CASES ────────────────────────────────────────────
+// ── CASES DATA (shared between Cases page + Updates page) ─
 let allCases = [];
 
 async function loadCases() {
-  const tbody = document.getElementById('casesTbody');
   try {
-    const res  = await fetch('../php/ioGetCases.php');
+    const res  = await fetch('../php/iogetcases.php');
     const data = await res.json();
-    if (!data.success || !data.cases.length) {
-      tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No cases assigned yet.</td></tr>';
-      allCases = [];
-      return;
-    }
-    allCases = data.cases;
-    renderCases(allCases);
-  } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">Failed to load cases.</td></tr>';
+    allCases = (data.success && data.cases) ? data.cases : [];
+  } catch {
+    allCases = [];
   }
+  renderCasesTable();
+  renderUpdateCards();
 }
 
-function renderCases(cases) {
-  const tbody = document.getElementById('casesTbody');
-  if (!cases.length) {
-    tbody.innerHTML = '<tr><td colspan="8" class="empty-row">No cases found.</td></tr>';
+// ══════════════════════════════════════════════════════════
+// ── CASES PAGE ────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+
+function renderCasesTable() {
+  const tbody  = document.getElementById('casesTbody');
+  const status  = document.getElementById('filterCaseStatus').value;
+  const urgency = document.getElementById('filterCaseUrgency').value;
+  const search  = document.getElementById('searchCase').value.trim().toLowerCase();
+
+  let filtered = allCases;
+  if (status)  filtered = filtered.filter(c => c.status === status);
+  if (urgency !== '') filtered = filtered.filter(c => String(c.is_urgent) === urgency);
+  if (search)  filtered = filtered.filter(c =>
+    c.reference_number.toLowerCase().includes(search) ||
+    (c.incident_area || '').toLowerCase().includes(search)
+  );
+
+  if (!filtered.length) {
+    tbody.innerHTML = `<tr><td colspan="7" class="empty-row">${allCases.length ? 'No cases match the current filters.' : 'No cases assigned yet.'}</td></tr>`;
     return;
   }
-  tbody.innerHTML = cases.map(c => `
+
+  const isResolved = s => ['Resolved','Closed'].includes(s);
+
+  tbody.innerHTML = filtered.map(c => `
     <tr>
       <td>${c.reference_number}</td>
-      <td>${c.category_name}${c.is_urgent == 1 ? ' <span class="badge b-urgent">Urgent</span>' : ''}</td>
-      <td>${c.incident_area  || '—'}</td>
-      <td>${c.station_name   || '—'}</td>
+      <td>
+        ${c.category_name}
+        ${c.is_urgent == 1 ? ' <span class="badge b-urgent">Urgent</span>' : ''}
+      </td>
+      <td>${c.incident_area || '—'}</td>
       <td>${statusBadge(c.status)}</td>
       <td>${c.is_urgent == 1
         ? '<span class="badge b-urgent">Urgent</span>'
@@ -134,34 +153,220 @@ function renderCases(cases) {
           <svg viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
           View
         </button>
-        <button class="btn btn-gold btn-sm" onclick="openUpdateModal(${c.complaint_id},'${c.reference_number}','${c.status}')">
+        ${!isResolved(c.status) ? `
+        <button class="btn btn-gold btn-sm" onclick="openUpdateModal(${c.complaint_id},'${esc(c.reference_number)}','${esc(c.status)}')">
           <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
           Update
-        </button>
+        </button>` : `<span style="font-size:10.5px;color:var(--success);padding:5px 2px;">✓ Resolved</span>`}
       </td>
     </tr>
   `).join('');
 }
 
-// ── FILTERS ───────────────────────────────────────────────
-function setupFilters() {
-  document.getElementById('filterCaseStatus').addEventListener('change', applyFilters);
-  document.getElementById('searchCase').addEventListener('input', applyFilters);
+function setupCasesFilters() {
+  document.getElementById('filterCaseStatus').addEventListener('change', renderCasesTable);
+  document.getElementById('filterCaseUrgency').addEventListener('change', renderCasesTable);
+  document.getElementById('searchCase').addEventListener('input', renderCasesTable);
+  document.getElementById('clearCasesFilter').addEventListener('click', () => {
+    document.getElementById('filterCaseStatus').value  = '';
+    document.getElementById('filterCaseUrgency').value = '';
+    document.getElementById('searchCase').value        = '';
+    renderCasesTable();
+  });
 }
 
-function applyFilters() {
-  const status = document.getElementById('filterCaseStatus').value;
-  const search = document.getElementById('searchCase').value.trim().toLowerCase();
+// ══════════════════════════════════════════════════════════
+// ── CASE UPDATES PAGE ─────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+
+function renderUpdateCards() {
+  const container = document.getElementById('updatesList');
+  const status    = document.getElementById('filterUpdStatus').value;
+  const urgency   = document.getElementById('filterUpdUrgency').value;
+  const search    = document.getElementById('searchUpd').value.trim().toLowerCase();
+
   let filtered = allCases;
-  if (status) filtered = filtered.filter(c => c.status === status);
-  if (search) filtered = filtered.filter(c =>
+  if (status)      filtered = filtered.filter(c => c.status === status);
+  if (urgency !== '') filtered = filtered.filter(c => String(c.is_urgent) === urgency);
+  if (search)      filtered = filtered.filter(c =>
     c.reference_number.toLowerCase().includes(search) ||
     (c.incident_area || '').toLowerCase().includes(search)
   );
-  renderCases(filtered);
+
+  if (!filtered.length) {
+    container.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px;font-size:12px;font-style:italic;">${allCases.length ? 'No cases match the current filters.' : 'No cases assigned yet.'}</div>`;
+    return;
+  }
+
+  const isResolved = s => ['Resolved','Closed'].includes(s);
+
+  container.innerHTML = filtered.map(c => `
+    <div class="update-card" id="ucard-${c.complaint_id}">
+      <div class="update-card-head" onclick="toggleCard(${c.complaint_id})">
+        <div class="update-card-meta">
+          <span class="update-card-ref">${c.reference_number}</span>
+          <span class="update-card-cat">${c.category_name}</span>
+          ${c.incident_area ? `<span class="update-card-cat">· ${c.incident_area}</span>` : ''}
+          ${c.is_urgent == 1 ? '<span class="badge b-urgent">Urgent</span>' : ''}
+        </div>
+        <div class="update-card-right">
+          ${statusBadge(c.status)}
+          <span style="font-size:10px;color:var(--muted);">${formatDate(c.assigned_at)}</span>
+          <svg class="chevron" viewBox="0 0 24 24"><polyline points="6,9 12,15 18,9"/></svg>
+        </div>
+      </div>
+      <div class="update-card-body">
+        <div class="update-body-inner">
+          <!-- LEFT: Case info + Timeline -->
+          <div class="update-panel">
+            <div class="detail-section-title">Case Details</div>
+            <div class="detail-row"><span class="dr-key">Status</span>        <span class="dr-val">${statusBadge(c.status)}</span></div>
+            <div class="detail-row"><span class="dr-key">Incident Area</span> <span class="dr-val">${c.incident_area || '—'}</span></div>
+            <div class="detail-row"><span class="dr-key">Assigned On</span>   <span class="dr-val">${formatDate(c.assigned_at)}</span></div>
+            <div style="margin-top:16px;">
+              <div class="detail-section-title">Update History</div>
+              <div class="timeline" id="timeline-${c.complaint_id}">
+                <p class="tl-empty">Click to load history…</p>
+              </div>
+            </div>
+          </div>
+          <!-- RIGHT: Submit Update -->
+          <div class="update-panel">
+            <div class="detail-section-title">Submit Update</div>
+            ${isResolved(c.status)
+              ? `<p class="resolved-notice">✓ This case is already ${c.status.toLowerCase()}. No further updates can be submitted.</p>`
+              : `<div class="form-field" style="margin-bottom:12px;">
+                  <label class="form-label">New Status <span style="color:var(--danger)">*</span></label>
+                  <select class="form-select" id="sel-${c.complaint_id}">
+                    <option value="">— Select status —</option>
+                    <option value="Investigation Ongoing"${c.status === 'Investigation Ongoing' ? ' selected' : ''}>Investigation Ongoing</option>
+                    <option value="Resolved">Resolved</option>
+                  </select>
+                </div>
+                <div class="form-field" style="margin-bottom:12px;">
+                  <label class="form-label">Update Note</label>
+                  <textarea class="form-textarea" id="note-${c.complaint_id}" rows="4" placeholder="Evidence found, witness interviewed, site visited, etc."></textarea>
+                </div>
+                <button class="btn-submit-inline" id="sbtn-${c.complaint_id}" onclick="submitInlineUpdate(${c.complaint_id})">Submit Update</button>
+                <div class="inline-alert" id="ialert-${c.complaint_id}"></div>`
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
 }
 
-// ── CASE DETAIL MODAL (REQ-IO-5) ──────────────────────────
+// Toggle expand/collapse + lazy-load timeline
+async function toggleCard(complaintId) {
+  const card = document.getElementById(`ucard-${complaintId}`);
+  const wasExpanded = card.classList.contains('expanded');
+
+  // Collapse all others
+  document.querySelectorAll('.update-card.expanded').forEach(c => c.classList.remove('expanded'));
+
+  if (wasExpanded) return; // just collapsed
+
+  card.classList.add('expanded');
+
+  // Load timeline if not yet loaded
+  const tlEl = document.getElementById(`timeline-${complaintId}`);
+  if (tlEl && tlEl.querySelector('.tl-empty')) {
+    tlEl.innerHTML = '<p class="tl-empty">Loading…</p>';
+    try {
+      const res  = await fetch(`../php/Iogetcasedetail.php?id=${complaintId}`);
+      const data = await res.json();
+      if (data.success && data.updates && data.updates.length) {
+        tlEl.innerHTML = data.updates.map((u, i, arr) => `
+          <div class="tl-item">
+            <div class="tl-dot ${i === arr.length - 1 ? 'current' : 'done'}"></div>
+            <div>
+              <div class="tl-status">${u.status}</div>
+              ${u.note ? `<div class="tl-note">${u.note}</div>` : ''}
+              <div class="tl-meta">${u.updated_by} · ${formatDate(u.updated_at)}</div>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        tlEl.innerHTML = '<p class="tl-empty">No updates recorded yet.</p>';
+      }
+    } catch {
+      tlEl.innerHTML = '<p class="tl-empty">Failed to load history.</p>';
+    }
+  }
+}
+
+// Inline update submit
+async function submitInlineUpdate(complaintId) {
+  const alertEl = document.getElementById(`ialert-${complaintId}`);
+  const btn     = document.getElementById(`sbtn-${complaintId}`);
+  const status  = document.getElementById(`sel-${complaintId}`).value;
+  const note    = document.getElementById(`note-${complaintId}`).value.trim();
+
+  alertEl.className   = 'inline-alert';
+  alertEl.textContent = '';
+
+  if (!status) {
+    alertEl.className   = 'inline-alert error';
+    alertEl.textContent = 'Please select a new status.';
+    return;
+  }
+
+  btn.disabled    = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    const res  = await fetch('../php/Iocaseupdate.php', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ complaint_id: complaintId, status, note }),
+    });
+    const data = await res.json();
+
+    if (data.success) {
+      alertEl.className   = 'inline-alert success';
+      alertEl.textContent = 'Case updated successfully.';
+      // Reload everything to reflect new status
+      await loadCases();
+      await loadStats();
+      // Re-expand this card and reload its timeline
+      const card = document.getElementById(`ucard-${complaintId}`);
+      if (card) {
+        card.classList.add('expanded');
+        const tlEl = document.getElementById(`timeline-${complaintId}`);
+        if (tlEl) tlEl.innerHTML = '<p class="tl-empty">Click to load history…</p>';
+        await toggleCard(complaintId);
+      }
+    } else {
+      alertEl.className   = 'inline-alert error';
+      alertEl.textContent = data.message || 'Failed to update case.';
+      btn.disabled    = false;
+      btn.textContent = 'Submit Update';
+    }
+  } catch {
+    alertEl.className   = 'inline-alert error';
+    alertEl.textContent = 'Connection error. Please try again.';
+    btn.disabled    = false;
+    btn.textContent = 'Submit Update';
+  }
+}
+
+function setupUpdatesFilters() {
+  document.getElementById('filterUpdStatus').addEventListener('change',  renderUpdateCards);
+  document.getElementById('filterUpdUrgency').addEventListener('change', renderUpdateCards);
+  document.getElementById('searchUpd').addEventListener('input',         renderUpdateCards);
+  document.getElementById('clearUpdFilter').addEventListener('click', () => {
+    document.getElementById('filterUpdStatus').value  = '';
+    document.getElementById('filterUpdUrgency').value = '';
+    document.getElementById('searchUpd').value        = '';
+    renderUpdateCards();
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// ── CASE DETAIL MODAL (View) ──────────────────────────────
+// ══════════════════════════════════════════════════════════
+
 async function openCaseModal(complaintId) {
   document.getElementById('caseModal').classList.add('open');
   document.getElementById('cmRef').textContent         = 'Loading…';
@@ -172,13 +377,15 @@ async function openCaseModal(complaintId) {
   document.getElementById('cmDate').textContent        = '—';
   document.getElementById('cmCnic').textContent        = '—';
   document.getElementById('cmDescription').textContent = '—';
-  document.getElementById('cmTimeline').innerHTML      = '<p style="font-size:12px;color:var(--muted);">Loading…</p>';
+  document.getElementById('cmTimeline').innerHTML      = '<p class="tl-empty">Loading…</p>';
 
   try {
-    const res  = await fetch(`../php/ioGetCaseDetail.php?id=${complaintId}`);
+    const res  = await fetch(`../php/Iogetcasedetail.php?id=${complaintId}`);
     const data = await res.json();
-    if (!data.success) return;
-
+    if (!data.success) {
+      document.getElementById('cmRef').textContent = data.message || 'Failed to load case.';
+      return;
+    }
     const c = data.case;
     document.getElementById('cmRef').textContent         = c.reference_number || '—';
     document.getElementById('cmCategory').textContent    = c.category_name    || '—';
@@ -189,9 +396,9 @@ async function openCaseModal(complaintId) {
     document.getElementById('cmCnic').textContent        = c.cnic             || '—';
     document.getElementById('cmDescription').textContent = c.description      || 'No description provided.';
 
-    const timeline = document.getElementById('cmTimeline');
+    const tlEl = document.getElementById('cmTimeline');
     if (data.updates && data.updates.length) {
-      timeline.innerHTML = data.updates.map((u, i, arr) => `
+      tlEl.innerHTML = data.updates.map((u, i, arr) => `
         <div class="tl-item">
           <div class="tl-dot ${i === arr.length - 1 ? 'current' : 'done'}"></div>
           <div>
@@ -202,9 +409,9 @@ async function openCaseModal(complaintId) {
         </div>
       `).join('');
     } else {
-      timeline.innerHTML = '<p style="font-size:12px;color:var(--muted);font-style:italic;">No updates yet.</p>';
+      tlEl.innerHTML = '<p class="tl-empty">No updates yet.</p>';
     }
-  } catch (e) {
+  } catch {
     document.getElementById('cmRef').textContent = 'Failed to load case.';
   }
 }
@@ -216,7 +423,10 @@ document.getElementById('caseModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('open');
 });
 
-// ── CASE UPDATE MODAL (REQ-IO-4) ──────────────────────────
+// ══════════════════════════════════════════════════════════
+// ── QUICK UPDATE MODAL (from Cases page) ─────────────────
+// ══════════════════════════════════════════════════════════
+
 let _updateComplaintId = null;
 
 function openUpdateModal(complaintId, refNumber, currentStatus) {
@@ -246,11 +456,11 @@ document.getElementById('submitUpdateBtn').addEventListener('click', async funct
     return;
   }
 
-  this.disabled     = true;
-  this.textContent  = 'Submitting…';
+  this.disabled    = true;
+  this.textContent = 'Submitting…';
 
   try {
-    const res  = await fetch('../php/ioCaseUpdate.php', {
+    const res  = await fetch('../php/Iocaseupdate.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ complaint_id: _updateComplaintId, status, note }),
@@ -264,7 +474,7 @@ document.getElementById('submitUpdateBtn').addEventListener('click', async funct
     } else {
       showAlert('umAlert', 'error', data.message || 'Failed to update case.');
     }
-  } catch (e) {
+  } catch {
     showAlert('umAlert', 'error', 'Connection error. Please try again.');
   } finally {
     this.disabled    = false;
@@ -272,17 +482,25 @@ document.getElementById('submitUpdateBtn').addEventListener('click', async funct
   }
 });
 
+// ══════════════════════════════════════════════════════════
 // ── PAGE NAVIGATION ───────────────────────────────────────
+// ══════════════════════════════════════════════════════════
+
 function setupNav() {
-  const pageMap  = { cases: 'page-cases', profile: 'page-profile' };
+  const pageMap  = {
+    cases:   'page-cases',
+    updates: 'page-updates',
+    profile: 'page-profile',
+  };
   const titleMap = {
-    cases:   { title: 'My Assigned Cases', sub: 'Cases assigned to you for investigation' },
-    profile: { title: 'My Profile',        sub: 'View your account details' },
+    cases:   { title: 'My Assigned Cases', sub: 'Cases assigned to you for investigation at your station' },
+    updates: { title: 'Case Updates',       sub: 'Submit and track updates on your assigned cases' },
+    profile: { title: 'My Profile',         sub: 'View your account details' },
   };
 
   function switchPage(key) {
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.nav-item[data-page]').forEach(n => n.classList.remove('active'));
     const section = document.getElementById(pageMap[key]);
     if (section) section.classList.add('active');
     document.querySelectorAll(`[data-page="${key}"]`).forEach(n => n.classList.add('active'));
@@ -311,9 +529,10 @@ function setupNav() {
 document.addEventListener('DOMContentLoaded', async () => {
   await checkSession();
   setDate();
-  loadProfile();
-  loadStats();
-  loadCases();
-  setupFilters();
+  await loadProfile();
+  await loadStats();
+  await loadCases();
+  setupCasesFilters();
+  setupUpdatesFilters();
   setupNav();
 });

@@ -4,9 +4,7 @@
 //        schedule, updates, withdrawals
 // ══════════════════════════════════════════════
 
-/* ══════════════════════════
-   GLOBAL STATE
-══════════════════════════ */
+
 let SHO          = null;   // session data
 let casesData    = [];
 let apptData     = [];

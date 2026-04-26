@@ -1,5 +1,6 @@
 <?php
-// ioGetCases.php — All cases assigned to this IO
+// ioGetCases.php — Cases assigned to this IO at their station only.
+// IO can ONLY see cases: (1) assigned to them via case_assignments AND (2) at their station.
 require_once __DIR__ . '/../config/config.php';
 session_start();
 header('Content-Type: application/json');
@@ -14,6 +15,12 @@ if (
 }
 
 $officerId = (int)$_SESSION['officer_id'];
+$stationId = (int)($_SESSION['station_id'] ?? 0);
+
+if (!$stationId) {
+    echo json_encode(['success' => false, 'message' => 'No station assigned to your account.']);
+    exit;
+}
 
 $stmt = $conn->prepare("
     SELECT
@@ -29,14 +36,15 @@ $stmt = $conn->prepare("
         s.station_name,
         ca.assigned_at
     FROM case_assignments ca
-    JOIN complaints c             ON ca.complaint_id = c.complaint_id
-    JOIN complaint_categories cc  ON c.category_id   = cc.category_id
-    JOIN stations s               ON c.station_id    = s.station_id
+    JOIN complaints c            ON ca.complaint_id = c.complaint_id
+    JOIN complaint_categories cc ON c.category_id   = cc.category_id
+    JOIN stations s              ON c.station_id    = s.station_id
     WHERE ca.officer_id = ?
       AND ca.is_current = 1
+      AND c.station_id  = ?
     ORDER BY ca.assigned_at DESC
 ");
-$stmt->bind_param('i', $officerId);
+$stmt->bind_param('ii', $officerId, $stationId);
 $stmt->execute();
 $cases = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();

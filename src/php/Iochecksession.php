@@ -20,4 +20,4 @@ echo json_encode([
     'badge_number' => $_SESSION['badge_number'],
     'rank'         => $_SESSION['rank'],
     'station_id'   => $_SESSION['station_id'],
-]); 
+]);
