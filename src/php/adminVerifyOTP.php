@@ -22,65 +22,68 @@ if (empty($otp) || empty($email)) {
     exit;
 }
 
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+// Find admin by email
+$stmt = $conn->prepare("SELECT admin_id FROM admin WHERE email = ? LIMIT 1");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$admin = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
-    $stmt = $pdo->prepare("SELECT admin_id FROM admin WHERE email = :email LIMIT 1");
-    $stmt->execute([':email' => $email]);
-    $admin = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$admin) {
-        echo json_encode(['success' => false, 'message' => 'Invalid request.']);
-        exit;
-    }
-
-    $adminId = $admin['admin_id'];
-
-    // get latest unexpired unverified OTP
-    $stmt = $pdo->prepare("
-        SELECT id, otp, attempts, max_attempts
-        FROM admin_otps
-        WHERE admin_id  = :id
-          AND expires_at > NOW()
-          AND verified   = 0
-        ORDER BY created_at DESC
-        LIMIT 1
-    ");
-    $stmt->execute([':id' => $adminId]);
-    $record = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$record) {
-        echo json_encode(['success' => false, 'message' => 'Code has expired. Please request a new one.']);
-        exit;
-    }
-
-    if ($record['attempts'] >= $record['max_attempts']) {
-        echo json_encode(['success' => false, 'message' => 'Too many incorrect attempts. Please request a new code.']);
-        exit;
-    }
-
-    if (!password_verify($otp, $record['otp'])) {
-        $pdo->prepare("UPDATE admin_otps SET attempts = attempts + 1 WHERE id = :id")
-            ->execute([':id' => $record['id']]);
-        $remaining = $record['max_attempts'] - $record['attempts'] - 1;
-        echo json_encode(['success' => false, 'message' => "Incorrect code. {$remaining} attempt(s) remaining."]);
-        exit;
-    }
-
-    // mark verified
-    $pdo->prepare("UPDATE admin_otps SET verified = 1 WHERE id = :id")
-        ->execute([':id' => $record['id']]);
-
-    $_SESSION['admin_otp_verified'] = true;
-    $_SESSION['otp_admin_id']       = $adminId;
-
-    echo json_encode(['success' => true]);
-
-} catch (PDOException $e) {
-    error_log('adminVerifyOTP.php error: ' . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
+if (!$admin) {
+    echo json_encode(['success' => false, 'message' => 'Invalid request.']);
+    exit;
 }
+
+$adminId = (int) $admin['admin_id'];
+
+// Get latest unexpired unverified OTP
+$stmt = $conn->prepare("
+    SELECT id, otp, attempts, max_attempts
+    FROM admin_otps
+    WHERE admin_id  = ?
+      AND expires_at > NOW()
+      AND verified   = 0
+    ORDER BY created_at DESC
+    LIMIT 1
+");
+$stmt->bind_param("i", $adminId);
+$stmt->execute();
+$record = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+if (!$record) {
+    echo json_encode(['success' => false, 'message' => 'Code has expired. Please request a new one.']);
+    exit;
+}
+
+if ($record['attempts'] >= $record['max_attempts']) {
+    echo json_encode(['success' => false, 'message' => 'Too many incorrect attempts. Please request a new code.']);
+    exit;
+}
+
+if (!password_verify($otp, $record['otp'])) {
+    $upd = $conn->prepare("UPDATE admin_otps SET attempts = attempts + 1 WHERE id = ?");
+    $upd->bind_param("i", $record['id']);
+    $upd->execute();
+    $upd->close();
+
+    $remaining = $record['max_attempts'] - $record['attempts'] - 1;
+    echo json_encode(['success' => false, 'message' => "Incorrect code. {$remaining} attempt(s) remaining."]);
+    exit;
+}
+
+// Mark verified
+$upd = $conn->prepare("UPDATE admin_otps SET verified = 1 WHERE id = ?");
+$upd->bind_param("i", $record['id']);
+$upd->execute();
+$upd->close();
+
+if ($conn->errno) {
+    echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
+    exit;
+}
+
+$_SESSION['admin_otp_verified'] = true;
+$_SESSION['otp_admin_id']       = $adminId;
+
+echo json_encode(['success' => true]);

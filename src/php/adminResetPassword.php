@@ -26,34 +26,31 @@ if (strlen($newPassword) < 8) {
     exit;
 }
 
-try {
-    $pdo = new PDO(
-        'mysql:host=' . DB_HOST . ';dbname=' . DB_NAME . ';charset=utf8mb4',
-        DB_USER, DB_PASS,
-        [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
-    );
+$hash      = password_hash($newPassword, PASSWORD_DEFAULT);
+$adminId   = (int) $_SESSION['otp_admin_id'];
 
-    $hash = password_hash($newPassword, PASSWORD_DEFAULT);
+// Update password
+$stmt = $conn->prepare("
+    UPDATE admin
+    SET password_hash = ?, password_changed = 1
+    WHERE admin_id = ?
+");
+$stmt->bind_param("si", $hash, $adminId);
+$stmt->execute();
+$stmt->close();
 
-    $pdo->prepare("
-        UPDATE admin
-        SET password_hash = :hash, password_changed = 1
-        WHERE admin_id = :id
-    ")->execute([
-        ':hash' => $hash,
-        ':id'   => $_SESSION['otp_admin_id']
-    ]);
+// Clean up OTPs
+$stmt = $conn->prepare("DELETE FROM admin_otps WHERE admin_id = ?");
+$stmt->bind_param("i", $adminId);
+$stmt->execute();
+$stmt->close();
 
-    // clean up OTPs
-    $pdo->prepare("DELETE FROM admin_otps WHERE admin_id = :id")
-        ->execute([':id' => $_SESSION['otp_admin_id']]);
-
-    // clear session flags
-    unset($_SESSION['admin_otp_verified'], $_SESSION['otp_admin_id']);
-
-    echo json_encode(['success' => true]);
-
-} catch (PDOException $e) {
-    error_log('adminResetPassword.php error: ' . $e->getMessage());
+if ($conn->errno) {
     echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']);
+    exit;
 }
+
+// Clear session flags
+unset($_SESSION['admin_otp_verified'], $_SESSION['otp_admin_id']);
+
+echo json_encode(['success' => true]);
