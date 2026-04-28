@@ -354,8 +354,10 @@
    .accent-Rejected            { background: #ef4444; }
    .accent-Officer\ Assigned   { background: #8b5cf6; }
    .accent-Investigation\ Ongoing { background: #f97316; }
-   .accent-Resolved            { background: #d1d5db; }
-   .accent-Closed              { background: #9ca3af; }
+  .accent-Withdrawal\ Pending { background: #f59e0b; }
+  .accent-Withdrawn           { background: #64748b; }
+  .accent-Resolved            { background: #d1d5db; }
+  .accent-Closed              { background: #9ca3af; }
    
    .card-inner {
      display: flex; align-items: center; gap: 14px;
@@ -400,8 +402,10 @@
    .s-Rejected             { background: rgba(239,68,68,0.08);   color: #b91c1c; }
    .s-Officer\ Assigned    { background: rgba(139,92,246,0.08);  color: #5b21b6; }
    .s-Investigation\ Ongoing { background: rgba(249,115,22,0.08); color: #c2410c; }
-   .s-Resolved             { background: rgba(107,114,128,0.08); color: #4b5563; }
-   .s-Closed               { background: rgba(156,163,175,0.1);  color: #6b7280; }
+  .s-Withdrawal\ Pending  { background: rgba(245,158,11,0.12);  color: #b45309; }
+  .s-Withdrawn            { background: rgba(100,116,139,0.12); color: #475569; }
+  .s-Resolved             { background: rgba(107,114,128,0.08); color: #4b5563; }
+  .s-Closed               { background: rgba(156,163,175,0.1);  color: #6b7280; }
    
    .card-date { font-size: 0.62rem; color: var(--muted); }
    .card-chevron {

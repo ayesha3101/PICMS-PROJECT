@@ -1,7 +1,7 @@
 <?php
 // ══════════════════════════════════════════════
 // shoMarkAppointment.php
-// Marks a Confirmed appointment as Completed or Cancelled.
+// Marks an Accepted appointment as Completed or Cancelled.
 // On second cancellation → complaint auto-closed.
 //
 // ┌─ WHY TRANSACTION? ─────────────────────────
@@ -27,7 +27,7 @@
 // │
 // │ Without a transaction, a crash between writes
 // │ could leave the complaint in Accepted status
-// │ but the appointment still showing Confirmed,
+// │ but the appointment still showing Accepted,
 // │ or the case closed without a log entry.
 // └────────────────────────────────────────────
 // ══════════════════════════════════════════════
@@ -55,13 +55,13 @@ if (!$appointment_id || !in_array($outcome, ['Completed', 'Cancelled'])) {
     exit;
 }
 
-// Fetch appointment and confirm it belongs to this SHO and is Confirmed
+// Fetch appointment and confirm it belongs to this SHO and is Accepted
 $stmtA = $conn->prepare("
     SELECT a.appointment_id, a.complaint_id, a.status, a.sho_id,
            c.station_id
     FROM   appointments a
     JOIN   complaints   c ON a.complaint_id = c.complaint_id
-    WHERE  a.appointment_id = ? AND a.sho_id = ? AND a.status = 'Confirmed'
+    WHERE  a.appointment_id = ? AND a.sho_id = ? AND a.status = 'Accepted'
     LIMIT  1
 ");
 $stmtA->bind_param('ii', $appointment_id, $officer_id);
@@ -69,7 +69,7 @@ $stmtA->execute();
 $appt = $stmtA->get_result()->fetch_assoc();
 
 if (!$appt) {
-    echo json_encode(['success' => false, 'message' => 'Appointment not found or not in Confirmed status.']);
+    echo json_encode(['success' => false, 'message' => 'Appointment not found or not in Accepted status.']);
     exit;
 }
 

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/appointmentLifecycle.php';
 header('Content-Type: application/json');
 
 if (empty($_SESSION['officer_id']) || $_SESSION['role'] !== 'officer' || empty($_SESSION['is_sho'])) {
@@ -22,6 +23,8 @@ if (!$complaint_id || !$station_id) {
     echo json_encode(['success' => false, 'message' => 'Missing complaint_id.']);
     exit;
 }
+
+syncExpiredPendingAppointments($conn, ['complaint_id' => $complaint_id, 'station_id' => $station_id]);
 
 // ── Main complaint row (enforce station ownership)
 $stmt = $conn->prepare("
@@ -93,22 +96,21 @@ $timeline = $stmtT->get_result()->fetch_all(MYSQLI_ASSOC);
 // ── Appointments for this complaint (most recent first)
 $stmtA = $conn->prepare("
     SELECT
-        a.appointment_id,
-        a.status,
-        a.location,
-        a.cancellation_reason,
-        a.created_at,
-        a.complaint_id,
-        ss.scheduled_date,
-        ss.start_time,
-        ss.end_time,
-        c.reference_number,
-        c.cnic
-    FROM   appointments a
-    JOIN   sho_schedule ss ON a.schedule_id = ss.schedule_id
-    JOIN   complaints   c  ON a.complaint_id = c.complaint_id
-    WHERE  a.complaint_id = ?
-    ORDER  BY ss.scheduled_date DESC, ss.start_time DESC
+        v.appointment_id,
+        v.status,
+        v.location,
+        v.cancellation_reason,
+        v.created_at,
+        v.complaint_id,
+        v.scheduled_date,
+        v.start_time,
+        v.end_time,
+        v.reference_number,
+        v.cnic,
+        v.miss_count
+    FROM   vw_appointment_details v
+    WHERE  v.complaint_id = ?
+    ORDER  BY v.scheduled_date DESC, v.start_time DESC
 ");
 $stmtA->bind_param('i', $complaint_id);
 $stmtA->execute();
@@ -116,15 +118,7 @@ $appointments = $stmtA->get_result()->fetch_all(MYSQLI_ASSOC);
 
 // ── miss_count = number of cancelled appointments for this complaint
 //    (each cancellation because citizen didn't appear counts as a miss)
-$stmtM = $conn->prepare("
-    SELECT COUNT(*) AS miss_count
-    FROM   appointments
-    WHERE  complaint_id = ? AND status = 'Cancelled'
-");
-$stmtM->bind_param('i', $complaint_id);
-$stmtM->execute();
-$missRow  = $stmtM->get_result()->fetch_assoc();
-$miss_count = (int) ($missRow['miss_count'] ?? 0);
+$miss_count = !empty($appointments) ? (int) $appointments[0]['miss_count'] : 0;
 
 echo json_encode([
     'success'      => true,

@@ -7,6 +7,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
     loadDashboard();
+    loadWithdrawalIndicators();
+    loadAppointmentIndicators();
 });
 
 // ── 1. Session guard
@@ -61,6 +63,56 @@ function loadDashboard() {
             document.getElementById('loadingState').style.display = 'none';
             document.getElementById('emptyState').style.display   = 'flex';
         });
+}
+
+function loadWithdrawalIndicators() {
+    fetch('../php/citizenGetWithdrawals.php')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success || !Array.isArray(data.cases)) return;
+
+            const pending = data.cases.filter(c =>
+                c.status === 'Withdrawal Pending' || c.latest_request_status === 'Pending'
+            ).length;
+
+            const badge = document.getElementById('withdrawalBadge');
+            const dot = document.getElementById('withdrawalDot');
+
+            if (badge) {
+                if (pending > 0) {
+                    badge.textContent = pending;
+                    badge.classList.add('visible');
+                } else {
+                    badge.classList.remove('visible');
+                }
+            }
+
+            if (dot) {
+                dot.classList.toggle('visible', pending > 0);
+            }
+        })
+        .catch(() => {});
+}
+
+function loadAppointmentIndicators() {
+    fetch('../php/citizenGetAppointments.php?count_only=1')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return;
+
+            const pending = Number(data.pending || 0);
+            const badge = document.getElementById('appointmentBadge');
+
+            if (!badge) return;
+
+            if (pending > 0) {
+                badge.textContent = pending;
+                badge.classList.add('visible');
+            } else {
+                badge.classList.remove('visible');
+            }
+        })
+        .catch(() => {});
 }
 
 // ── 4. Build and insert complaint cards into the DOM

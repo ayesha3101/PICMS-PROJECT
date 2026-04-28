@@ -9,6 +9,7 @@
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/appointmentLifecycle.php';
 header('Content-Type: application/json');
 
 if (empty($_SESSION['officer_id']) || $_SESSION['role'] !== 'officer' || empty($_SESSION['is_sho'])) {
@@ -25,13 +26,14 @@ if (!$station_id) {
     exit;
 }
 
+syncExpiredPendingAppointments($conn, ['station_id' => $station_id]);
+
 // ── Badge count mode: just return pending count for nav badge
 if (!empty($_GET['count_only'])) {
     $stmt = $conn->prepare("
         SELECT COUNT(*) AS pending
-        FROM   appointments a
-        JOIN   complaints   c ON a.complaint_id = c.complaint_id
-        WHERE  c.station_id = ? AND a.status = 'Pending'
+        FROM   vw_appointment_details v
+        WHERE  v.station_id = ? AND v.status = 'Pending'
     ");
     $stmt->bind_param('i', $station_id);
     $stmt->execute();
@@ -45,50 +47,44 @@ if ($complaint_id) {
     // Single complaint — verify it belongs to this station
     $stmt = $conn->prepare("
         SELECT
-            a.appointment_id,
-            a.complaint_id,
-            a.sho_id,
-            a.status,
-            a.location,
-            a.cancellation_reason,
-            a.created_at,
-            ss.scheduled_date,
-            ss.start_time,
-            ss.end_time,
-            c.reference_number,
-            c.cnic,
-            (SELECT COUNT(*) FROM appointments ap2
-             WHERE  ap2.complaint_id = a.complaint_id AND ap2.status = 'Cancelled') AS miss_count
-        FROM   appointments a
-        JOIN   sho_schedule ss ON a.schedule_id  = ss.schedule_id
-        JOIN   complaints   c  ON a.complaint_id = c.complaint_id
-        WHERE  a.complaint_id = ? AND c.station_id = ?
-        ORDER  BY ss.scheduled_date DESC, ss.start_time DESC
+            v.appointment_id,
+            v.complaint_id,
+            v.sho_id,
+            v.status,
+            v.location,
+            v.cancellation_reason,
+            v.created_at,
+            v.scheduled_date,
+            v.start_time,
+            v.end_time,
+            v.reference_number,
+            v.cnic,
+            v.miss_count
+        FROM   vw_appointment_details v
+        WHERE  v.complaint_id = ? AND v.station_id = ?
+        ORDER  BY v.scheduled_date DESC, v.start_time DESC
     ");
     $stmt->bind_param('ii', $complaint_id, $station_id);
 } else {
     // All appointments for this station
     $stmt = $conn->prepare("
         SELECT
-            a.appointment_id,
-            a.complaint_id,
-            a.sho_id,
-            a.status,
-            a.location,
-            a.cancellation_reason,
-            a.created_at,
-            ss.scheduled_date,
-            ss.start_time,
-            ss.end_time,
-            c.reference_number,
-            c.cnic,
-            (SELECT COUNT(*) FROM appointments ap2
-             WHERE  ap2.complaint_id = a.complaint_id AND ap2.status = 'Cancelled') AS miss_count
-        FROM   appointments a
-        JOIN   sho_schedule ss ON a.schedule_id  = ss.schedule_id
-        JOIN   complaints   c  ON a.complaint_id = c.complaint_id
-        WHERE  c.station_id = ? AND a.sho_id = ?
-        ORDER  BY ss.scheduled_date DESC, ss.start_time DESC
+            v.appointment_id,
+            v.complaint_id,
+            v.sho_id,
+            v.status,
+            v.location,
+            v.cancellation_reason,
+            v.created_at,
+            v.scheduled_date,
+            v.start_time,
+            v.end_time,
+            v.reference_number,
+            v.cnic,
+            v.miss_count
+        FROM   vw_appointment_details v
+        WHERE  v.station_id = ? AND v.sho_id = ?
+        ORDER  BY v.scheduled_date DESC, v.start_time DESC
     ");
     $stmt->bind_param('ii', $station_id, $officer_id);
 }

@@ -8,6 +8,7 @@
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/appointmentLifecycle.php';
 
 header('Content-Type: application/json');
 
@@ -66,6 +67,8 @@ if (!$complaint) {
 }
 
 $complaint_id = $complaint['complaint_id'];
+
+syncExpiredPendingAppointments($conn, ['complaint_id' => (int) $complaint_id, 'cnic' => $cnic]);
 
 // ── Fetch witnesses from the witnesses table if any exist
 /*SQL — SELECT witnesses linked to this complaint */
@@ -126,22 +129,20 @@ $stmtO->bind_param("i", $complaint_id);
 $stmtO->execute();
 $officer = $stmtO->get_result()->fetch_assoc();
 
-// ── Fetch upcoming appointment if one exists
-//    JOIN sho_schedule to get the actual date and time
-//    (appointments table stores schedule_id, not date/time directly)
-/*SQL — SELECT latest Pending/Confirmed appointment with its schedule details */
+// ── Fetch latest citizen-facing appointment if one exists
 $stmtA = $conn->prepare("
     SELECT
-        ss.scheduled_date,
-        ss.start_time,
-        ss.end_time,
-        a.location,
-        a.status
-    FROM appointments a
-    JOIN sho_schedule ss ON a.schedule_id = ss.schedule_id
-    WHERE a.complaint_id = ?
-      AND a.status IN ('Pending', 'Confirmed')
-    ORDER BY ss.scheduled_date ASC
+        v.appointment_id,
+        v.scheduled_date,
+        v.start_time,
+        v.end_time,
+        v.location,
+        v.status,
+        v.cancellation_reason,
+        v.miss_count
+    FROM vw_appointment_details v
+    WHERE v.complaint_id = ?
+    ORDER BY v.scheduled_date DESC, v.start_time DESC
     LIMIT 1
 ");
 /*END*/

@@ -534,14 +534,14 @@ CREATE TABLE sho_schedule (
         ON DELETE CASCADE
 );
 
-
+--yeh change hua hai
 CREATE TABLE appointments (
     appointment_id      INT AUTO_INCREMENT PRIMARY KEY,
     complaint_id        INT NOT NULL,
     sho_id              INT NOT NULL,
     schedule_id         INT NOT NULL,
     location            VARCHAR(255) NULL,
-    status              ENUM('Pending','Confirmed','Completed','Cancelled') DEFAULT 'Pending',
+    status              ENUM('Pending','Accepted','Completed','Cancelled') DEFAULT 'Pending',
     cancellation_reason VARCHAR(255) NULL,
     created_at          TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (complaint_id) REFERENCES complaints(complaint_id)
@@ -549,6 +549,41 @@ CREATE TABLE appointments (
     FOREIGN KEY (sho_id)       REFERENCES officers(officer_id),
     FOREIGN KEY (schedule_id)  REFERENCES sho_schedule(schedule_id)
 );
+
+--this added view
+CREATE VIEW vw_appointment_details AS
+SELECT
+    a.appointment_id,
+    a.complaint_id,
+    a.sho_id,
+    a.schedule_id,
+    a.location,
+    a.status,
+    a.cancellation_reason,
+    a.created_at,
+    c.reference_number,
+    c.cnic,
+    c.station_id,
+    c.status AS complaint_status,
+    s.station_name,
+    ss.scheduled_date,
+    ss.start_time,
+    ss.end_time,
+    TIMESTAMP(ss.scheduled_date, ss.start_time) AS scheduled_at,
+    TIMESTAMP(ss.scheduled_date, ss.end_time)   AS scheduled_end_at,
+    COALESCE((
+        SELECT COUNT(*)
+        FROM appointments ap2
+        WHERE ap2.complaint_id = a.complaint_id
+          AND ap2.status = 'Cancelled'
+    ), 0) AS miss_count
+FROM appointments a
+JOIN complaints c
+  ON c.complaint_id = a.complaint_id
+JOIN stations s
+  ON s.station_id = c.station_id
+JOIN sho_schedule ss
+  ON ss.schedule_id = a.schedule_id;
 
 CREATE TABLE jail_cells (
     cell_id    INT AUTO_INCREMENT PRIMARY KEY,
@@ -609,7 +644,7 @@ CREATE TABLE court_hearings (
 
 
 DELIMITER $$
-
+--one trigger is removedd
 -- 1. Auto-log every complaint status change into case_updates
 CREATE TRIGGER after_status_update
 AFTER UPDATE ON complaints
@@ -668,23 +703,7 @@ BEGIN
     END IF;
 END$$
 
--- 6. Auto-insert sho_schedule slot when appointment is created
-CREATE TRIGGER after_appointment_insert
-AFTER INSERT ON appointments
-FOR EACH ROW
-BEGIN
-    INSERT INTO sho_schedule (officer_id, scheduled_date, start_time, end_time, slot_type)
-    SELECT
-        NEW.sho_id,
-        ss.scheduled_date,
-        ss.start_time,
-        ss.end_time,
-        'Appointment'
-    FROM sho_schedule ss
-    WHERE ss.schedule_id = NEW.schedule_id;
-END$$
-
--- 7. Retire old case assignment when new one inserted
+-- 6. Retire old case assignment when new one inserted
 CREATE TRIGGER before_case_reassign
 BEFORE INSERT ON case_assignments
 FOR EACH ROW

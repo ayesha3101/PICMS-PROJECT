@@ -114,6 +114,8 @@ function renderCase(data) {
   //    API now returns scheduled_date, start_time, end_time (from sho_schedule JOIN)
   if (data.appointment) {
     renderAppointment(data.appointment);
+  } else {
+    document.getElementById('appointmentSection').style.display = 'none';
   }
 }
 
@@ -151,6 +153,7 @@ function renderTimeline(updates) {
 function renderAppointment(appt) {
   const section = document.getElementById('appointmentSection');
   const card    = document.getElementById('appointmentCard');
+  const actions = document.getElementById('appointmentActionBar');
 
   section.style.display = 'block';
 
@@ -169,6 +172,32 @@ function renderAppointment(appt) {
     </div>
     <span class="appt-badge appt-${appt.status}">${appt.status}</span>
   `;
+
+  actions.innerHTML = `
+    <a href="citizenAppointments.html" class="btn-ghost-sm">View All Appointments</a>
+    ${appt.status === 'Pending' ? '<button type="button" class="btn-primary" id="acceptApptBtn">Accept Appointment</button>' : ''}
+  `;
+
+  if (appt.status === 'Pending') {
+    document.getElementById('acceptApptBtn').addEventListener('click', () => acceptAppointment(appt.appointment_id));
+  }
+}
+
+function acceptAppointment(appointmentId) {
+  fetch('../php/citizenAppointmentAction.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ appointment_id: appointmentId, action: 'accept' }),
+  })
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) {
+        alert(data.message || 'Failed to accept appointment.');
+        return;
+      }
+      loadCaseDetail(new URLSearchParams(window.location.search).get('ref'));
+    })
+    .catch(() => alert('Connection error. Please try again.'));
 }
 
 // ── Helpers

@@ -3,7 +3,7 @@
 // ── SESSION CHECK ─────────────────────────────────────────
 async function checkSession() {
   try {
-    const res  = await fetch('../php/Iochecksession.php');
+    const res  = await fetch('../php/ioCheckSession.php');
     const data = await res.json();
     if (!data.success) window.location.href = 'officerLogin.html';
   } catch {
@@ -60,7 +60,7 @@ function setDate() {
 // ── LOAD PROFILE ─────────────────────────────────────────
 async function loadProfile() {
   try {
-    const res  = await fetch('../php/IOgetprofile.php');
+    const res  = await fetch('../php/ioGetProfile.php');
     const data = await res.json();
     if (!data.success) return;
 
@@ -84,7 +84,7 @@ async function loadProfile() {
 // ── LOAD STATS ────────────────────────────────────────────
 async function loadStats() {
   try {
-    const res  = await fetch('../php/iogetstats.php');
+    const res  = await fetch('../php/ioGetStats.php');
     const data = await res.json();
     if (!data.success) return;
     document.getElementById('oTotal').textContent    = data.totalCases;
@@ -100,7 +100,7 @@ let allCases = [];
 
 async function loadCases() {
   try {
-    const res  = await fetch('../php/iogetcases.php');
+    const res  = await fetch('../php/ioGetCases.php');
     const data = await res.json();
     allCases = (data.success && data.cases) ? data.cases : [];
   } catch {
@@ -274,7 +274,7 @@ async function toggleCard(complaintId) {
   if (tlEl && tlEl.querySelector('.tl-empty')) {
     tlEl.innerHTML = '<p class="tl-empty">Loading…</p>';
     try {
-      const res  = await fetch(`../php/Iogetcasedetail.php?id=${complaintId}`);
+      const res  = await fetch(`../php/ioGetCaseDetail.php?id=${complaintId}`);
       const data = await res.json();
       if (data.success && data.updates && data.updates.length) {
         tlEl.innerHTML = data.updates.map((u, i, arr) => `
@@ -316,7 +316,7 @@ async function submitInlineUpdate(complaintId) {
   btn.textContent = 'Submitting…';
 
   try {
-    const res  = await fetch('../php/Iocaseupdate.php', {
+    const res  = await fetch('../php/ioCaseUpdate.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ complaint_id: complaintId, status, note }),
@@ -380,7 +380,7 @@ async function openCaseModal(complaintId) {
   document.getElementById('cmTimeline').innerHTML      = '<p class="tl-empty">Loading…</p>';
 
   try {
-    const res  = await fetch(`../php/Iogetcasedetail.php?id=${complaintId}`);
+    const res  = await fetch(`../php/ioGetCaseDetail.php?id=${complaintId}`);
     const data = await res.json();
     if (!data.success) {
       document.getElementById('cmRef').textContent = data.message || 'Failed to load case.';
@@ -460,7 +460,7 @@ document.getElementById('submitUpdateBtn').addEventListener('click', async funct
   this.textContent = 'Submitting…';
 
   try {
-    const res  = await fetch('../php/Iocaseupdate.php', {
+    const res  = await fetch('../php/ioCaseUpdate.php', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ complaint_id: _updateComplaintId, status, note }),

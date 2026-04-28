@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PICMS — Dashboard | Karachi Police</title>
+  <title>PICMS — Withdrawals | Karachi Police</title>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="../css/citizenDashboard.css"/>
+  <link rel="stylesheet" href="../css/citizenWithdrawals.css"/>
 </head>
 <body>
-
-  <!-- NAV -->
   <nav class="nav">
     <a href="citizenHome.html" class="nav-brand">
       <div class="nav-logo">
@@ -21,10 +20,6 @@
       </div>
     </a>
     <div class="nav-right">
-      <div class="notif-wrap" onclick="window.location.href='citizenWithdrawals.html'">
-        <svg viewBox="0 0 24 24"><path d="M8 7h10"/><path d="M8 12h8"/><path d="M8 17h6"/><path d="M4 4h16v16H4z"/></svg>
-        <span class="notif-dot" id="withdrawalDot"></span>
-      </div>
       <div class="nav-divider"></div>
       <div class="citizen-info" onclick="window.location.href='citizenProfile.html'">
         <div class="citizen-avatar" id="citizenInitials">--</div>
@@ -34,25 +29,20 @@
     </div>
   </nav>
 
-  <!-- LAYOUT -->
   <div class="layout">
-
-    <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="sidebar-label">Menu</div>
-      <a class="sidebar-item active" href="citizenDashboard.html">
+      <a class="sidebar-item" href="citizenDashboard.html">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
         Dashboard
       </a>
       <a class="sidebar-item" href="myComplaints.html">
         <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
         My Complaints
-        <span class="s-badge" id="complaintBadge"></span>
       </a>
       <a class="sidebar-item" href="citizenAppointments.html">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         Appointments
-        <span class="s-badge" id="appointmentBadge"></span>
       </a>
       <a class="sidebar-item" href="trackCase.html">
         <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -64,10 +54,9 @@
         <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         Profile
       </a>
-      <a class="sidebar-item" href="citizenWithdrawals.html">
+      <a class="sidebar-item active" href="citizenWithdrawals.html">
         <svg viewBox="0 0 24 24"><path d="M8 7h10"/><path d="M8 12h8"/><path d="M8 17h6"/><path d="M4 4h16v16H4z"/></svg>
         Withdrawals
-        <span class="s-badge" id="withdrawalBadge"></span>
       </a>
       <div class="sidebar-divider"></div>
       <a class="sidebar-item sidebar-signout" href="../php/citizenLogout.php">
@@ -76,96 +65,95 @@
       </a>
     </aside>
 
-    <!-- MAIN -->
     <main class="main">
-
-      <!-- PAGE HEADER -->
       <div class="page-header">
         <div>
           <div class="page-eyebrow">
             <div class="eyebrow-line"></div>
             <span class="eyebrow-text">Citizen Portal</span>
           </div>
-          <h1 class="page-title">Your <em>Dashboard</em></h1>
+          <h1 class="page-title">Case <em>Withdrawals</em></h1>
         </div>
-        <a href="complaintForm.html" class="btn-primary">
-          <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          New Complaint
+        <a href="citizenDashboard.html" class="btn-primary">
+          <svg viewBox="0 0 24 24"><polyline points="15,18 9,12 15,6"/></svg>
+          Back to Dashboard
         </a>
       </div>
 
-      <!-- STATS -->
-      <div class="stats-row">
+      <div class="stats-row withdrawal-stats">
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-blue">
               <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
             </div>
-            <span class="stat-trend">Total</span>
+            <span class="stat-trend">Eligible</span>
           </div>
-          <div class="stat-num" id="statTotal">—</div>
-          <div class="stat-label">Complaints filed</div>
+          <div class="stat-num" id="statEligible">—</div>
+          <div class="stat-label">Cases you can act on</div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-amber">
-              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
             </div>
-            <span class="stat-trend">Active</span>
+            <span class="stat-trend">Pending</span>
           </div>
-          <div class="stat-num" id="statReview">—</div>
-          <div class="stat-label">Under review</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-top">
-            <div class="stat-icon icon-purple">
-              <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-            </div>
-            <span class="stat-trend">Ongoing</span>
-          </div>
-          <div class="stat-num" id="statAssigned">—</div>
-          <div class="stat-label">Officer assigned</div>
+          <div class="stat-num" id="statPending">—</div>
+          <div class="stat-label">Awaiting SHO action</div>
         </div>
         <div class="stat-card">
           <div class="stat-top">
             <div class="stat-icon icon-green">
               <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
             </div>
-            <span class="stat-trend">Closed</span>
+            <span class="stat-trend">Withdrawn</span>
           </div>
-          <div class="stat-num" id="statResolved">—</div>
-          <div class="stat-label">Resolved</div>
+          <div class="stat-num" id="statWithdrawn">—</div>
+          <div class="stat-label">Cases already withdrawn</div>
         </div>
       </div>
 
-      <!-- RECENT COMPLAINTS -->
-      <div class="section-head">
-        <span class="section-title">Recent complaints</span>
-        <div class="filter-pills">
-          <span class="pill active" onclick="filterCards('all', this)">All</span>
-          <span class="pill" onclick="filterCards('Under Review', this)">Review</span>
-          <span class="pill" onclick="filterCards('Officer Assigned', this)">Assigned</span>
-          <span class="pill" onclick="filterCards('Resolved', this)">Resolved</span>
-        </div>
+      <div class="withdrawal-note">
+        If no officer has been assigned, your case is withdrawn immediately. Once an officer is assigned, your request goes to the SHO for approval or rejection.
       </div>
 
-      <!-- CARDS CONTAINER -->
-      <div id="cardsContainer">
-        <div class="loading-state" id="loadingState">
-          <div class="loading-spinner"></div>
-          <span>Loading your complaints...</span>
-        </div>
-        <div class="empty-state" id="emptyState" style="display:none;">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
-          <p>No complaints filed yet.</p>
-          <a href="complaintForm.html" class="btn-primary" style="margin-top:12px;">File your first complaint</a>
-        </div>
-        <div id="cardsList"></div>
+      <div id="withdrawalAlert" class="page-alert"></div>
+
+      <div id="loadingState" class="loading-state">
+        <div class="loading-spinner"></div>
+        <span>Loading your cases...</span>
       </div>
 
+      <div id="emptyState" class="empty-state" style="display:none;">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+        <p>No cases available for withdrawal.</p>
+      </div>
+
+      <div id="withdrawalsList"></div>
     </main>
   </div>
 
-  <script src="../js/citizenDashboard.js"></script>
+  <div class="modal-backdrop" id="withdrawalModal" style="display:none;">
+    <div class="withdrawal-modal">
+      <div class="withdrawal-modal-head">
+        <div>
+          <div class="withdrawal-modal-eyebrow">Withdraw Case</div>
+          <h2 id="modalRef">—</h2>
+        </div>
+        <button type="button" class="modal-close-btn" id="closeModalBtn">✕</button>
+      </div>
+      <div class="withdrawal-modal-body">
+        <p id="modalModeText" class="modal-mode-text"></p>
+        <textarea id="withdrawalReason" rows="5" placeholder="Tell us why you want to withdraw this case."></textarea>
+        <div id="modalAlert" class="page-alert"></div>
+      </div>
+      <div class="withdrawal-modal-actions">
+        <button type="button" class="btn-secondary" id="cancelModalBtn">Cancel</button>
+        <button type="button" class="btn-primary" id="confirmWithdrawalBtn">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/citizenWithdrawals.js"></script>
 </body>
 </html>

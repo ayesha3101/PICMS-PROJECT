@@ -175,7 +175,7 @@ function statusBadge(s) {
   return `<span class="badge ${map[s]||'b-submitted'}">${esc(s)}</span>`;
 }
 function apptBadge(s) {
-  const map = { 'Pending':'b-appt-pending','Confirmed':'b-appt-confirmed','Completed':'b-appt-completed','Cancelled':'b-appt-cancelled' };
+  const map = { 'Pending':'b-appt-pending','Accepted':'b-appt-confirmed','Completed':'b-appt-completed','Cancelled':'b-appt-cancelled' };
   return `<span class="badge ${map[s]||'b-submitted'}">${esc(s)}</span>`;
 }
 function rankBadge(r) {
@@ -440,7 +440,7 @@ function buildCaseActions(c, appointments, missCount) {
   zone.innerHTML = '';
   const lastAppt = appointments.length ? appointments[appointments.length - 1] : null;
   const hasCompletedAppt = appointments.some(a => a.status === 'Completed');
-  const hasPendingOrConfirmedAppt = lastAppt && ['Pending','Confirmed'].includes(lastAppt.status);
+  const hasPendingOrAcceptedAppt = lastAppt && ['Pending','Accepted'].includes(lastAppt.status);
 
   // 1. Submitted → can review
   if (c.status === 'Submitted') {
@@ -454,7 +454,7 @@ function buildCaseActions(c, appointments, missCount) {
   }
 
   // 2. Accepted & no pending appt → schedule appointment
-  if (c.status === 'Accepted' && !hasPendingOrConfirmedAppt) {
+  if (c.status === 'Accepted' && !hasPendingOrAcceptedAppt) {
     zone.innerHTML = `
       <button class="btn btn-primary" id="btnOpenAppt">
         <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -464,18 +464,18 @@ function buildCaseActions(c, appointments, missCount) {
     return;
   }
 
-  // 3. Pending/Confirmed appt exists → can mark outcome
-  if (hasPendingOrConfirmedAppt && lastAppt.status === 'Confirmed') {
+  // 3. Pending/Accepted appt exists → can mark outcome
+  if (hasPendingOrAcceptedAppt && lastAppt.status === 'Accepted') {
     zone.innerHTML = `
-      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Appointment confirmed by citizen. You can mark the outcome after meeting.</p>
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Appointment accepted by citizen. You can mark the outcome after meeting.</p>
       <button class="btn btn-primary" id="btnOpenMark">
         Mark Appointment Outcome
       </button>`;
     document.getElementById('btnOpenMark').addEventListener('click', () => openMarkApptModal(lastAppt, missCount));
     return;
   }
-  if (hasPendingOrConfirmedAppt && lastAppt.status === 'Pending') {
-    zone.innerHTML = `<p style="font-size:12px;color:var(--amber)">Waiting for citizen to confirm the appointment.</p>`;
+  if (hasPendingOrAcceptedAppt && lastAppt.status === 'Pending') {
+    zone.innerHTML = `<p style="font-size:12px;color:var(--amber)">Waiting for citizen to accept the appointment before its scheduled time.</p>`;
     return;
   }
 
@@ -795,7 +795,7 @@ function renderAppointments(list) {
   const tbody = document.getElementById('apptTbody');
   if (!list.length) { tbody.innerHTML='<tr><td colspan="8" class="tbl-empty">No appointments found.</td></tr>'; return; }
   tbody.innerHTML = list.map(a => {
-    const canMark    = a.status === 'Confirmed';
+    const canMark    = a.status === 'Accepted';
     const canReschedule = a.status === 'Cancelled' && (a.miss_count||0) < 2;
     return `<tr>
       <td><span style="font-family:monospace;font-size:11px;color:var(--gold-dim)">${esc(a.reference_number)}</span></td>

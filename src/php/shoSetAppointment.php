@@ -3,29 +3,26 @@
 // shoSetAppointment.php
 // Creates a new appointment for an Accepted complaint.
 // Steps: insert sho_schedule slot → insert appointment
-//        → update complaint status to 'Under Review'
+//        → keep complaint in Accepted state
 //        → insert case_update log entry
 //
 // ┌─ WHY TRANSACTION? ─────────────────────────
-// │ Four tables touched in sequence:
+// │ Three tables touched in sequence:
 // │  1. INSERT sho_schedule (create the time slot)
 // │  2. INSERT appointments (link complaint to slot)
-// │     ↳ DB trigger `after_appointment_insert` also
-// │       fires here — it copies the slot details
-// │       back into sho_schedule as type 'Appointment'
-// │  3. UPDATE complaints SET status = 'Under Review'
-// │  4. INSERT case_updates (log the action)
+// │  3. INSERT case_updates (log the action)
 // │
 // │ If any step fails (e.g. the trigger detects a
 // │ conflict mid-insert, or the network dies), we
 // │ do NOT want a dangling schedule slot with no
-// │ matching appointment, or a complaint stuck
-// │ in a half-updated state. All four writes are
+// │ matching appointment or a missing case log.
+// │ All three writes are
 // │ rolled back together if anything goes wrong.
 // └────────────────────────────────────────────
 // ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/appointmentLifecycle.php';
 header('Content-Type: application/json');
 
 if (empty($_SESSION['officer_id']) || $_SESSION['role'] !== 'officer' || empty($_SESSION['is_sho'])) {
@@ -60,6 +57,8 @@ if ($date <= date('Y-m-d')) {
     exit;
 }
 
+syncExpiredPendingAppointments($conn, ['station_id' => $station_id, 'complaint_id' => $complaint_id]);
+
 // Verify complaint is Accepted and belongs to this station
 $chk = $conn->prepare("
     SELECT complaint_id FROM complaints
@@ -90,10 +89,10 @@ if ($conflictChk->get_result()->fetch_assoc()) {
 }
 
 // ┌─ TRANSACTION START ─────────────────────────────────────────────────────
-// │ Reason: Four interdependent writes across sho_schedule, appointments,
-// │ complaints, and case_updates. If any single write fails (including the
+// │ Reason: Three interdependent writes across sho_schedule, appointments,
+// │ and case_updates. If any single write fails (including the
 // │ DB trigger's conflict check on sho_schedule), the whole appointment is
-// │ rolled back — no orphaned records, no half-updated complaint status.
+// │ rolled back — no orphaned records and no partial appointment creation.
 // └─────────────────────────────────────────────────────────────────────────
 $conn->begin_transaction();
 
@@ -111,9 +110,6 @@ try {
     $schedule_id = $conn->insert_id;
 
     // 2. Insert the appointment record
-    //    (DB trigger `after_appointment_insert` fires here — it re-reads
-    //     the schedule row and copies date/time back, which is harmless
-    //     since we just inserted it above)
     $insAppt = $conn->prepare("
         INSERT INTO appointments (complaint_id, sho_id, schedule_id, location, status)
         VALUES (?, ?, ?, ?, 'Pending')
@@ -121,19 +117,11 @@ try {
     $insAppt->bind_param('iiis', $complaint_id, $officer_id, $schedule_id, $location);
     if (!$insAppt->execute()) throw new Exception('Failed to create appointment: ' . $conn->error);
 
-    // 3. Update complaint status to 'Under Review'
-    //    (trigger `after_status_update` fires and auto-inserts a System entry)
-    $updStatus = $conn->prepare("
-        UPDATE complaints SET status = 'Under Review' WHERE complaint_id = ?
-    ");
-    $updStatus->bind_param('i', $complaint_id);
-    if (!$updStatus->execute()) throw new Exception('Failed to update complaint status: ' . $conn->error);
-
-    // 4. Insert SHO-authored case update log
-    $note   = "Appointment scheduled by SHO {$sho_name} on {$date} at {$start_time}. Location: {$location}.";
+    // 3. Insert SHO-authored case update log
+    $note   = "Appointment scheduled by SHO {$sho_name} on {$date} at {$start_time}. Location: {$location}. Citizen must accept it before the scheduled time.";
     $insLog = $conn->prepare("
         INSERT INTO case_updates (complaint_id, status, note, updated_by)
-        VALUES (?, 'Under Review', ?, ?)
+        VALUES (?, 'Accepted', ?, ?)
     ");
     $insLog->bind_param('iss', $complaint_id, $note, $sho_name);
     if (!$insLog->execute()) throw new Exception('Failed to log case update: ' . $conn->error);
