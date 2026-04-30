@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Officer Dashboard — PICMS Karachi Police</title>
+  <title>Investigating Officer Dashboard — PICMS Karachi Police</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/officerCommon.css"/>
+  <link rel="stylesheet" href="../css/ioDashboard.css"/>
   <style>
     :root {
       --navy:         #08121f;
@@ -332,7 +334,7 @@
       </div>
       <div>
         <div class="brand-name">PICMS</div>
-        <div class="brand-role">Officer Portal</div>
+        <div class="brand-role">Investigating Officer Portal</div>
       </div>
     </div>
   </div>
@@ -482,6 +484,18 @@
           <div class="detail-row"><span class="dr-key">Station</span><span class="dr-val" id="pStation">—</span></div>
           <div class="detail-row"><span class="dr-key">Email</span>  <span class="dr-val" id="pEmail">—</span></div>
           <div class="detail-row"><span class="dr-key">Role</span>   <span class="dr-val">Investigating Officer</span></div>
+        </div>
+      </div>
+      <div class="section-card" style="max-width:460px;">
+        <div class="section-head"><h2>Change Password</h2></div>
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
+          <input class="filter-inp" type="password" id="ioCurrentPwd" placeholder="Current password" style="width:100%;" />
+          <input class="filter-inp" type="password" id="ioNewPwd" placeholder="New password (min 8 chars)" style="width:100%;" />
+          <input class="filter-inp" type="password" id="ioConfirmPwd" placeholder="Confirm new password" style="width:100%;" />
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-steel" id="ioChangePwdBtn">Update Password</button>
+            <span id="ioPwdMsg" style="font-size:11px;color:var(--muted);"></span>
+          </div>
         </div>
       </div>
     </div>

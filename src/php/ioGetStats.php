@@ -17,25 +17,24 @@ if (
 
 $officerId = (int) $_SESSION['officer_id'];
 
+// Active cases count from view-based workload projection.
+$stmt = $conn->prepare("
+    SELECT active_cases
+    FROM vw_officer_workload
+    WHERE officer_id = ?
+    LIMIT 1
+");
+$stmt->bind_param('i', $officerId);
+$stmt->execute();
+$workloadRow = $stmt->get_result()->fetch_assoc();
+$activeCases = (int)($workloadRow['active_cases'] ?? 0);
+$stmt->close();
+
 // Total cases ever assigned to this IO (all time, all is_current values)
 $stmt = $conn->prepare("SELECT COUNT(*) AS cnt FROM case_assignments WHERE officer_id = ?");
 $stmt->bind_param('i', $officerId);
 $stmt->execute();
 $totalCases = (int) $stmt->get_result()->fetch_assoc()['cnt'];
-$stmt->close();
-
-// Active cases (currently assigned, status is active)
-$stmt = $conn->prepare("
-    SELECT COUNT(*) AS cnt
-    FROM case_assignments ca
-    JOIN complaints c ON ca.complaint_id = c.complaint_id
-    WHERE ca.officer_id = ?
-      AND ca.is_current = 1
-      AND c.status IN ('Officer Assigned', 'Investigation Ongoing')
-");
-$stmt->bind_param('i', $officerId);
-$stmt->execute();
-$activeCases = (int) $stmt->get_result()->fetch_assoc()['cnt'];
 $stmt->close();
 
 // Resolved cases (any assignment, resolved/closed status)

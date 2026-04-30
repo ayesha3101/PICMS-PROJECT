@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
   wireFilterResets();
   wireScheduleTimeTriggers();
   wireApptTimeTriggers();
+  wireProfileActions();
 });
 
 function setTopbarDate() {
@@ -69,6 +70,7 @@ function populateSessionUI() {
   document.getElementById('shoAvatarTop').textContent     = initials;
   document.getElementById('shoNameTop').textContent       = SHO.name;
   document.getElementById('shoRankTop').textContent       = SHO.rank;
+  loadProfilePage();
 }
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
@@ -90,6 +92,7 @@ const PAGE_META = {
   schedule:    { title: 'My Schedule',            sub: 'View and update your personal schedule' },
   updates:     { title: 'Case Updates',           sub: 'Track all status changes across station cases' },
   withdrawals: { title: 'Withdrawal Requests',    sub: 'Review and action citizen withdrawal requests' },
+  profile:     { title: 'My Profile',             sub: 'View account details and change password' },
 };
 
 const PAGE_LOADERS = {
@@ -99,6 +102,7 @@ const PAGE_LOADERS = {
   schedule:     loadSchedule,
   updates:      loadUpdates,
   withdrawals:  loadWithdrawals,
+  profile:      loadProfilePage,
 };
 
 function wireNav() {
@@ -315,6 +319,53 @@ function wireFilterResets() {
 
   document.getElementById('fScheduleMonth').addEventListener('change', applyScheduleFilters);
   document.getElementById('fScheduleType').addEventListener('change', applyScheduleFilters);
+}
+
+function loadProfilePage() {
+  if (!SHO) return;
+  const set = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val || '—';
+  };
+  set('spName', SHO.name);
+  set('spBadge', SHO.badge);
+  set('spRank', SHO.rank);
+  set('spStation', SHO.station_name);
+  set('spEmail', SHO.email);
+}
+
+function wireProfileActions() {
+  const btn = document.getElementById('spChangePwdBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    hideAlert('spPwdAlert');
+    const current_password = document.getElementById('spCurrentPwd').value;
+    const new_password = document.getElementById('spNewPwd').value;
+    const confirm_password = document.getElementById('spConfirmPwd').value;
+    btn.disabled = true;
+    btn.textContent = 'Updating...';
+    try {
+      const res = await fetch('../php/officerChangePassword.php', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ current_password, new_password, confirm_password }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        showAlert('spPwdAlert', 'success', data.message || 'Password updated.');
+        document.getElementById('spCurrentPwd').value = '';
+        document.getElementById('spNewPwd').value = '';
+        document.getElementById('spConfirmPwd').value = '';
+      } else {
+        showAlert('spPwdAlert', 'error', data.message || 'Failed to update password.');
+      }
+    } catch {
+      showAlert('spPwdAlert', 'error', 'Connection error.');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Update Password';
+    }
+  });
 }
 
 function applyCaseFilters() {

@@ -7,6 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../css/officerCommon.css"/>
   <link rel="stylesheet" href="../css/shoDashboard.css"/>
 </head>
 <body>
@@ -53,6 +54,11 @@
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
       <span>Withdrawal Requests</span>
       <span class="nav-badge urgent" id="navBadgeWd"></span>
+    </button>
+    <p class="nav-label">Account</p>
+    <button class="nav-item" data-page="profile">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>My Profile</span>
     </button>
   </nav>
 
@@ -488,6 +494,47 @@
               <tr><td colspan="7" class="tbl-empty">Loading…</td></tr>
             </tbody>
           </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════
+         PAGE: PROFILE
+    ══════════════════════════════ -->
+    <div class="page-section" id="page-profile">
+      <div class="table-card" style="max-width:740px;">
+        <div class="table-card-head">
+          <h2 class="table-card-title">My Profile</h2>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:16px;">
+          <div>
+            <div class="modal-section-title">Account Details</div>
+            <div class="info-rows">
+              <div class="info-row"><span class="info-key">Name</span><span class="info-val" id="spName">—</span></div>
+              <div class="info-row"><span class="info-key">Badge</span><span class="info-val" id="spBadge">—</span></div>
+              <div class="info-row"><span class="info-key">Rank</span><span class="info-val" id="spRank">—</span></div>
+              <div class="info-row"><span class="info-key">Station</span><span class="info-val" id="spStation">—</span></div>
+              <div class="info-row"><span class="info-key">Email</span><span class="info-val" id="spEmail">—</span></div>
+              <div class="info-row"><span class="info-key">Role</span><span class="info-val">SHO</span></div>
+            </div>
+          </div>
+          <div>
+            <div class="modal-section-title">Change Password</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">
+              <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Current Password</label>
+              <input class="field-input" type="password" id="spCurrentPwd" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">
+              <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">New Password</label>
+              <input class="field-input" type="password" id="spNewPwd" />
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:8px;">
+              <label style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);">Confirm New Password</label>
+              <input class="field-input" type="password" id="spConfirmPwd" />
+            </div>
+            <button class="btn btn-primary" id="spChangePwdBtn">Update Password</button>
+            <div class="alert" id="spPwdAlert" style="margin-top:10px;"></div>
+          </div>
         </div>
       </div>
     </div>

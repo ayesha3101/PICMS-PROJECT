@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jail Superintendent Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/officerCommon.css" />
+  <style>
+    body { margin: 0; font-family: 'Outfit', sans-serif; background:var(--navy); color:var(--offwhite); }
+    .top { display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--navy-border); background:var(--navy-mid); position:sticky; top:0; }
+    .title { font-size:20px; font-weight:600; }
+    .sub { color:var(--muted); font-size:12px; }
+    .wrap { padding:18px; }
+    .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px; }
+    .card { background:var(--navy-card); border:1px solid var(--navy-border); border-radius:8px; padding:12px; }
+    .v { font-size:24px; font-weight:600; }
+    .l { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .tabs { display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap; }
+    .tab { border:1px solid var(--navy-border); background:var(--navy-surface); color:var(--offwhite); padding:8px 12px; border-radius:6px; cursor:pointer; }
+    .tab.active { background:rgba(201,168,76,0.12); color:var(--gold-light); border-color:rgba(201,168,76,0.4); }
+    .section { display:none; }
+    .section.active { display:block; }
+    .head { display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+    .filters { display:flex; gap:8px; flex-wrap:wrap; }
+    input, select, button, textarea { background:var(--navy-surface); border:1px solid var(--navy-border); color:var(--offwhite); border-radius:6px; padding:7px 9px; font-family:inherit; }
+    button { cursor:pointer; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th, td { border-bottom:1px solid var(--navy-border); padding:9px 8px; text-align:left; vertical-align:top; }
+    th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; }
+    .pill { padding:2px 7px; border-radius:999px; font-size:10px; border:1px solid var(--navy-border); display:inline-block; }
+    .actions { display:flex; gap:6px; flex-wrap:wrap; }
+    .muted { color:var(--muted); }
+    .modalBg { display:none; position:fixed; inset:0; background:rgba(0,0,0,.6); align-items:center; justify-content:center; }
+    .modalBg.open { display:flex; }
+    .modal { width:100%; max-width:520px; background:var(--navy-card); border:1px solid var(--navy-border); border-radius:8px; padding:14px; }
+    .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .right { text-align:right; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <div class="title">Jail Superintendent Portal</div>
+      <div class="sub" id="topSub">Custody Operations</div>
+    </div>
+    <div class="actions">
+      <button id="signOutBtn">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="stats">
+      <div class="card"><div class="l">Active Detainees</div><div class="v" id="stDetainees">0</div></div>
+      <div class="card"><div class="l">Total Cells</div><div class="v" id="stCells">0</div></div>
+      <div class="card"><div class="l">Upcoming Hearings</div><div class="v" id="stHearings">0</div></div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="detainees">Detainees</button>
+      <button class="tab" data-tab="cells">Cells</button>
+      <button class="tab" data-tab="hearings">Court Hearings</button>
+      <button class="tab" data-tab="cases">Linked Cases</button>
+      <button class="tab" data-tab="profile">Profile</button>
+    </div>
+
+    <section class="section active" id="sec-detainees">
+      <div class="head">
+        <h3>Detainee Management</h3>
+        <div class="actions"><button id="addDetaineeBtn">Add Detainee</button></div>
+      </div>
+      <div class="filters">
+        <select id="fDetGender"><option value="">All Genders</option><option>Male</option><option>Female</option></select>
+        <select id="fDetCell"><option value="">All Cell States</option><option value="assigned">Assigned</option><option value="unassigned">Unassigned</option></select>
+        <input id="fDetSearch" placeholder="Search name/CNIC/case ref" />
+        <button id="fDetClear">Clear</button>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <table><thead><tr><th>Name</th><th>Gender</th><th>Age</th><th>Cell</th><th>Case</th><th>Admission</th><th>Actions</th></tr></thead><tbody id="detTbody"></tbody></table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-cells">
+      <div class="head"><h3>All Cells</h3></div>
+      <div class="filters">
+        <select id="fCellGender"><option value="">All Genders</option><option>Male</option><option>Female</option></select>
+        <select id="fCellAvail"><option value="">All Occupancy</option><option value="available">Available</option><option value="full">Full</option></select>
+        <input id="fCellSearch" placeholder="Search cell code" />
+        <button id="fCellClear">Clear</button>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <table><thead><tr><th>Cell</th><th>Gender</th><th>Capacity</th><th>Occupied</th><th>Available</th></tr></thead><tbody id="cellTbody"></tbody></table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-hearings">
+      <div class="head"><h3>Detainee Court Hearings</h3></div>
+      <div class="filters">
+        <select id="fHearGender"><option value="">All Genders</option><option>Male</option><option>Female</option></select>
+        <input id="fHearDate" type="date" />
+        <input id="fHearSearch" placeholder="Search detainee/court/case" />
+        <button id="fHearClear">Clear</button>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <table><thead><tr><th>Detainee</th><th>Hearing Date</th><th>Court</th><th>Type</th><th>Result</th><th>Case</th></tr></thead><tbody id="hearTbody"></tbody></table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-cases">
+      <div class="head"><h3>Citizen-Registered Cases Linked to Detainees</h3></div>
+      <div class="filters">
+        <select id="fCaseGender"><option value="">All Genders</option><option>Male</option><option>Female</option></select>
+        <input id="fCaseSearch" placeholder="Search detainee/ref/CNIC/area" />
+        <button id="fCaseClear">Clear</button>
+      </div>
+      <div class="card" style="margin-top:8px;">
+        <table><thead><tr><th>Detainee</th><th>Reference</th><th>Status</th><th>Area</th><th>CNIC</th><th>Date</th></tr></thead><tbody id="caseTbody"></tbody></table>
+      </div>
+    </section>
+
+    <section class="section" id="sec-profile">
+      <div class="head"><h3>Profile</h3></div>
+      <div class="grid2">
+        <div class="card">
+          <div class="l">Basic Info</div>
+          <p><b>Name:</b> <span id="pName">—</span></p>
+          <p><b>Badge:</b> <span id="pBadge">—</span></p>
+          <p><b>Rank:</b> <span id="pRank">—</span></p>
+          <p><b>Email:</b> <span id="pEmail">—</span></p>
+          <p><b>Station:</b> <span id="pStation">—</span></p>
+        </div>
+        <div class="card">
+          <div class="l">Change Password</div>
+          <input id="cpCurrent" type="password" placeholder="Current password" />
+          <input id="cpNew" type="password" placeholder="New password" />
+          <input id="cpConfirm" type="password" placeholder="Confirm new password" />
+          <div style="margin-top:8px;"><button id="cpBtn">Update Password</button></div>
+          <p class="muted" id="cpMsg"></p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <div class="modalBg" id="detModalBg">
+    <div class="modal">
+      <div class="head"><h3 id="detModalTitle">Add Detainee</h3><button id="detCloseBtn">X</button></div>
+      <input type="hidden" id="detId" />
+      <div class="grid2">
+        <input id="detFName" placeholder="First name" />
+        <input id="detMInit" placeholder="Middle initial" />
+        <input id="detLName" placeholder="Last name" />
+        <input id="detCNIC" placeholder="CNIC" />
+        <input id="detAge" type="number" min="1" placeholder="Age" />
+        <select id="detGender"><option value="">Gender</option><option>Male</option><option>Female</option></select>
+        <select id="detPurpose"><option>Remand</option><option>Sentence</option><option>Preventive Detention</option><option>Other</option></select>
+        <input id="detAdmission" type="date" />
+        <input id="detComplaint" type="number" placeholder="Complaint ID (optional)" />
+      </div>
+      <p class="muted" id="detMsg"></p>
+      <div class="right"><button id="detSaveBtn">Save</button></div>
+    </div>
+  </div>
+
+  <script src="../js/superintendentDashboard.js"></script>
+</body>
+</html>

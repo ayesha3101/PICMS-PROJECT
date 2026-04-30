@@ -34,7 +34,7 @@ session_start();
 require_once __DIR__ . '/../config/config.php';
 header('Content-Type: application/json');
 
-if (empty($_SESSION['officer_id']) || $_SESSION['role'] !== 'officer' || empty($_SESSION['is_sho'])) {
+if (empty($_SESSION['officer_id']) || ($_SESSION['role'] ?? '') !== 'officer' || (int)($_SESSION['role_id'] ?? 0) !== 2) {
     echo json_encode(['success' => false, 'message' => 'Unauthorised.']);
     exit;
 }

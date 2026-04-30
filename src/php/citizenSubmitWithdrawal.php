@@ -76,24 +76,16 @@ $conn->begin_transaction();
 
 try {
     if ($hasAssignedOfficer) {
-        $insertReq = $conn->prepare("
-            INSERT INTO withdrawal_requests (complaint_id, requested_by, reason)
-            VALUES (?, ?, ?)
-        ");
-        $insertReq->bind_param('iss', $complaint_id, $cnic, $reason);
-        if (!$insertReq->execute()) {
-            throw new Exception('Failed to create withdrawal request.');
+        // Use centralized DB procedure for validated withdrawal flow.
+        $proc = $conn->prepare("CALL sp_submit_withdrawal_request(?, ?, ?)");
+        if (!$proc) {
+            throw new Exception('Failed to prepare withdrawal procedure.');
         }
-
-        $updateComplaint = $conn->prepare("
-            UPDATE complaints
-            SET status = 'Withdrawal Pending'
-            WHERE complaint_id = ?
-        ");
-        $updateComplaint->bind_param('i', $complaint_id);
-        if (!$updateComplaint->execute()) {
-            throw new Exception('Failed to update complaint status.');
+        $proc->bind_param('iss', $complaint_id, $cnic, $reason);
+        if (!$proc->execute()) {
+            throw new Exception('Failed to run withdrawal procedure.');
         }
+        $proc->close();
 
         $note = 'Citizen requested case withdrawal. Awaiting SHO review.';
         $updateLog = $conn->prepare("

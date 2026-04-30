@@ -525,6 +525,37 @@ function setupNav() {
   });
 }
 
+function setupProfileActions() {
+  const btn = document.getElementById('ioChangePwdBtn');
+  if (!btn) return;
+  btn.addEventListener('click', async () => {
+    const msg = document.getElementById('ioPwdMsg');
+    const current_password = document.getElementById('ioCurrentPwd').value;
+    const new_password = document.getElementById('ioNewPwd').value;
+    const confirm_password = document.getElementById('ioConfirmPwd').value;
+    msg.style.color = 'var(--muted)';
+    msg.textContent = 'Updating...';
+    try {
+      const res = await fetch('../php/officerChangePassword.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current_password, new_password, confirm_password }),
+      });
+      const data = await res.json();
+      msg.style.color = data.success ? 'var(--success)' : 'var(--danger)';
+      msg.textContent = data.message || (data.success ? 'Password updated.' : 'Failed to update password.');
+      if (data.success) {
+        document.getElementById('ioCurrentPwd').value = '';
+        document.getElementById('ioNewPwd').value = '';
+        document.getElementById('ioConfirmPwd').value = '';
+      }
+    } catch {
+      msg.style.color = 'var(--danger)';
+      msg.textContent = 'Connection error. Please try again.';
+    }
+  });
+}
+
 // ── INIT ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async () => {
   await checkSession();
@@ -535,4 +566,5 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupCasesFilters();
   setupUpdatesFilters();
   setupNav();
+  setupProfileActions();
 });

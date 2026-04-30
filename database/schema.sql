@@ -585,6 +585,69 @@ JOIN stations s
 JOIN sho_schedule ss
   ON ss.schedule_id = a.schedule_id;
 
+-- Unified case listing view for admin/SHO/IO reporting
+CREATE VIEW vw_case_overview AS
+SELECT
+    c.complaint_id,
+    c.reference_number,
+    c.cnic,
+    c.station_id,
+    s.station_name,
+    c.category_id,
+    cc.category_name,
+    c.subcategory_id,
+    csc.subcategory_name,
+    c.incident_area,
+    c.incident_date,
+    c.status,
+    cc.is_urgent,
+    c.submitted_at,
+    ca.officer_id AS current_officer_id,
+    o.full_name   AS current_officer_name,
+    o.badge_number AS current_officer_badge
+FROM complaints c
+JOIN stations s
+  ON s.station_id = c.station_id
+JOIN complaint_categories cc
+  ON cc.category_id = c.category_id
+LEFT JOIN complaint_subcategories csc
+  ON csc.subcategory_id = c.subcategory_id
+LEFT JOIN case_assignments ca
+  ON ca.complaint_id = c.complaint_id
+ AND ca.is_current = 1
+LEFT JOIN officers o
+  ON o.officer_id = ca.officer_id;
+
+-- Superintendent-focused detainee + case + cell snapshot
+CREATE VIEW vw_detainee_overview AS
+SELECT
+    d.detainee_id,
+    d.station_id,
+    s.station_name,
+    d.cnic,
+    d.d_fname,
+    d.d_minit,
+    d.d_lname,
+    d.gender,
+    d.age,
+    d.admission_date,
+    d.release_date,
+    d.purpose_of_admission,
+    jc.cell_id,
+    jc.cell_code,
+    jc.gender AS cell_gender,
+    jc.capacity AS cell_capacity,
+    c.complaint_id,
+    c.reference_number,
+    c.status AS complaint_status
+FROM detainees d
+JOIN stations s
+  ON s.station_id = d.station_id
+LEFT JOIN jail_cells jc
+  ON jc.cell_id = d.cell_id
+LEFT JOIN complaints c
+  ON c.complaint_id = d.complaint_id;
+
 CREATE TABLE jail_cells (
     cell_id    INT AUTO_INCREMENT PRIMARY KEY,
     station_id INT NOT NULL,
@@ -711,6 +774,295 @@ BEGIN
     UPDATE case_assignments
     SET is_current = 0, removed_at = NOW()
     WHERE complaint_id = NEW.complaint_id AND is_current = 1;
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+-- Safely assign/reassign an Investigating Officer to a complaint in the same station
+CREATE PROCEDURE sp_assign_officer_to_case (
+    IN p_complaint_id INT,
+    IN p_officer_id   INT,
+    IN p_assigned_by  INT
+)
+BEGIN
+    DECLARE v_station_id INT;
+    DECLARE v_officer_station_id INT;
+    DECLARE v_officer_role_id INT;
+    DECLARE v_officer_active TINYINT(1);
+
+    SELECT station_id
+      INTO v_station_id
+      FROM complaints
+     WHERE complaint_id = p_complaint_id
+     LIMIT 1;
+
+    IF v_station_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid complaint_id.';
+    END IF;
+
+    SELECT station_id, role_id, is_active
+      INTO v_officer_station_id, v_officer_role_id, v_officer_active
+      FROM officers
+     WHERE officer_id = p_officer_id
+     LIMIT 1;
+
+    IF v_officer_station_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid officer_id.';
+    END IF;
+
+    IF v_officer_station_id <> v_station_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Officer must belong to the same station as complaint.';
+    END IF;
+
+    IF v_officer_role_id <> 1 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only Investigating Officers can be assigned.';
+    END IF;
+
+    IF v_officer_active <> 1 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Officer is not active.';
+    END IF;
+
+    INSERT INTO case_assignments (complaint_id, officer_id, assigned_by, is_current)
+    VALUES (p_complaint_id, p_officer_id, p_assigned_by, 1);
+
+    UPDATE complaints
+       SET status = 'Officer Assigned'
+     WHERE complaint_id = p_complaint_id
+       AND status IN ('Accepted', 'Under Review', 'Submitted', 'Investigation Ongoing');
+END$$
+
+-- Station dashboard stats in one query (for admin/SHO/superintendent reporting)
+CREATE PROCEDURE sp_get_station_dashboard_stats (
+    IN p_station_id INT
+)
+BEGIN
+    SELECT
+        p_station_id AS station_id,
+        (SELECT COUNT(*) FROM complaints WHERE station_id = p_station_id) AS total_complaints,
+        (SELECT COUNT(*) FROM complaints WHERE station_id = p_station_id AND status IN ('Submitted','Under Review','Accepted','Officer Assigned','Investigation Ongoing','Withdrawal Pending')) AS open_complaints,
+        (SELECT COUNT(*) FROM complaints WHERE station_id = p_station_id AND status IN ('Resolved','Closed','Withdrawn','Rejected')) AS closed_complaints,
+        (SELECT COUNT(*) FROM appointments a JOIN complaints c ON c.complaint_id = a.complaint_id WHERE c.station_id = p_station_id AND a.status = 'Pending') AS pending_appointments,
+        (SELECT COUNT(*) FROM detainees WHERE station_id = p_station_id AND release_date IS NULL) AS active_detainees,
+        (SELECT COUNT(*) FROM jail_cells WHERE station_id = p_station_id) AS total_cells;
+END$$
+
+DELIMITER ;
+
+-- Additional reporting views
+DROP VIEW IF EXISTS vw_station_case_stats;
+CREATE VIEW vw_station_case_stats AS
+SELECT
+    s.station_id,
+    s.station_name,
+    COUNT(c.complaint_id) AS total_cases,
+    SUM(
+        CASE
+            WHEN c.status IN ('Submitted', 'Under Review', 'Accepted', 'Officer Assigned', 'Investigation Ongoing', 'Withdrawal Pending')
+            THEN 1 ELSE 0
+        END
+    ) AS open_cases,
+    SUM(
+        CASE
+            WHEN c.status IN ('Resolved', 'Closed', 'Withdrawn', 'Rejected')
+            THEN 1 ELSE 0
+        END
+    ) AS closed_cases
+FROM stations s
+LEFT JOIN complaints c
+  ON c.station_id = s.station_id
+GROUP BY s.station_id, s.station_name;
+
+DROP VIEW IF EXISTS vw_officer_workload;
+CREATE VIEW vw_officer_workload AS
+SELECT
+    o.officer_id,
+    o.full_name,
+    o.badge_number,
+    o.station_id,
+    s.station_name,
+    o.role_id,
+    o.is_active,
+    COUNT(
+        CASE
+            WHEN ca.is_current = 1 THEN ca.assignment_id
+            ELSE NULL
+        END
+    ) AS active_cases
+FROM officers o
+LEFT JOIN stations s
+  ON s.station_id = o.station_id
+LEFT JOIN case_assignments ca
+  ON ca.officer_id = o.officer_id
+GROUP BY
+    o.officer_id,
+    o.full_name,
+    o.badge_number,
+    o.station_id,
+    s.station_name,
+    o.role_id,
+    o.is_active;
+
+DROP VIEW IF EXISTS vw_hearing_calendar;
+CREATE VIEW vw_hearing_calendar AS
+SELECT
+    h.hearing_id,
+    h.hearing_date,
+    h.hearing_time,
+    h.hearing_type,
+    h.court_name,
+    h.result,
+    h.next_hearing_date,
+    d.detainee_id,
+    d.station_id,
+    s.station_name,
+    CONCAT(d.d_fname, ' ', COALESCE(d.d_minit, ''), ' ', d.d_lname) AS detainee_name,
+    c.complaint_id,
+    c.reference_number
+FROM court_hearings h
+JOIN detainees d
+  ON d.detainee_id = h.detainee_id
+JOIN stations s
+  ON s.station_id = d.station_id
+LEFT JOIN complaints c
+  ON c.complaint_id = h.complaint_id;
+
+DELIMITER $$
+
+-- Add withdrawal request with validation and status sync
+CREATE PROCEDURE sp_submit_withdrawal_request (
+    IN p_complaint_id INT,
+    IN p_requested_by VARCHAR(15),
+    IN p_reason TEXT
+)
+BEGIN
+    DECLARE v_owner_cnic VARCHAR(15);
+    DECLARE v_existing_pending INT DEFAULT 0;
+
+    SELECT cnic
+      INTO v_owner_cnic
+      FROM complaints
+     WHERE complaint_id = p_complaint_id
+     LIMIT 1;
+
+    IF v_owner_cnic IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid complaint_id.';
+    END IF;
+
+    IF v_owner_cnic <> p_requested_by THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Only complaint owner can request withdrawal.';
+    END IF;
+
+    SELECT COUNT(*)
+      INTO v_existing_pending
+      FROM withdrawal_requests
+     WHERE complaint_id = p_complaint_id
+       AND status = 'Pending';
+
+    IF v_existing_pending > 0 THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'A pending withdrawal request already exists.';
+    END IF;
+
+    INSERT INTO withdrawal_requests (complaint_id, requested_by, reason, status)
+    VALUES (p_complaint_id, p_requested_by, p_reason, 'Pending');
+
+    UPDATE complaints
+       SET status = 'Withdrawal Pending'
+     WHERE complaint_id = p_complaint_id
+       AND status NOT IN ('Withdrawn', 'Closed');
+END$$
+
+-- Assign detainee to jail cell with station/gender/capacity checks
+CREATE PROCEDURE sp_assign_detainee_cell (
+    IN p_detainee_id INT,
+    IN p_cell_id INT,
+    IN p_officer_id INT
+)
+BEGIN
+    DECLARE v_detainee_station_id INT;
+    DECLARE v_detainee_gender VARCHAR(10);
+    DECLARE v_cell_station_id INT;
+    DECLARE v_cell_gender VARCHAR(10);
+    DECLARE v_cell_capacity INT;
+    DECLARE v_current_occupancy INT;
+
+    SELECT station_id, gender
+      INTO v_detainee_station_id, v_detainee_gender
+      FROM detainees
+     WHERE detainee_id = p_detainee_id
+     LIMIT 1;
+
+    IF v_detainee_station_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid detainee_id.';
+    END IF;
+
+    SELECT station_id, gender, capacity
+      INTO v_cell_station_id, v_cell_gender, v_cell_capacity
+      FROM jail_cells
+     WHERE cell_id = p_cell_id
+     LIMIT 1;
+
+    IF v_cell_station_id IS NULL THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Invalid cell_id.';
+    END IF;
+
+    IF v_detainee_station_id <> v_cell_station_id THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Detainee and cell must belong to the same station.';
+    END IF;
+
+    IF v_detainee_gender <> v_cell_gender THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cell gender does not match detainee gender.';
+    END IF;
+
+    SELECT COUNT(*)
+      INTO v_current_occupancy
+      FROM detainees
+     WHERE cell_id = p_cell_id
+       AND release_date IS NULL;
+
+    IF v_current_occupancy >= v_cell_capacity THEN
+        SIGNAL SQLSTATE '45000'
+        SET MESSAGE_TEXT = 'Cell capacity reached.';
+    END IF;
+
+    UPDATE detainees
+       SET cell_id = p_cell_id,
+           admitted_by = p_officer_id
+     WHERE detainee_id = p_detainee_id;
+END$$
+
+-- Read-only station-level open cases list
+CREATE PROCEDURE sp_get_station_open_cases (
+    IN p_station_id INT
+)
+BEGIN
+    SELECT
+        complaint_id,
+        reference_number,
+        station_id,
+        station_name,
+        category_id,
+        category_name,
+        current_officer_id,
+        current_officer_name,
+        status,
+        submitted_at
+    FROM vw_case_overview
+    WHERE station_id = p_station_id
+      AND status IN ('Submitted', 'Under Review', 'Accepted', 'Officer Assigned', 'Investigation Ongoing', 'Withdrawal Pending')
+    ORDER BY submitted_at DESC;
 END$$
 
 DELIMITER ;
@@ -1155,3 +1507,45 @@ UPDATE citizens SET password_hash = '$2b$10$S2QiS2u0KoZABLd4mjYOcuRayrJS7GiLSBeE
 UPDATE officers SET password_hash = '$2b$10$S2QiS2u0KoZABLd4mjYOcuRayrJS7GiLSBeE/V9hp.LMfksF4Zf3C';
   --saray citizen and officers ka password Test@1234 hai T is capital
 
+--to run
+USE picms_db;  -- replace with your actual DB name
+-- 2) update appointments.status enum (Confirmed -> Accepted)
+ALTER TABLE appointments
+MODIFY COLUMN status ENUM('Pending','Accepted','Completed','Cancelled') DEFAULT 'Pending';
+-- 3) remove old trigger that was deleted from schema
+DROP TRIGGER IF EXISTS after_appointment_insert;
+-- 4) add/update appointment details view
+DROP VIEW IF EXISTS vw_appointment_details;
+CREATE VIEW vw_appointment_details AS
+SELECT
+    a.appointment_id,
+    a.complaint_id,
+    a.sho_id,
+    a.schedule_id,
+    a.location,
+    a.status,
+    a.cancellation_reason,
+    a.created_at,
+    c.reference_number,
+    c.cnic,
+    c.station_id,
+    c.status AS complaint_status,
+    s.station_name,
+    ss.scheduled_date,
+    ss.start_time,
+    ss.end_time,
+    TIMESTAMP(ss.scheduled_date, ss.start_time) AS scheduled_at,
+    TIMESTAMP(ss.scheduled_date, ss.end_time)   AS scheduled_end_at,
+    COALESCE((
+        SELECT COUNT(*)
+        FROM appointments ap2
+        WHERE ap2.complaint_id = a.complaint_id
+          AND ap2.status = 'Cancelled'
+    ), 0) AS miss_count
+FROM appointments a
+JOIN complaints c
+  ON c.complaint_id = a.complaint_id
+JOIN stations s
+  ON s.station_id = c.station_id
+JOIN sho_schedule ss
+  ON ss.schedule_id = a.schedule_id;

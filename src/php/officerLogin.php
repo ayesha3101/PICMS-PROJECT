@@ -59,9 +59,11 @@ session_regenerate_id(true);
 $_SESSION['officer_id']       = (int)  $officer['officer_id'];
 $_SESSION['officer_name']     =        $officer['full_name'];
 $_SESSION['badge_number']     =        $officer['badge_number'];
+$_SESSION['officer_email']    =        $officer['email'];
 $_SESSION['rank']             =        $officer['rank'];
 $_SESSION['station_id']       =        $officer['station_id'];
 $_SESSION['role_id']          = (int)  $officer['role_id'];
+$_SESSION['is_sho']           = ((int)$officer['role_id'] === 2);
 $_SESSION['password_changed'] = (bool) $officer['password_changed'];
 $_SESSION['role']             = 'officer';
 
