@@ -32,13 +32,23 @@ function ensureMailerAutoloaded(): array
 
 function configureSmtpMailer(PHPMailer $mail): void
 {
+    if (
+        !defined('SMTP_HOST') ||
+        !defined('SMTP_USERNAME') ||
+        !defined('SMTP_PASSWORD') ||
+        !defined('SMTP_PORT') ||
+        !defined('SMTP_SECURE')
+    ) {
+        throw new RuntimeException('SMTP settings are missing in config.php');
+    }
+
     $mail->isSMTP();
-    $mail->Host = 'smtp.gmail.com';
+    $mail->Host = (string)SMTP_HOST;
     $mail->SMTPAuth = true;
-    $mail->Username = 'noreply.picmskarachi@gmail.com';
-    $mail->Password = 'mmbrgoxxlwlvezcv';
-    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
+    $mail->Username = (string)SMTP_USERNAME;
+    $mail->Password = (string)SMTP_PASSWORD;
+    $mail->SMTPSecure = (string)SMTP_SECURE;
+    $mail->Port = (int)SMTP_PORT;
     $mail->Timeout = 15;
 
     // XAMPP on Windows often misses a CA bundle, which breaks TLS verification.
@@ -128,6 +138,9 @@ function sendOtpForCitizen(mysqli $conn, string $cnic, string $email, string $fi
 
         $mail->send();
         return ['success' => true, 'message' => 'OTP sent to your email'];
+    } catch (RuntimeException $e) {
+        error_log('otpService.php config error: ' . $e->getMessage());
+        return ['success' => false, 'message' => 'Mail service is not configured on server.'];
     } catch (Exception $e) {
         error_log('otpService.php mail error: ' . $mail->ErrorInfo . ' | exception: ' . $e->getMessage());
         return ['success' => false, 'message' => 'Failed to send email. Please try again.'];
@@ -168,6 +181,9 @@ function sendOTPEmail(string $email, string $fullName, string $otp): bool
 
         $mail->send();
         return true;
+    } catch (RuntimeException $e) {
+        error_log('otpService.php config error: ' . $e->getMessage());
+        return false;
     } catch (Exception $e) {
         error_log('otpService.php sendOTPEmail error: ' . $mail->ErrorInfo . ' | exception: ' . $e->getMessage());
         return false;
