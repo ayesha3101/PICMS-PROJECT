@@ -304,6 +304,10 @@ This document converts system functionality into **testable requirements** and a
 - `src/php/adminManageSuperintendent.php`
 - Password/logout: `src/php/changeAdminPassword.php`, `src/php/adminLogout.php`
 
+**Note for testers (case sensitivity)**:
+- The Admin UI currently calls `../php/adminManageSHO.php` in `src/js/adminDashboardPages.js`, but the repo file is `src/php/adminManageSho.php`.
+- On Windows this usually works; on Linux hosting it may 404. Align your test environment accordingly.
+
 ### UI entry points
 - `src/admin/adminDashboard.html` + `src/js/adminDashboard.js` + `src/js/adminDashboardPages.js`
 

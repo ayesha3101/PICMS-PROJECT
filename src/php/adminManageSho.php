@@ -27,6 +27,7 @@ if ($action === 'appoint') {
         echo json_encode(['success' => false, 'message' => 'officer_id required.']); exit;
     }
 
+<<<<<<< HEAD
     // Verify station exists
     $stChk = $conn->prepare("SELECT station_id FROM stations WHERE station_id = ? LIMIT 1");
     $stChk->bind_param("i", $stationId);
@@ -57,6 +58,17 @@ if ($action === 'appoint') {
         echo json_encode(['success' => false, 'message' => 'Current superintendent cannot be appointed as SHO.']); exit;
     }
 
+=======
+    // Verify officer exists and is active
+    $chk = $conn->prepare("SELECT officer_id FROM officers WHERE officer_id = ? AND station_id = ? AND is_active = 1");
+    $chk->bind_param("ii", $officerId, $stationId);
+    $chk->execute();
+    if (!$chk->get_result()->fetch_assoc()) {
+        echo json_encode(['success' => false, 'message' => 'Officer not found, inactive, or does not belong to this station.']); exit;
+    }
+    $chk->close();
+    
+>>>>>>> 1a32a5698a7b8f4533e99457ec906bb466f44381
     $conn->begin_transaction();
     try {
         // Ensure officer is not already current SHO/Superintendent for any station
