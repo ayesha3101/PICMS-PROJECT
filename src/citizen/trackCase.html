@@ -7,13 +7,47 @@
   <link rel="stylesheet" href="../css/citizenDashboard.css" />
 </head>
 <body>
-  <main style="max-width:900px;margin:40px auto;padding:24px;background:#fff;border:1px solid #eae6e0;border-radius:8px;">
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+  <main style="max-width:1000px;margin:30px auto;padding:24px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:10px;">
       <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:34px;height:34px;object-fit:contain;" />
-      <h1 style="margin:0;font-size:1.2rem;">Track a Case</h1>
+        <div>
+          <h1 style="margin:0;font-size:1.2rem;">Track a Case</h1>
+          <div style="font-size:12px;color:#6b7280;">Find your cases by reference number or area</div>
+        </div>
+      </div>
+      <a href="citizenDashboard.html" class="btn-secondary">Back to Dashboard</a>
     </div>
-    <p style="margin:0 0 16px;color:#6b7280;">This is a temporary placeholder to prevent broken links. Case-tracking features can be wired here.</p>
-    <a href="citizenDashboard.html" class="btn-primary">Back to Dashboard</a>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+      <input id="searchRef" type="text" placeholder="Type case reference (e.g., KHI-26-00001)" style="min-width:280px;padding:10px 12px;border:1px solid #d9d1c5;border-radius:8px;" />
+      <select id="filterStatus" style="padding:10px 12px;border:1px solid #d9d1c5;border-radius:8px;">
+        <option value="">All statuses</option>
+        <option value="Submitted">Submitted</option>
+        <option value="Under Review">Under Review</option>
+        <option value="Accepted">Accepted</option>
+        <option value="Officer Assigned">Officer Assigned</option>
+        <option value="Investigation Ongoing">Investigation Ongoing</option>
+        <option value="Withdrawal Pending">Withdrawal Pending</option>
+        <option value="Rejected">Rejected</option>
+        <option value="Withdrawn">Withdrawn</option>
+        <option value="Resolved">Resolved</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <button id="clearFiltersBtn" type="button" class="btn-secondary">Clear</button>
+      <span id="resultSummary" style="font-size:12px;color:#6b7280;">0 complaints</span>
+    </div>
+
+    <div id="loadingState" class="loading-state">
+      <div class="loading-spinner"></div>
+      <span>Loading your complaints...</span>
+    </div>
+    <div id="emptyState" class="empty-state" style="display:none;">
+      <p id="emptyText">No matching cases found.</p>
+    </div>
+    <div id="complaintsList"></div>
   </main>
+
+  <script src="../js/citizenCases.js"></script>
 </body>
 </html>

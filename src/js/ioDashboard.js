@@ -77,7 +77,7 @@ async function loadProfile() {
     document.getElementById('pStation').textContent   = data.station_name || '—';
     document.getElementById('pEmail').textContent     = data.email        || '—';
   } catch (e) {
-    console.error('Profile load error:', e);
+    // Keep UI usable even if profile fetch fails.
   }
 }
 
@@ -91,7 +91,7 @@ async function loadStats() {
     document.getElementById('oActive').textContent   = data.activeCases;
     document.getElementById('oResolved').textContent = data.resolvedCases;
   } catch (e) {
-    console.error('Stats error:', e);
+    // Keep UI usable even if stats fetch fails.
   }
 }
 

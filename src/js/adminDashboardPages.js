@@ -409,6 +409,27 @@ document.getElementById('complaintModal')?.addEventListener('click', e => {
 ══════════════════════════════════════ */
 let shoActiveStationId = null;
 
+function getEligibleStationOfficers(stationId, targetRole) {
+  return officersData
+    .filter(o => {
+      if (o.is_active != 1 || String(o.station_id) !== String(stationId)) return false;
+      if (o.is_current_sho || o.is_current_superintendent) return false;
+      if (targetRole === 'sho' && o.role_id == 3) return false;
+      if (targetRole === 'superintendent' && o.role_id == 2) return false;
+      return true;
+    })
+    .sort((a, b) => a.full_name.localeCompare(b.full_name));
+}
+
+async function refreshAdminCaches() {
+  officersLoaded = false;
+  stationsLoaded = false;
+  await Promise.all([fetchOfficers(), fetchStations()]);
+  renderStations(stationsCache);
+  renderSHOGrid();
+  renderSuptGrid();
+}
+
 async function initSHOPage() {
   if (!stationsLoaded) await fetchStations();
   if (!officersLoaded) await fetchOfficers();
@@ -456,20 +477,17 @@ function openSHOModal(stationId) {
     removeSection.style.display = 'none';
   }
 
-  // Eligible: active officers NOT currently SHO (role_id != 2 OR not current)
+  // Eligible: active officers from this station not currently assigned as SHO/Superintendent
   const sel = document.getElementById('shoOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
   document.getElementById('shoOfficerPreview').style.display = 'none';
 
-  officersData
-    .filter(o => o.is_active == 1 && o.role_id != 2)
-    .sort((a,b) => a.full_name.localeCompare(b.full_name))
-    .forEach(o => {
+  getEligibleStationOfficers(stationId, 'sho').forEach(o => {
       const opt = document.createElement('option');
       opt.value = o.officer_id;
       opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
       sel.appendChild(opt);
-    });
+  });
 
   document.getElementById('shoModal').classList.add('active');
 }
@@ -492,16 +510,14 @@ document.getElementById('btnAppointSHO')?.addEventListener('click', async functi
   if (!officerId) { showAlert('shoModalAlert','error','Please select an officer.'); return; }
   this.disabled = true; this.textContent = 'Appointing…';
   try {
-    const res  = await fetch('../php/adminManageSHO.php', {
+    const res  = await fetch('../php/adminManageSho.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'appoint', station_id: shoActiveStationId, officer_id: officerId }),
     });
     const data = await res.json();
     if (data.success) {
       showAlert('shoModalAlert','success','SHO appointed successfully.');
-      officersLoaded = false; stationsLoaded = false;
-      await Promise.all([fetchOfficers(), fetchStations()]);
-      renderSHOGrid();
+      await refreshAdminCaches();
       setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1200);
     } else { showAlert('shoModalAlert','error', data.message || 'Failed to appoint.'); }
   } catch { showAlert('shoModalAlert','error','Connection error.'); }
@@ -514,16 +530,14 @@ document.getElementById('btnRemoveSHO')?.addEventListener('click', async functio
   const reason     = document.getElementById('shoRemoveReason').value.trim();
   this.disabled = true; this.textContent = 'Removing…';
   try {
-    const res  = await fetch('../php/adminManageSHO.php', {
+    const res  = await fetch('../php/adminManageSho.php', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'remove', station_id: shoActiveStationId, remove_type: removeType, reason }),
     });
     const data = await res.json();
     if (data.success) {
       showAlert('shoModalAlert','success','SHO removed.');
-      officersLoaded = false; stationsLoaded = false;
-      await Promise.all([fetchOfficers(), fetchStations()]);
-      renderSHOGrid();
+      await refreshAdminCaches();
       setTimeout(() => document.getElementById('shoModal').classList.remove('active'), 1200);
     } else { showAlert('shoModalAlert','error', data.message || 'Failed to remove.'); }
   } catch { showAlert('shoModalAlert','error','Connection error.'); }
@@ -590,15 +604,12 @@ function openSuptModal(stationId) {
 
   const sel = document.getElementById('suptOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
-  officersData
-    .filter(o => o.is_active == 1 && o.role_id != 3)
-    .sort((a,b) => a.full_name.localeCompare(b.full_name))
-    .forEach(o => {
+  getEligibleStationOfficers(stationId, 'superintendent').forEach(o => {
       const opt = document.createElement('option');
       opt.value = o.officer_id;
       opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
       sel.appendChild(opt);
-    });
+  });
 
   document.getElementById('superintendentModal').classList.add('active');
 }
@@ -616,9 +627,7 @@ document.getElementById('btnAppointSupt')?.addEventListener('click', async funct
     const data = await res.json();
     if (data.success) {
       showAlert('suptModalAlert','success','Superintendent appointed successfully.');
-      officersLoaded = false; stationsLoaded = false;
-      await Promise.all([fetchOfficers(), fetchStations()]);
-      renderSuptGrid();
+      await refreshAdminCaches();
       setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1200);
     } else { showAlert('suptModalAlert','error', data.message || 'Failed.'); }
   } catch { showAlert('suptModalAlert','error','Connection error.'); }
@@ -637,9 +646,7 @@ document.getElementById('btnRemoveSupt')?.addEventListener('click', async functi
     const data = await res.json();
     if (data.success) {
       showAlert('suptModalAlert','success','Superintendent removed.');
-      officersLoaded = false; stationsLoaded = false;
-      await Promise.all([fetchOfficers(), fetchStations()]);
-      renderSuptGrid();
+      await refreshAdminCaches();
       setTimeout(() => document.getElementById('superintendentModal').classList.remove('active'), 1200);
     } else { showAlert('suptModalAlert','error', data.message || 'Failed.'); }
   } catch { showAlert('suptModalAlert','error','Connection error.'); }

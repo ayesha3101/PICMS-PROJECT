@@ -23,7 +23,15 @@ try {
             o.station_id,
             COALESCE(s.station_name, '') AS station_name,
             o.role_id,
-            r.role_name
+            r.role_name,
+            EXISTS (
+                SELECT 1 FROM station_sho_assignments sa
+                WHERE sa.officer_id = o.officer_id AND sa.is_current = 1
+            ) AS is_current_sho,
+            EXISTS (
+                SELECT 1 FROM station_superintendent_assignments ssa
+                WHERE ssa.officer_id = o.officer_id AND ssa.is_current = 1
+            ) AS is_current_superintendent
         FROM officers o
         LEFT JOIN stations s ON o.station_id = s.station_id
         JOIN officer_roles r ON o.role_id = r.role_id
@@ -39,6 +47,8 @@ try {
         $o['role_id']         = (int)$o['role_id'];
         $o['active_caseload'] = (int)$o['active_caseload'];
         $o['is_active']       = (bool)$o['is_active'];
+        $o['is_current_sho']  = (bool)$o['is_current_sho'];
+        $o['is_current_superintendent'] = (bool)$o['is_current_superintendent'];
     }
     unset($o);
 

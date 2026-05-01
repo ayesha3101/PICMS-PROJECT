@@ -25,10 +25,16 @@ try {
              JOIN officers o2 ON sa.officer_id = o2.officer_id
              WHERE sa.station_id = s.station_id AND sa.is_current = 1
              LIMIT 1) AS sho_name,
+            (SELECT sa.officer_id FROM station_sho_assignments sa
+             WHERE sa.station_id = s.station_id AND sa.is_current = 1
+             LIMIT 1) AS sho_officer_id,
             (SELECT o3.full_name FROM station_superintendent_assignments ssa
              JOIN officers o3 ON ssa.officer_id = o3.officer_id
              WHERE ssa.station_id = s.station_id AND ssa.is_current = 1
-             LIMIT 1) AS superintendent_name
+             LIMIT 1) AS superintendent_name,
+            (SELECT ssa.officer_id FROM station_superintendent_assignments ssa
+             WHERE ssa.station_id = s.station_id AND ssa.is_current = 1
+             LIMIT 1) AS superintendent_officer_id
         FROM stations s
         ORDER BY s.station_name ASC
     ");

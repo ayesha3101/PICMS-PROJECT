@@ -75,6 +75,11 @@ if (in_array($currentStatus, ['Resolved', 'Closed'], true)) {
     exit;
 }
 
+if (!in_array($currentStatus, ['Officer Assigned', 'Investigation Ongoing'], true)) {
+    echo json_encode(['success' => false, 'message' => 'Case is not in a valid state for IO updates.']);
+    exit;
+}
+
 // Insert into case_updates
 $stmt = $conn->prepare("
     INSERT INTO case_updates (complaint_id, status, note, updated_by)

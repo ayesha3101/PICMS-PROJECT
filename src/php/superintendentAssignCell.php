@@ -28,6 +28,30 @@ if (!$detaineeId || !$cellId) {
 }
 
 try {
+    if (!$stationId) {
+        throw new Exception('No station assigned to your account.');
+    }
+
+    $chk = $conn->prepare("
+        SELECT
+            (SELECT station_id FROM detainees WHERE detainee_id = ? LIMIT 1) AS detainee_station_id,
+            (SELECT station_id FROM jail_cells WHERE cell_id = ? LIMIT 1) AS cell_station_id
+    ");
+    if (!$chk) {
+        throw new Exception('Unable to validate station access.');
+    }
+    $chk->bind_param('ii', $detaineeId, $cellId);
+    $chk->execute();
+    $meta = $chk->get_result()->fetch_assoc();
+    $chk->close();
+
+    if (!$meta || empty($meta['detainee_station_id']) || empty($meta['cell_station_id'])) {
+        throw new Exception('Invalid detainee or cell selection.');
+    }
+    if ((int)$meta['detainee_station_id'] !== $stationId || (int)$meta['cell_station_id'] !== $stationId) {
+        throw new Exception('Access denied for detainee/cell outside your station.');
+    }
+
     $proc = $conn->prepare("CALL sp_assign_detainee_cell(?, ?, ?)");
     if (!$proc) {
         throw new Exception('Unable to prepare assignment procedure.');

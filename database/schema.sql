@@ -200,7 +200,7 @@ CREATE TABLE witnesses (
 CREATE TABLE withdrawal_requests (
     request_id     INT AUTO_INCREMENT PRIMARY KEY,
     complaint_id   INT NOT NULL,
-    requested_by   VARCHAR(15) NOT NULL, --this is redundant
+    requested_by   VARCHAR(15) NOT NULL,
     reason         TEXT NULL,
     status         ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
     rejection_note VARCHAR(255) NULL,
@@ -257,7 +257,6 @@ CREATE TABLE sho_schedule (
         ON DELETE CASCADE
 );
 
---yeh change hua hai
 CREATE TABLE appointments (
     appointment_id      INT AUTO_INCREMENT PRIMARY KEY,
     complaint_id        INT NOT NULL,
@@ -399,7 +398,7 @@ VALUES (
 ); 
 set foreign_key_checks=1;
 
---this added view
+-- this added view
 CREATE VIEW vw_appointment_details AS
 SELECT
     a.appointment_id,
@@ -571,7 +570,7 @@ BEGIN
 END$$
 
 DELIMITER ;
-------yahan se
+-- yahan se
 DELIMITER $$
 -- Safely assign/reassign an Investigating Officer to a complaint in the same station
 CREATE PROCEDURE sp_assign_officer_to_case (
@@ -647,7 +646,7 @@ BEGIN
 END$$
 
 DELIMITER ;
-------------done 
+-- done 
 -- Additional reporting views
 DROP VIEW IF EXISTS vw_station_case_stats;
 CREATE VIEW vw_station_case_stats AS
@@ -671,7 +670,7 @@ FROM stations s
 LEFT JOIN complaints c
   ON c.station_id = s.station_id
 GROUP BY s.station_id, s.station_name;
--------done
+
 DROP VIEW IF EXISTS vw_officer_workload;
 CREATE VIEW vw_officer_workload AS
 SELECT
@@ -1233,10 +1232,8 @@ SET foreign_key_checks=1;
 -- Run this to update all existing rows at once
 UPDATE citizens SET password_hash = '$2b$10$S2QiS2u0KoZABLd4mjYOcuRayrJS7GiLSBeE/V9hp.LMfksF4Zf3C';
 UPDATE officers SET password_hash = '$2b$10$S2QiS2u0KoZABLd4mjYOcuRayrJS7GiLSBeE/V9hp.LMfksF4Zf3C';
-  --saray citizen and officers ka password Test@1234 hai T is capital
+  -- saray citizen and officers ka password Test@1234 hai T is capital
 
---to run
-USE picms_db;  -- replace with your actual DB name
 -- 2) update appointments.status enum (Confirmed -> Accepted)
 ALTER TABLE appointments
 MODIFY COLUMN status ENUM('Pending','Accepted','Completed','Cancelled') DEFAULT 'Pending';
