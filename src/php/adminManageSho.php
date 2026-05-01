@@ -28,14 +28,14 @@ if ($action === 'appoint') {
     }
 
     // Verify officer exists and is active
-    $chk = $conn->prepare("SELECT officer_id FROM officers WHERE officer_id = ? AND is_active = 1");
-    $chk->bind_param("i", $officerId);
+    $chk = $conn->prepare("SELECT officer_id FROM officers WHERE officer_id = ? AND station_id = ? AND is_active = 1");
+    $chk->bind_param("ii", $officerId, $stationId);
     $chk->execute();
     if (!$chk->get_result()->fetch_assoc()) {
-        echo json_encode(['success' => false, 'message' => 'Officer not found or inactive.']); exit;
+        echo json_encode(['success' => false, 'message' => 'Officer not found, inactive, or does not belong to this station.']); exit;
     }
     $chk->close();
-
+    
     $conn->begin_transaction();
 
     // Get existing current SHO for this station
