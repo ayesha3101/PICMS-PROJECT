@@ -85,28 +85,35 @@ if ($action === 'appoint') {
         if ($existing) {
             $upd = $conn->prepare("UPDATE station_superintendent_assignments SET is_current = 0, removed_at = NOW() WHERE station_id = ? AND is_current = 1");
             $upd->bind_param("i", $stationId);
-            $upd->execute();
+            if (!$upd->execute()) {
+                throw new Exception('Failed to retire previous superintendent assignment.');
+            }
             $upd->close();
 
             $dem = $conn->prepare("UPDATE officers SET role_id = 1 WHERE officer_id = ?");
             $dem->bind_param("i", $existing['officer_id']);
-            $dem->execute();
+            if (!$dem->execute()) {
+                throw new Exception('Failed to demote previous superintendent.');
+            }
             $dem->close();
         }
 
         $ins = $conn->prepare("INSERT INTO station_superintendent_assignments (station_id, officer_id, appointed_by, is_current) VALUES (?, ?, ?, 1)");
+        if (!$ins) {
+            throw new Exception('Prepare failed: ' . $conn->error);
+        }
         $ins->bind_param("iii", $stationId, $officerId, $_SESSION['admin_id']);
-        $ins->execute();
+        if (!$ins->execute()) {
+            throw new Exception('Failed to create superintendent assignment: ' . $ins->error);
+        }
         $ins->close();
 
         $pro = $conn->prepare("UPDATE officers SET role_id = 3, station_id = ? WHERE officer_id = ?");
         $pro->bind_param("ii", $stationId, $officerId);
-        $pro->execute();
-        $pro->close();
-
-        if ($conn->errno) {
-            throw new Exception('Server error');
+        if (!$pro->execute()) {
+            throw new Exception('Failed to promote officer to superintendent.');
         }
+        $pro->close();
 
         $conn->commit();
         echo json_encode(['success' => true]);
@@ -135,35 +142,33 @@ if ($action === 'appoint') {
     $officerId = $row['officer_id'];
 
     $conn->begin_transaction();
+    try {
+        // Retire assignment
+        $upd = $conn->prepare("
+            UPDATE station_superintendent_assignments
+            SET is_current = 0, removed_at = NOW(), removal_reason = ?
+            WHERE station_id = ? AND is_current = 1
+        ");
+        $upd->bind_param("si", $reason, $stationId);
+        if (!$upd->execute()) {
+            throw new Exception('Failed to retire superintendent assignment.');
+        }
+        $upd->close();
 
-    // Retire assignment
-    $upd = $conn->prepare("
-        UPDATE station_superintendent_assignments
-        SET is_current = 0, removed_at = NOW(), removal_reason = ?
-        WHERE station_id = ? AND is_current = 1
-    ");
-    $upd->bind_param("si", $reason, $stationId);
-    $upd->execute();
-    $upd->close();
-
-    if ($removeType === 'duty') {
-        // Deactivate officer entirely
-        $dem = $conn->prepare("UPDATE officers SET is_active = 0, role_id = 1 WHERE officer_id = ?");
-    } else {
-        // Just demote back to Investigating Officer, keep active
+        // Demote back to Investigating Officer, keep active
         $dem = $conn->prepare("UPDATE officers SET role_id = 1 WHERE officer_id = ?");
-    }
-    $dem->bind_param("i", $officerId);
-    $dem->execute();
-    $dem->close();
+        $dem->bind_param("i", $officerId);
+        if (!$dem->execute()) {
+            throw new Exception('Failed to update officer status.');
+        }
+        $dem->close();
 
-    if ($conn->errno) {
+        $conn->commit();
+        echo json_encode(['success' => true]);
+    } catch (Exception $e) {
         $conn->rollback();
-        echo json_encode(['success' => false, 'message' => 'Server error. Please try again.']); exit;
+        echo json_encode(['success' => false, 'message' => $e->getMessage() ?: 'Server error. Please try again.']);
     }
-
-    $conn->commit();
-    echo json_encode(['success' => true]);
 
 } else {
     echo json_encode(['success' => false, 'message' => 'Unknown action. Use appoint or remove.']);
