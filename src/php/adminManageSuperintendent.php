@@ -27,90 +27,78 @@ if ($action === 'appoint') {
         echo json_encode(['success' => false, 'message' => 'officer_id required.']); exit;
     }
 
-    // Verify station exists
-    $stChk = $conn->prepare("SELECT station_id FROM stations WHERE station_id = ? LIMIT 1");
-    $stChk->bind_param("i", $stationId);
-    $stChk->execute();
-    if (!$stChk->get_result()->fetch_assoc()) {
+    $stationCheck = $conn->prepare("SELECT station_id FROM stations WHERE station_id = ? LIMIT 1");
+    $stationCheck->bind_param("i", $stationId);
+    $stationCheck->execute();
+    if (!$stationCheck->get_result()->fetch_assoc()) {
         echo json_encode(['success' => false, 'message' => 'Station not found.']); exit;
     }
-    $stChk->close();
+    $stationCheck->close();
 
-    // Verify officer exists, is active, and belongs to selected station
-    $chk = $conn->prepare("
-        SELECT officer_id, role_id, station_id
-        FROM officers
-        WHERE officer_id = ? AND is_active = 1
-        LIMIT 1
-    ");
-    $chk->bind_param("i", $officerId);
-    $chk->execute();
-    $officer = $chk->get_result()->fetch_assoc();
+    $officerCheck = $conn->prepare("SELECT officer_id, role_id, station_id FROM officers WHERE officer_id = ? AND is_active = 1 LIMIT 1");
+    $officerCheck->bind_param("i", $officerId);
+    $officerCheck->execute();
+    $officer = $officerCheck->get_result()->fetch_assoc();
+    $officerCheck->close();
+
     if (!$officer) {
         echo json_encode(['success' => false, 'message' => 'Officer not found or inactive.']); exit;
     }
-    $chk->close();
     if ((int)$officer['station_id'] !== $stationId) {
         echo json_encode(['success' => false, 'message' => 'Officer must belong to the selected station.']); exit;
     }
     if ((int)$officer['role_id'] === 2) {
         echo json_encode(['success' => false, 'message' => 'Current SHO cannot be appointed as superintendent.']); exit;
     }
+    if ((int)$officer['role_id'] === 3) {
+        echo json_encode(['success' => false, 'message' => 'Officer already has a Superintendent role.']); exit;
+    }
 
     $conn->begin_transaction();
     try {
-        // Ensure officer is not already current SHO/Superintendent for any station
-        $assignedElsewhere = $conn->prepare("
-            SELECT
+        $assignedElsewhere = $conn->prepare(
+            "SELECT
                 EXISTS(SELECT 1 FROM station_sho_assignments sa WHERE sa.officer_id = ? AND sa.is_current = 1) AS in_sho,
-                EXISTS(SELECT 1 FROM station_superintendent_assignments ssa WHERE ssa.officer_id = ? AND ssa.is_current = 1) AS in_supt
-        ");
+                EXISTS(SELECT 1 FROM station_superintendent_assignments ssa WHERE ssa.officer_id = ? AND ssa.is_current = 1) AS in_supt"
+        );
         $assignedElsewhere->bind_param("ii", $officerId, $officerId);
         $assignedElsewhere->execute();
-        $a = $assignedElsewhere->get_result()->fetch_assoc();
+        $status = $assignedElsewhere->get_result()->fetch_assoc();
         $assignedElsewhere->close();
-        if (!empty($a['in_sho']) || !empty($a['in_supt'])) {
-            throw new Exception('Officer already holds a current station leadership assignment.');
+
+        if (!empty($status['in_sho']) || !empty($status['in_supt'])) {
+            throw new Exception('Officer already holds an active leadership assignment.');
         }
 
-        // Get existing current superintendent for this station
-        $cur = $conn->prepare("
-            SELECT officer_id FROM station_superintendent_assignments
-            WHERE station_id = ? AND is_current = 1 LIMIT 1
-        ");
+        $cur = $conn->prepare("SELECT officer_id FROM station_superintendent_assignments WHERE station_id = ? AND is_current = 1 LIMIT 1");
         $cur->bind_param("i", $stationId);
         $cur->execute();
         $existing = $cur->get_result()->fetch_assoc();
         $cur->close();
 
+        if ($existing && (int)$existing['officer_id'] === $officerId) {
+            $conn->commit();
+            echo json_encode(['success' => true]);
+            exit;
+        }
+
         if ($existing) {
-            // Retire existing superintendent assignment
-            $upd = $conn->prepare("
-                UPDATE station_superintendent_assignments
-                SET is_current = 0, removed_at = NOW()
-                WHERE station_id = ? AND is_current = 1
-            ");
+            $upd = $conn->prepare("UPDATE station_superintendent_assignments SET is_current = 0, removed_at = NOW() WHERE station_id = ? AND is_current = 1");
             $upd->bind_param("i", $stationId);
             $upd->execute();
             $upd->close();
 
-            // Demote previous superintendent back to Investigating Officer
             $dem = $conn->prepare("UPDATE officers SET role_id = 1 WHERE officer_id = ?");
             $dem->bind_param("i", $existing['officer_id']);
             $dem->execute();
             $dem->close();
         }
 
-        // Insert new superintendent assignment
-        $ins = $conn->prepare("
-            INSERT INTO station_superintendent_assignments (station_id, officer_id, appointed_by, is_current)
-            VALUES (?, ?, ?, 1)
-        ");
+        $ins = $conn->prepare("INSERT INTO station_superintendent_assignments (station_id, officer_id, appointed_by, is_current) VALUES (?, ?, ?, 1)");
         $ins->bind_param("iii", $stationId, $officerId, $_SESSION['admin_id']);
         $ins->execute();
         $ins->close();
 
-        // Promote officer to Jail Superintendent role (role_id = 3)
         $pro = $conn->prepare("UPDATE officers SET role_id = 3, station_id = ? WHERE officer_id = ?");
         $pro->bind_param("ii", $stationId, $officerId);
         $pro->execute();

@@ -414,8 +414,7 @@ function getEligibleStationOfficers(stationId, targetRole) {
     .filter(o => {
       if (o.is_active != 1 || String(o.station_id) !== String(stationId)) return false;
       if (o.is_current_sho || o.is_current_superintendent) return false;
-      if (targetRole === 'sho' && o.role_id == 3) return false;
-      if (targetRole === 'superintendent' && o.role_id == 2) return false;
+      if (o.role_id !== 1) return false;
       return true;
     })
     .sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -480,14 +479,22 @@ function openSHOModal(stationId) {
   // Eligible: active officers from this station not currently assigned as SHO/Superintendent
   const sel = document.getElementById('shoOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
-  document.getElementById('shoOfficerPreview').style.display = 'none';
-
-  getEligibleStationOfficers(stationId, 'sho').forEach(o => {
+  const eligible = getEligibleStationOfficers(stationId, 'sho');
+  if (!eligible.length) {
+    sel.innerHTML = '<option value="">No eligible officers available</option>';
+    sel.disabled = true;
+    document.getElementById('btnAppointSHO').disabled = true;
+  } else {
+    sel.disabled = false;
+    document.getElementById('btnAppointSHO').disabled = false;
+    eligible.forEach(o => {
       const opt = document.createElement('option');
       opt.value = o.officer_id;
       opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
       sel.appendChild(opt);
-  });
+    });
+  }
+  document.getElementById('shoOfficerPreview').style.display = 'none';
 
   document.getElementById('shoModal').classList.add('active');
 }
@@ -604,12 +611,21 @@ function openSuptModal(stationId) {
 
   const sel = document.getElementById('suptOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
-  getEligibleStationOfficers(stationId, 'superintendent').forEach(o => {
+  const eligible = getEligibleStationOfficers(stationId, 'superintendent');
+  if (!eligible.length) {
+    sel.innerHTML = '<option value="">No eligible officers available</option>';
+    sel.disabled = true;
+    document.getElementById('btnAppointSupt').disabled = true;
+  } else {
+    sel.disabled = false;
+    document.getElementById('btnAppointSupt').disabled = false;
+    eligible.forEach(o => {
       const opt = document.createElement('option');
       opt.value = o.officer_id;
       opt.textContent = `${o.full_name} (${o.rank} · ${o.badge_number})`;
       sel.appendChild(opt);
-  });
+    });
+  }
 
   document.getElementById('superintendentModal').classList.add('active');
 }
