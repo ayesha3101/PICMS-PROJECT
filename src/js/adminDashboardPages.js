@@ -50,7 +50,7 @@ async function initOfficersPage() {
 
 async function fetchOfficers() {
   try {
-    const res  = await fetch('../php/adminGetOfficers.php');
+    const res  = await fetch('../php/adminGetOfficers.php', { credentials: 'same-origin' });
     const data = await res.json();
     if (data.success) {
       officersData   = data.officers;
@@ -178,7 +178,7 @@ async function initStationsPage() {
 
 async function fetchStations() {
   try {
-    const res  = await fetch('../php/adminGetStations.php');
+    const res  = await fetch('../php/adminGetStations.php', { credentials: 'same-origin' });
     const data = await res.json();
     if (data.success) {
       stationsCache  = data.stations;
@@ -412,9 +412,11 @@ let shoActiveStationId = null;
 function getEligibleStationOfficers(stationId, targetRole) {
   return officersData
     .filter(o => {
-      if (o.is_active != 1 || String(o.station_id) !== String(stationId)) return false;
+      if (o.is_active != 1) return false;
+      if (o.station_id === null || String(o.station_id) !== String(stationId)) return false;
       if (o.is_current_sho || o.is_current_superintendent) return false;
-      if (o.role_id !== 1) return false;
+      if (targetRole === 'sho' && o.role_id !== 1) return false;
+      if (targetRole === 'superintendent' && o.role_id !== 1) return false;
       return true;
     })
     .sort((a, b) => a.full_name.localeCompare(b.full_name));
@@ -427,6 +429,16 @@ async function refreshAdminCaches() {
   renderStations(stationsCache);
   renderSHOGrid();
   renderSuptGrid();
+}
+
+async function fetchEligibleStationOfficers(stationId, targetRole) {
+  try {
+    const res = await fetch(`../php/adminGetEligibleOfficers.php?station_id=${encodeURIComponent(stationId)}&target_role=${encodeURIComponent(targetRole)}`, { credentials: 'same-origin' });
+    const data = await res.json();
+    return data.success ? data.officers : [];
+  } catch {
+    return [];
+  }
 }
 
 async function initSHOPage() {
@@ -452,12 +464,15 @@ function renderSHOGrid() {
     </div>`).join('');
 
   document.querySelectorAll('#shoGrid .ssc-btn').forEach(btn => {
-    btn.addEventListener('click', () => openSHOModal(parseInt(btn.dataset.stationId)));
+    btn.addEventListener('click', async () => await openSHOModal(parseInt(btn.dataset.stationId)));
   });
 }
 
-function openSHOModal(stationId) {
+async function openSHOModal(stationId) {
   shoActiveStationId = stationId;
+  if (!stationsLoaded) await fetchStations();
+  if (!officersLoaded) await fetchOfficers();
+
   const s = stationsCache.find(x => x.station_id == stationId);
   if (!s) return;
   document.getElementById('shoModalStationName').textContent = s.station_name;
@@ -476,10 +491,9 @@ function openSHOModal(stationId) {
     removeSection.style.display = 'none';
   }
 
-  // Eligible: active officers from this station not currently assigned as SHO/Superintendent
   const sel = document.getElementById('shoOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
-  const eligible = getEligibleStationOfficers(stationId, 'sho');
+  const eligible = await fetchEligibleStationOfficers(stationId, 'sho');
   if (!eligible.length) {
     sel.innerHTML = '<option value="">No eligible officers available</option>';
     sel.disabled = true;
@@ -518,7 +532,7 @@ document.getElementById('btnAppointSHO')?.addEventListener('click', async functi
   this.disabled = true; this.textContent = 'Appointing…';
   try {
     const res  = await fetch('../php/adminManageSho.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'appoint', station_id: shoActiveStationId, officer_id: officerId }),
     });
     const data = await res.json();
@@ -538,7 +552,7 @@ document.getElementById('btnRemoveSHO')?.addEventListener('click', async functio
   this.disabled = true; this.textContent = 'Removing…';
   try {
     const res  = await fetch('../php/adminManageSho.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'remove', station_id: shoActiveStationId, remove_type: removeType, reason }),
     });
     const data = await res.json();
@@ -587,12 +601,15 @@ function renderSuptGrid() {
     </div>`).join('');
 
   document.querySelectorAll('#superintendentGrid .ssc-btn').forEach(btn => {
-    btn.addEventListener('click', () => openSuptModal(parseInt(btn.dataset.stationId)));
+    btn.addEventListener('click', async () => await openSuptModal(parseInt(btn.dataset.stationId)));
   });
 }
 
-function openSuptModal(stationId) {
+async function openSuptModal(stationId) {
   suptActiveStationId = stationId;
+  if (!stationsLoaded) await fetchStations();
+  if (!officersLoaded) await fetchOfficers();
+
   const s = stationsCache.find(x => x.station_id == stationId);
   if (!s) return;
   document.getElementById('suptModalStationName').textContent = s.station_name;
@@ -611,7 +628,7 @@ function openSuptModal(stationId) {
 
   const sel = document.getElementById('suptOfficerSelect');
   sel.innerHTML = '<option value="">— Choose an officer —</option>';
-  const eligible = getEligibleStationOfficers(stationId, 'superintendent');
+  const eligible = await fetchEligibleStationOfficers(stationId, 'superintendent');
   if (!eligible.length) {
     sel.innerHTML = '<option value="">No eligible officers available</option>';
     sel.disabled = true;
@@ -637,7 +654,7 @@ document.getElementById('btnAppointSupt')?.addEventListener('click', async funct
   this.disabled = true; this.textContent = 'Appointing…';
   try {
     const res  = await fetch('../php/adminManageSuperintendent.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'appoint', station_id: suptActiveStationId, officer_id: oid }),
     });
     const data = await res.json();
@@ -656,7 +673,7 @@ document.getElementById('btnRemoveSupt')?.addEventListener('click', async functi
   this.disabled = true; this.textContent = 'Removing…';
   try {
     const res  = await fetch('../php/adminManageSuperintendent.php', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'remove', station_id: suptActiveStationId, remove_type: removeType }),
     });
     const data = await res.json();
@@ -682,7 +699,7 @@ document.getElementById('superintendentModal')?.addEventListener('click', e => {
 ══════════════════════════════════════ */
 async function initProfilePage() {
   try {
-    const res  = await fetch('../php/adminCheckSession.php');
+    const res  = await fetch('../php/adminCheckSession.php', { credentials: 'same-origin' });
     const data = await res.json();
     if (!data.valid) return;
     const name    = data.name  || '—';
@@ -728,7 +745,7 @@ async function handleChangePassword() {
   btn.disabled = true; btn.textContent = 'Updating…';
   try {
     const res  = await fetch('../php/changeAdminPassword.php', {
-      method: 'POST', headers: {'Content-Type':'application/json'},
+      method: 'POST', credentials: 'same-origin', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ current_password: current, new_password: newPwd }),
     });
     const data = await res.json();
