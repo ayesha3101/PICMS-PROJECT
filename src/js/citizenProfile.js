@@ -8,6 +8,21 @@
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
   loadProfile();
+  loadBadgeIndicators();
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      loadProfile();
+      loadBadgeIndicators();
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      loadProfile();
+      loadBadgeIndicators();
+    }
+  });
 });
 
 // ── Session guard
@@ -236,4 +251,56 @@ function togglePassVis(inputId, btn) {
   btn.querySelector('svg').innerHTML = visible
     ? '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>'
     : '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/>';
+}
+
+function loadBadgeIndicators() {
+  fetch('../php/getComplaints.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.complaints)) return;
+      const badge = document.getElementById('complaintBadge');
+      if (badge) {
+        badge.textContent = data.complaints.length;
+        if (data.complaints.length > 0) {
+          badge.classList.add('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetWithdrawals.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.cases)) return;
+      const pending = data.cases.filter(c =>
+        c.status === 'Withdrawal Pending' || c.latest_request_status === 'Pending'
+      ).length;
+      const badge = document.getElementById('withdrawalBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetAppointments.php?count_only=1')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      const pending = Number(data.pending || 0);
+      const badge = document.getElementById('appointmentBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
 }

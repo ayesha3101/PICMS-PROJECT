@@ -9,6 +9,22 @@ document.addEventListener('DOMContentLoaded', () => {
     loadDashboard();
     loadWithdrawalIndicators();
     loadAppointmentIndicators();
+
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) {
+            loadDashboard();
+            loadWithdrawalIndicators();
+            loadAppointmentIndicators();
+        }
+    });
+
+    window.addEventListener('pageshow', (e) => {
+        if (e.persisted) {
+            loadDashboard();
+            loadWithdrawalIndicators();
+            loadAppointmentIndicators();
+        }
+    });
 });
 
 // ── 1. Session guard

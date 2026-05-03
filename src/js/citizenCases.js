@@ -3,7 +3,22 @@ let allComplaints = [];
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
   loadComplaints();
+  loadBadgeIndicators();
   wireFilters();
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      loadComplaints();
+      loadBadgeIndicators();
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      loadComplaints();
+      loadBadgeIndicators();
+    }
+  });
 });
 
 function checkSession() {
@@ -144,4 +159,42 @@ function escHtml(str) {
 function escAttr(str) {
   if (!str) return '';
   return String(str).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-_]/g, '');
+}
+
+function loadBadgeIndicators() {
+  fetch('../php/citizenGetWithdrawals.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.cases)) return;
+      const pending = data.cases.filter(c =>
+        c.status === 'Withdrawal Pending' || c.latest_request_status === 'Pending'
+      ).length;
+      const badge = document.getElementById('withdrawalBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetAppointments.php?count_only=1')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      const pending = Number(data.pending || 0);
+      const badge = document.getElementById('appointmentBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
 }

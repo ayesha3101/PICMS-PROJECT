@@ -5,6 +5,21 @@ document.addEventListener('DOMContentLoaded', () => {
   checkSession();
   wireModal();
   loadWithdrawals();
+  loadBadgeIndicators();
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      loadWithdrawals();
+      loadBadgeIndicators();
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      loadWithdrawals();
+      loadBadgeIndicators();
+    }
+  });
 });
 
 function checkSession() {
@@ -271,4 +286,37 @@ function escHtml(str) {
 function escAttr(str) {
   if (!str) return '';
   return String(str).replace(/\s+/g, '-').replace(/[^a-zA-Z0-9-_]/g, '');
+}
+
+function loadBadgeIndicators() {
+  fetch('../php/getComplaints.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.complaints)) return;
+      const badge = document.getElementById('complaintBadge');
+      if (badge) {
+        badge.textContent = data.complaints.length;
+        if (data.complaints.length > 0) {
+          badge.classList.add('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetAppointments.php?count_only=1')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      const pending = Number(data.pending || 0);
+      const badge = document.getElementById('appointmentBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
 }

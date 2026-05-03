@@ -11,6 +11,9 @@ require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/appointmentLifecycle.php';
 
 header('Content-Type: application/json');
+header('Cache-Control: no-cache, no-store, must-revalidate');
+header('Pragma: no-cache');
+header('Expires: 0');
 
 // ── Guard: must be logged in
 if (empty($_SESSION['logged_in']) || empty($_SESSION['citizen_cnic'])) {

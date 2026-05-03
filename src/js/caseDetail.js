@@ -7,8 +7,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   checkSession();
+  loadBadgeIndicators();
 
-  // ── Read reference number from URL: caseDetail.html?ref=KHI-26-00001
   const params = new URLSearchParams(window.location.search);
   const ref    = params.get('ref');
 
@@ -18,6 +18,20 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   loadCaseDetail(ref);
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) {
+      loadBadgeIndicators();
+      loadCaseDetail(ref);
+    }
+  });
+
+  window.addEventListener('pageshow', (e) => {
+    if (e.persisted) {
+      loadBadgeIndicators();
+      loadCaseDetail(ref);
+    }
+  });
 });
 
 // ── Session guard
@@ -219,4 +233,56 @@ function escHtml(str) {
   if (!str) return '';
   return String(str)
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function loadBadgeIndicators() {
+  fetch('../php/getComplaints.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.complaints)) return;
+      const badge = document.getElementById('complaintBadge');
+      if (badge) {
+        badge.textContent = data.complaints.length;
+        if (data.complaints.length > 0) {
+          badge.classList.add('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetWithdrawals.php')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success || !Array.isArray(data.cases)) return;
+      const pending = data.cases.filter(c =>
+        c.status === 'Withdrawal Pending' || c.latest_request_status === 'Pending'
+      ).length;
+      const badge = document.getElementById('withdrawalBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
+
+  fetch('../php/citizenGetAppointments.php?count_only=1')
+    .then(r => r.json())
+    .then(data => {
+      if (!data.success) return;
+      const pending = Number(data.pending || 0);
+      const badge = document.getElementById('appointmentBadge');
+      if (badge) {
+        if (pending > 0) {
+          badge.textContent = pending;
+          badge.classList.add('visible');
+        } else {
+          badge.classList.remove('visible');
+        }
+      }
+    })
+    .catch(() => {});
 }
