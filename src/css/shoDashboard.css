@@ -219,7 +219,59 @@
     align-self: flex-end; white-space: nowrap;
   }
   .btn-reset:hover { border-color: var(--gold-dim); color: var(--gold); }
-  
+
+  /* Status Pills */
+  .pill {
+    display: inline-block; padding: 4px 10px; border-radius: 12px;
+    font-size: 10.5px; font-weight: 500; white-space: nowrap;
+    background: rgba(139,92,246,0.12); color: var(--purple); border: 1px solid rgba(139,92,246,0.2);
+  }
+  .pill[data-status="Male"] { background: rgba(59,130,246,0.12); color: #60a5fa; border-color: rgba(59,130,246,0.2); }
+  .pill[data-status="Female"] { background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.2); }
+  .pill[data-status="Resolved"] { background: rgba(76,175,128,0.12); color: var(--success); border-color: rgba(76,175,128,0.2); }
+  .pill[data-status="Pending"] { background: rgba(245,158,11,0.12); color: var(--amber); border-color: rgba(245,158,11,0.2); }
+
+  /* Action Buttons */
+  .btn-action {
+    padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 500;
+    background: var(--navy-surface); border: 1px solid var(--navy-border);
+    color: var(--gold-light); cursor: pointer; transition: all 0.15s;
+    font-family: 'Outfit', sans-serif; white-space: nowrap;
+  }
+  .btn-action:hover { background: rgba(201,168,76,0.1); border-color: var(--gold-dim); }
+  .btn-action.btn-danger { color: #e88080; }
+  .btn-action.btn-danger:hover { background: rgba(217,95,95,0.1); border-color: #e88080; }
+
+  /* Detail List */
+  .detail-list { display: flex; flex-direction: column; padding: 16px 20px; gap: 0; }
+  .detail-row {
+    display: grid; grid-template-columns: 140px 1fr;
+    padding: 12px 0; border-bottom: 1px solid var(--navy-border);
+    align-items: start;
+  }
+  .detail-row:last-child { border-bottom: none; }
+  .dr-key { font-size: 11px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .dr-val { font-size: 13px; color: var(--offwhite); word-break: break-word; }
+
+  /* Profile Card */
+  .profile-card {
+    display: flex; align-items: center; gap: 16px; padding: 24px;
+    background: var(--navy-card); border: 1px solid var(--navy-border);
+    border-radius: 10px; margin-bottom: 20px;
+  }
+  .profile-avatar-lg {
+    width: 52px; height: 52px; border-radius: 50%;
+    background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600; color: var(--gold); flex-shrink: 0;
+  }
+  .profile-name { font-size: 16px; font-weight: 600; color: var(--offwhite); }
+  .profile-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* Form Fields */
+  .form-field { display: flex; flex-direction: column; gap: 6px; }
+  .filter-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+
   /* ════════════════════════════
      TABLE CARD
   ════════════════════════════ */

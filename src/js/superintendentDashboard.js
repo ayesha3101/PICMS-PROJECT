@@ -65,6 +65,9 @@ async function loadProfile() {
   byId('suptInitials').textContent = initials;
   byId('suptName').textContent = name;
   byId('suptBadge').textContent = d.profile.badge_number || '—';
+  byId('suptAvatarTop').textContent = initials;
+  byId('suptNameTop').textContent = name;
+  byId('suptRankTop').textContent = d.profile.rank || '—';
   byId('pFullName').textContent = name;
   byId('pBadgeSub').textContent = `Badge: ${d.profile.badge_number || '—'}`;
   byId('pAvatarLg').textContent = initials;
@@ -113,20 +116,21 @@ function renderDetainees() {
     }
     return true;
   });
+  byId('detCount').textContent = rows.length;
   byId('detTbody').innerHTML = rows.length ? rows.map((d) => `
     <tr>
       <td>${esc(fullName(d))}</td>
       <td><span class="pill">${esc(d.gender)}</span></td>
       <td>${esc(d.age)}</td>
-      <td>${d.cell_code ? `${esc(d.cell_code)} <span class="muted">(${esc(d.cell_gender)})</span>` : '<span class="muted">Unassigned</span>'}</td>
-      <td>${d.reference_number ? esc(d.reference_number) : '<span class="muted">None</span>'}</td>
+      <td>${d.cell_code ? `${esc(d.cell_code)}` : '<span class="muted">Unassigned</span>'}</td>
+      <td>${d.reference_number ? esc(d.reference_number) : '<span class="muted">—</span>'}</td>
       <td>${fmtDate(d.admission_date)}</td>
       <td class="actions">
-        <button onclick="openEditDetainee(${d.detainee_id})">Edit</button>
-        <button onclick="openAssignCell(${d.detainee_id})">Assign/Reassign Cell</button>
-        <button onclick="removeDetainee(${d.detainee_id})">Remove</button>
+        <button class="btn-action" onclick="openEditDetainee(${d.detainee_id})">Edit</button>
+        <button class="btn-action" onclick="openAssignCell(${d.detainee_id})">Assign Cell</button>
+        <button class="btn-action btn-danger" onclick="removeDetainee(${d.detainee_id})">Remove</button>
       </td>
-    </tr>`).join('') : '<tr><td colspan="7" class="muted">No detainees found.</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="7" class="tbl-empty"><div class="loading-row">No detainees found.</div></td></tr>';
 }
 
 function renderCells() {
@@ -141,10 +145,11 @@ function renderCells() {
     if (s && !String(c.cell_code).toLowerCase().includes(s)) return false;
     return true;
   });
+  byId('cellCount').textContent = rows.length;
   byId('cellTbody').innerHTML = rows.length ? rows.map((c) => {
     const available = Number(c.capacity) - Number(c.occupied);
     return `<tr><td>${esc(c.cell_code)}</td><td>${esc(c.gender)}</td><td>${esc(c.capacity)}</td><td>${esc(c.occupied)}</td><td>${available}</td></tr>`;
-  }).join('') : '<tr><td colspan="5" class="muted">No cells found.</td></tr>';
+  }).join('') : '<tr><td colspan="5" class="tbl-empty"><div class="loading-row">No cells found.</div></td></tr>';
 }
 
 function renderHearings() {
@@ -160,15 +165,16 @@ function renderHearings() {
     }
     return true;
   });
+  byId('hearCount').textContent = rows.length;
   byId('hearTbody').innerHTML = rows.length ? rows.map((h) => `
     <tr>
-      <td>${esc(h.detainee_name)} <span class="muted">(${esc(h.gender)})</span></td>
+      <td>${esc(h.detainee_name)}</td>
       <td>${fmtDate(h.hearing_date)} ${h.hearing_time ? ` ${esc(h.hearing_time.slice(0,5))}` : ''}</td>
       <td>${esc(h.court_name || '—')}</td>
       <td>${esc(h.hearing_type || '—')}</td>
       <td>${esc(h.result || '—')}</td>
       <td>${esc(h.reference_number || '—')}</td>
-    </tr>`).join('') : '<tr><td colspan="6" class="muted">No hearings found.</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="6" class="tbl-empty"><div class="loading-row">No hearings found.</div></td></tr>';
 }
 
 function renderCases() {
@@ -182,15 +188,16 @@ function renderCases() {
     }
     return true;
   });
+  byId('caseCount').textContent = rows.length;
   byId('caseTbody').innerHTML = rows.length ? rows.map((c) => `
     <tr>
-      <td>${esc(c.detainee_name)} <span class="muted">(${esc(c.gender)})</span></td>
+      <td>${esc(c.detainee_name)}</td>
       <td>${esc(c.reference_number)}</td>
-      <td>${esc(c.status)}</td>
+      <td><span class="pill">${esc(c.status)}</span></td>
       <td>${esc(c.incident_area || '—')}</td>
       <td>${esc(c.cnic || '—')}</td>
       <td>${fmtDate(c.incident_date)}</td>
-    </tr>`).join('') : '<tr><td colspan="6" class="muted">No linked cases found.</td></tr>';
+    </tr>`).join('') : '<tr><td colspan="6" class="tbl-empty"><div class="loading-row">No linked cases found.</div></td></tr>';
 }
 
 function wireFilters() {
@@ -209,6 +216,12 @@ function wireFilters() {
   [['fCaseGender','change',renderCases],['fCaseSearch','input',renderCases]]
     .forEach(([id, ev, fn]) => byId(id).addEventListener(ev, fn));
   byId('fCaseClear').addEventListener('click', () => { byId('fCaseGender').value=''; byId('fCaseSearch').value=''; renderCases(); });
+}
+
+function wireSidebarToggle() {
+  const toggle = byId('sidebarToggle');
+  const sidebar = byId('sidebar');
+  if (toggle) toggle.addEventListener('click', () => sidebar.classList.toggle('open'));
 }
 
 function openDetaineeModal(d = null) {
@@ -295,6 +308,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (!ok) return;
   setTopbarDate();
   wireNavigation();
+  wireSidebarToggle();
   wireFilters();
   wireDetaineeModal();
   wireProfileActions();
