@@ -37,8 +37,8 @@
     .v-rule { position:absolute; top:10%; right:0; width:1px; height:80%; background:linear-gradient(to bottom, transparent, var(--gold-dim) 35%, var(--gold) 65%, transparent); opacity:0.35; }
     .left-content { position:relative; z-index:2; animation:fadeUp 0.9s ease both; }
     .emblem { margin-bottom:34px; }
-    .emblem-ring { width:66px; height:66px; border-radius:50%; border:1.5px solid var(--gold); display:flex; align-items:center; justify-content:center; position:relative; box-shadow:0 0 0 6px rgba(201,168,76,0.05), 0 0 26px rgba(201,168,76,0.1); }
-    .emblem-ring::before { content:''; position:absolute; inset:5px; border-radius:50%; border:1px solid rgba(201,168,76,0.26); }
+    .emblem-ring { width:66px; height:66px; border-radius:50%; border:none; background:white; display:flex; align-items:center; justify-content:center; position:relative; box-shadow:none; }
+    .emblem-ring::before { display:none; }
     .left-eyebrow { font-size:10px; font-weight:600; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); margin-bottom:13px; }
     .left-heading { font-family:'Cormorant Garamond',serif; font-size:clamp(32px,3.3vw,50px); font-weight:600; line-height:1.08; color:var(--offwhite); margin-bottom:16px; }
     .left-heading em { font-style:italic; color:var(--gold); }
@@ -142,7 +142,7 @@
     <div class="left-content">
       <div class="emblem">
         <div class="emblem-ring">
-          <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:40px;height:40px;object-fit:contain;"/>
+          <img src="../../assets/policeLogo.png" alt="Karachi Police Logo" style="width:78px;height:78px;object-fit:contain;"/>
         </div>
       </div>
       <p class="left-eyebrow">Karachi Police</p>

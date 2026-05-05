@@ -99,14 +99,14 @@ html, body {
 .emblem { margin-bottom: 34px; }
 .emblem-ring {
   width: 68px; height: 68px; border-radius: 50%;
-  border: 1.5px solid var(--gold);
+  border: none;
+  background: white;
   display: flex; align-items: center; justify-content: center;
   position: relative;
-  box-shadow: 0 0 0 6px rgba(201,168,76,0.05), 0 0 28px rgba(201,168,76,0.1);
+  box-shadow: none;
 }
 .emblem-ring::before {
-  content: ''; position: absolute; inset: 5px;
-  border-radius: 50%; border: 1px solid rgba(201,168,76,0.28);
+  display: none;
 }
 .emblem-icon { font-size: 22px; color: var(--gold); }
 

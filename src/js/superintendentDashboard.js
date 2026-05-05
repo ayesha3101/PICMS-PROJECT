@@ -5,6 +5,11 @@ const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<'
 const fullName = (d) => [d.d_fname, d.d_minit, d.d_lname].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 const fmtDate = (v) => v ? new Date(v).toLocaleDateString('en-GB') : '—';
 
+function setTopbarDate() {
+  const d = new Date();
+  byId('topbarDate').textContent = d.toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+}
+
 async function api(url, options = {}) {
   const res = await fetch(url, options);
   return res.json();
@@ -16,16 +21,31 @@ async function checkSession() {
   return true;
 }
 
-function wireTabs() {
-  document.querySelectorAll('.tab').forEach((tab) => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-      tab.classList.add('active');
-      const key = tab.dataset.tab;
-      document.querySelectorAll('.section').forEach((s) => s.classList.remove('active'));
-      byId(`sec-${key}`).classList.add('active');
+function wireNavigation() {
+  document.querySelectorAll('.nav-item[data-page]').forEach((item) => {
+    item.addEventListener('click', () => {
+      const page = item.dataset.page;
+      document.querySelectorAll('.nav-item[data-page]').forEach((x) => x.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.page-section').forEach((s) => s.classList.remove('active'));
+      const pageEl = document.getElementById(`page-${page}`);
+      if (pageEl) pageEl.classList.add('active');
+      updatePageTitle(page);
     });
   });
+}
+
+function updatePageTitle(page) {
+  const titles = {
+    detainees: { title: 'Detainee Management', subtitle: 'Add, edit, and manage detainee records' },
+    cells: { title: 'Cell Management', subtitle: 'View cell occupancy and availability' },
+    hearings: { title: 'Court Hearings', subtitle: 'Upcoming hearings for detainees' },
+    cases: { title: 'Linked Cases', subtitle: 'Citizen-registered cases linked to detainees' },
+    profile: { title: 'My Profile', subtitle: 'Account details and security settings' }
+  };
+  const data = titles[page] || { title: 'Dashboard', subtitle: 'Custody Operations Portal' };
+  byId('pageTitle').textContent = data.title;
+  byId('pageSubtitle').textContent = data.subtitle;
 }
 
 async function loadStats() {
@@ -40,12 +60,19 @@ async function loadProfile() {
   const d = await api('../php/superintendentGetProfile.php');
   if (!d.success) return;
   state.profile = d.profile;
-  byId('pName').textContent = d.profile.full_name || '—';
+  const name = d.profile.full_name || 'Officer';
+  const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '—';
+  byId('suptInitials').textContent = initials;
+  byId('suptName').textContent = name;
+  byId('suptBadge').textContent = d.profile.badge_number || '—';
+  byId('pFullName').textContent = name;
+  byId('pBadgeSub').textContent = `Badge: ${d.profile.badge_number || '—'}`;
+  byId('pAvatarLg').textContent = initials;
+  byId('pName').textContent = name;
   byId('pBadge').textContent = d.profile.badge_number || '—';
   byId('pRank').textContent = d.profile.rank || '—';
   byId('pEmail').textContent = d.profile.email || '—';
   byId('pStation').textContent = d.profile.station_name || '—';
-  byId('topSub').textContent = `Station: ${d.profile.station_name || '—'}`;
 }
 
 async function loadDetainees() {
@@ -224,6 +251,7 @@ window.removeDetainee = async (id) => {
 function wireDetaineeModal() {
   byId('addDetaineeBtn').addEventListener('click', () => openDetaineeModal());
   byId('detCloseBtn').addEventListener('click', () => byId('detModalBg').classList.remove('open'));
+  byId('detCancelBtn').addEventListener('click', () => byId('detModalBg').classList.remove('open'));
   byId('detModalBg').addEventListener('click', (e) => { if (e.target === byId('detModalBg')) byId('detModalBg').classList.remove('open'); });
   byId('detSaveBtn').addEventListener('click', async () => {
     const payload = {
@@ -257,7 +285,7 @@ function wireProfileActions() {
     byId('cpMsg').textContent = res.success ? 'Password updated.' : (res.message || 'Failed to update password.');
     if (res.success) { byId('cpCurrent').value=''; byId('cpNew').value=''; byId('cpConfirm').value=''; }
   });
-  byId('signOutBtn').addEventListener('click', () => {
+  byId('logoutBtn').addEventListener('click', () => {
     fetch('../php/officerLogout.php', { method:'POST' }).finally(() => window.location.href = 'officerLogin.html');
   });
 }
@@ -265,7 +293,8 @@ function wireProfileActions() {
 document.addEventListener('DOMContentLoaded', async () => {
   const ok = await checkSession();
   if (!ok) return;
-  wireTabs();
+  setTopbarDate();
+  wireNavigation();
   wireFilters();
   wireDetaineeModal();
   wireProfileActions();

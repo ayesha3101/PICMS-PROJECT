@@ -176,6 +176,10 @@
   .si-red    svg { stroke: var(--danger); }
   .si-green  { background: rgba(76,175,128,0.1);  border: 1px solid rgba(76,175,128,0.22);  }
   .si-green  svg { stroke: var(--success); }
+  .si-steel  { background: rgba(30,61,92,0.15);   border: 1px solid rgba(30,61,92,0.32);   }
+  .si-steel  svg { stroke: var(--steel-soft); }
+  .si-gold   { background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.28);  }
+  .si-gold   svg { stroke: var(--gold); }
   .stat-body { display: flex; flex-direction: column; gap: 3px; }
   .stat-label { font-size: 10.5px; color: var(--muted); font-weight: 400; }
   .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 28px; font-weight: 600; color: var(--offwhite); line-height: 1; }
