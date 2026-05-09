@@ -1,10 +1,8 @@
 <?php
-// ══════════════════════════════════════════════
 // verify_otp.php
 // Job: verify OTP for ANY purpose
 //      (register, forgot_password, change_password)
 //      purpose is read from session
-// ══════════════════════════════════════════════
 session_start();
 require_once __DIR__ . '/../config/config.php';
 
