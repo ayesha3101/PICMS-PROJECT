@@ -53,55 +53,96 @@ if ($complaintId !== null) {
     }
 }
 
-if ($detaineeId > 0) {
-    $stmt = $conn->prepare("
-        UPDATE detainees
-        SET cnic = ?, d_fname = ?, d_minit = ?, d_lname = ?, age = ?, gender = ?,
-            complaint_id = ?, purpose_of_admission = ?, admission_date = ?
-        WHERE detainee_id = ? AND station_id = ?
-    ");
-    $stmt->bind_param(
-        'ssssisissii',
-        $cnic,
-        $fname,
-        $minit,
-        $lname,
-        $age,
-        $gender,
-        $complaintId,
-        $purpose,
-        $admissionDate,
-        $detaineeId,
-        $stationId
-    );
-} else {
-    $stmt = $conn->prepare("
-        INSERT INTO detainees (
-            cnic, d_fname, d_minit, d_lname, age, gender, station_id,
-            complaint_id, purpose_of_admission, admission_date, admitted_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ");
-    $stmt->bind_param(
-        'ssssisiissi',
-        $cnic,
-        $fname,
-        $minit,
-        $lname,
-        $age,
-        $gender,
-        $stationId,
-        $complaintId,
-        $purpose,
-        $admissionDate,
-        $officerId
-    );
-}
+// ────────────────────────────────────────────────────────────────
+// ATOMIC TRANSACTION: Detainee save + audit logging
+// ────────────────────────────────────────────────────────────────
+$conn->begin_transaction();
 
-if (!$stmt->execute()) {
+try {
+    if ($detaineeId > 0) {
+        // UPDATE case
+        $stmt = $conn->prepare("
+            UPDATE detainees
+            SET cnic = ?, d_fname = ?, d_minit = ?, d_lname = ?, age = ?, gender = ?,
+                complaint_id = ?, purpose_of_admission = ?, admission_date = ?
+            WHERE detainee_id = ? AND station_id = ?
+        ");
+        if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+        $stmt->bind_param(
+            'ssssisissii',
+            $cnic,
+            $fname,
+            $minit,
+            $lname,
+            $age,
+            $gender,
+            $complaintId,
+            $purpose,
+            $admissionDate,
+            $detaineeId,
+            $stationId
+        );
+        if (!$stmt->execute()) throw new Exception("Failed to update detainee: " . $stmt->error);
+        $lastId = $detaineeId;
+    } else {
+        // INSERT case
+        $stmt = $conn->prepare("
+            INSERT INTO detainees (
+                cnic, d_fname, d_minit, d_lname, age, gender, station_id,
+                complaint_id, purpose_of_admission, admission_date, admitted_by
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ");
+        if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+        $stmt->bind_param(
+            'ssssisiissi',
+            $cnic,
+            $fname,
+            $minit,
+            $lname,
+            $age,
+            $gender,
+            $stationId,
+            $complaintId,
+            $purpose,
+            $admissionDate,
+            $officerId
+        );
+        if (!$stmt->execute()) throw new Exception("Failed to insert detainee: " . $stmt->error);
+        $lastId = $conn->insert_id;
+    }
     $stmt->close();
-    echo json_encode(['success' => false, 'message' => 'Failed to save detainee.']);
-    exit;
-}
-$stmt->close();
 
-echo json_encode(['success' => true]);
+    // 2. Log the action to case_updates for audit trail
+    $action = $detaineeId > 0 ? 'UPDATE' : 'INSERT';
+    $logNote = "$action detainee: $fname $lname (Age: $age, Gender: $gender)";
+
+    if ($complaintId) {
+        $log = $conn->prepare("
+            INSERT INTO case_updates (complaint_id, status, note, updated_by)
+            VALUES (?, 'Detention', ?, 'System')
+        ");
+        if (!$log) throw new Exception("Prepare failed: " . $conn->error);
+        $log->bind_param('is', $complaintId, $logNote);
+        if (!$log->execute()) throw new Exception("Failed to log detention action: " . $log->error);
+        $log->close();
+    }
+
+    // Commit both operations atomically
+    $conn->commit();
+
+    echo json_encode([
+        'success' => true,
+        'detainee_id' => $lastId,
+        'message' => 'Detainee saved successfully'
+    ]);
+
+} catch (Exception $e) {
+    // Rollback if anything fails
+    $conn->rollback();
+    error_log('superintendentSaveDetainee: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to save detainee. Please try again.',
+        'error' => $e->getMessage()
+    ]);
+}

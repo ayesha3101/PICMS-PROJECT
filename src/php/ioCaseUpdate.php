@@ -80,19 +80,41 @@ if (!in_array($currentStatus, ['Officer Assigned', 'Investigation Ongoing'], tru
     exit;
 }
 
-// Insert into case_updates
-$stmt = $conn->prepare("
-    INSERT INTO case_updates (complaint_id, status, note, updated_by)
-    VALUES (?, ?, ?, ?)
-");
-$stmt->bind_param('isss', $complaintId, $status, $note, $officerName);
-$stmt->execute();
-$stmt->close();
+// ────────────────────────────────────────────────────────────────
+// ATOMIC TRANSACTION: Both operations must succeed or both rollback
+// ────────────────────────────────────────────────────────────────
+$conn->begin_transaction();
 
-// Update complaint status (trigger will also log this but explicit update is fine)
-$upd = $conn->prepare("UPDATE complaints SET status = ? WHERE complaint_id = ?");
-$upd->bind_param('si', $status, $complaintId);
-$upd->execute();
-$upd->close();
+try {
+    // 1. Update complaint status
+    $upd = $conn->prepare("UPDATE complaints SET status = ? WHERE complaint_id = ?");
+    if (!$upd) throw new Exception("Prepare failed: " . $conn->error);
+    $upd->bind_param('si', $status, $complaintId);
+    if (!$upd->execute()) throw new Exception("Failed to update complaint status: " . $upd->error);
+    $upd->close();
 
-echo json_encode(['success' => true, 'message' => 'Case updated successfully.']);
+    // 2. Insert into case_updates (audit log)
+    $stmt = $conn->prepare("
+        INSERT INTO case_updates (complaint_id, status, note, updated_by)
+        VALUES (?, ?, ?, ?)
+    ");
+    if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+    $stmt->bind_param('isss', $complaintId, $status, $note, $officerName);
+    if (!$stmt->execute()) throw new Exception("Failed to log case update: " . $stmt->error);
+    $stmt->close();
+
+    // Commit both operations atomically
+    $conn->commit();
+
+    echo json_encode(['success' => true, 'message' => 'Case updated successfully.']);
+
+} catch (Exception $e) {
+    // Rollback if anything fails
+    $conn->rollback();
+    error_log('ioCaseUpdate: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to update case. Please try again.',
+        'error' => $e->getMessage()
+    ]);
+}
