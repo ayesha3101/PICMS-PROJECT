@@ -49,57 +49,103 @@ function updatePageTitle(page) {
 }
 
 async function loadStats() {
-  const d = await api('../php/superintendentGetStats.php');
-  if (!d.success) return;
-  byId('stDetainees').textContent = d.active_detainees;
-  byId('stCells').textContent = d.cells;
-  byId('stHearings').textContent = d.upcoming_hearings;
+  try {
+    const d = await api('../php/superintendentGetStats.php');
+    if (!d.success) {
+      console.warn('Failed to load stats:', d.message);
+      return;
+    }
+    byId('stDetainees').textContent = d.active_detainees || 0;
+    byId('stCells').textContent = d.cells || 0;
+    byId('stHearings').textContent = d.upcoming_hearings || 0;
+  } catch (e) {
+    console.error('Error loading stats:', e);
+  }
 }
 
 async function loadProfile() {
-  const d = await api('../php/superintendentGetProfile.php');
-  if (!d.success) return;
-  state.profile = d.profile;
-  const name = d.profile.full_name || 'Officer';
-  const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '—';
-  byId('suptInitials').textContent = initials;
-  byId('suptName').textContent = name;
-  byId('suptBadge').textContent = d.profile.badge_number || '—';
-  byId('suptAvatarTop').textContent = initials;
-  byId('suptNameTop').textContent = name;
-  byId('suptRankTop').textContent = d.profile.rank || '—';
-  byId('pFullName').textContent = name;
-  byId('pBadgeSub').textContent = `Badge: ${d.profile.badge_number || '—'}`;
-  byId('pAvatarLg').textContent = initials;
-  byId('pName').textContent = name;
-  byId('pBadge').textContent = d.profile.badge_number || '—';
-  byId('pRank').textContent = d.profile.rank || '—';
-  byId('pEmail').textContent = d.profile.email || '—';
-  byId('pStation').textContent = d.profile.station_name || '—';
+  try {
+    const d = await api('../php/superintendentGetProfile.php');
+    if (!d.success) {
+      console.warn('Failed to load profile:', d.message);
+      return;
+    }
+    state.profile = d.profile || {};
+    const name = d.profile?.full_name || 'Officer';
+    const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase() || '—';
+    byId('suptInitials').textContent = initials;
+    byId('suptName').textContent = name;
+    byId('suptBadge').textContent = d.profile?.badge_number || '—';
+    byId('suptAvatarTop').textContent = initials;
+    byId('suptNameTop').textContent = name;
+    byId('suptRankTop').textContent = d.profile?.rank || '—';
+    byId('pFullName').textContent = name;
+    byId('pBadgeSub').textContent = `Badge: ${d.profile?.badge_number || '—'}`;
+    byId('pAvatarLg').textContent = initials;
+    byId('pName').textContent = name;
+    byId('pBadge').textContent = d.profile?.badge_number || '—';
+    byId('pRank').textContent = d.profile?.rank || '—';
+    byId('pEmail').textContent = d.profile?.email || '—';
+    byId('pStation').textContent = d.profile?.station_name || '—';
+  } catch (e) {
+    console.error('Error loading profile:', e);
+  }
 }
 
 async function loadDetainees() {
-  const d = await api('../php/superintendentGetDetainees.php');
-  state.detainees = d.success ? d.detainees : [];
-  renderDetainees();
+  try {
+    const d = await api('../php/superintendentGetDetainees.php');
+    if (!d.success) {
+      console.warn('Failed to load detainees:', d.message);
+      return;
+    }
+    state.detainees = d.detainees || [];
+    renderDetainees();
+  } catch (e) {
+    console.error('Error loading detainees:', e);
+  }
 }
 
 async function loadCells() {
-  const d = await api('../php/superintendentGetCells.php');
-  state.cells = d.success ? d.cells : [];
-  renderCells();
+  try {
+    const d = await api('../php/superintendentGetCells.php');
+    if (!d.success) {
+      console.warn('Failed to load cells:', d.message);
+      return;
+    }
+    state.cells = d.cells || [];
+    renderCells();
+  } catch (e) {
+    console.error('Error loading cells:', e);
+  }
 }
 
 async function loadHearings() {
-  const d = await api('../php/superintendentGetHearings.php');
-  state.hearings = d.success ? d.hearings : [];
-  renderHearings();
+  try {
+    const d = await api('../php/superintendentGetHearings.php');
+    if (!d.success) {
+      console.warn('Failed to load hearings:', d.message);
+      return;
+    }
+    state.hearings = d.hearings || [];
+    renderHearings();
+  } catch (e) {
+    console.error('Error loading hearings:', e);
+  }
 }
 
 async function loadCases() {
-  const d = await api('../php/superintendentGetCases.php');
-  state.cases = d.success ? d.cases : [];
-  renderCases();
+  try {
+    const d = await api('../php/superintendentGetCases.php');
+    if (!d.success) {
+      console.warn('Failed to load cases:', d.message);
+      return;
+    }
+    state.cases = d.cases || [];
+    renderCases();
+  } catch (e) {
+    console.error('Error loading cases:', e);
+  }
 }
 
 function renderDetainees() {
@@ -169,7 +215,7 @@ function renderHearings() {
   byId('hearTbody').innerHTML = rows.length ? rows.map((h) => `
     <tr>
       <td>${esc(h.detainee_name)}</td>
-      <td>${fmtDate(h.hearing_date)} ${h.hearing_time ? ` ${esc(h.hearing_time.slice(0,5))}` : ''}</td>
+      <td>${fmtDate(h.hearing_date)} ${h.hearing_time ? ` ${esc(String(h.hearing_time).slice(0,5))}` : ''}</td>
       <td>${esc(h.court_name || '—')}</td>
       <td>${esc(h.hearing_type || '—')}</td>
       <td>${esc(h.result || '—')}</td>

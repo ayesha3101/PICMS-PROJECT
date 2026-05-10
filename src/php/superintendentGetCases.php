@@ -14,10 +14,20 @@ if (
 
 $stationId = (int)($_SESSION['station_id'] ?? 0);
 
-$stmt = $conn->prepare("CALL sp_get_station_open_cases(?)");
-$stmt->bind_param('i', $stationId);
-$stmt->execute();
-$rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-$stmt->close();
+try {
+    $stmt = $conn->prepare("CALL sp_get_station_open_cases(?)");
+    if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
+    $stmt->bind_param('i', $stationId);
+    if (!$stmt->execute()) throw new Exception("Query failed: " . $stmt->error);
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 
-echo json_encode(['success' => true, 'cases' => $rows]);
+    echo json_encode(['success' => true, 'cases' => $rows]);
+} catch (Exception $e) {
+    error_log('superintendentGetCases: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'message' => 'Failed to fetch cases. Please try again.',
+        'error' => $e->getMessage()
+    ]);
+}
