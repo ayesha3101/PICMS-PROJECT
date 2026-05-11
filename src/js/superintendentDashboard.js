@@ -5,6 +5,34 @@ const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (m) => ({ '&':'&amp;','<'
 const fullName = (d) => [d.d_fname, d.d_minit, d.d_lname].filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
 const fmtDate = (v) => v ? new Date(v).toLocaleDateString('en-GB') : '—';
 
+function openModal(id) { byId(id).classList.add('open'); }
+function closeModal(id) { byId(id).classList.remove('open'); }
+
+function showAlert(id, type, msg) {
+  const el = byId(id);
+  if (!el) return;
+  el.className = `alert show alert-${type}`;
+  el.textContent = msg;
+}
+
+function hideAlert(id) {
+  const el = byId(id);
+  if (!el) return;
+  el.className = 'alert';
+  el.textContent = '';
+}
+
+function wireModalCloseButtons() {
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.addEventListener('click', () => closeModal(btn.dataset.close));
+  });
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+}
+
 function setTopbarDate() {
   const d = new Date();
   byId('topbarDate').textContent = d.toLocaleDateString('en-PK', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -173,8 +201,8 @@ function renderDetainees() {
       <td>${fmtDate(d.admission_date)}</td>
       <td class="actions">
         <button class="btn-action" onclick="openEditDetainee(${d.detainee_id})">Edit</button>
-        <button class="btn-action" onclick="openAssignCell(${d.detainee_id})">Assign Cell</button>
-        <button class="btn-action btn-danger" onclick="removeDetainee(${d.detainee_id})">Remove</button>
+        <button class="btn-action" onclick="openAssignCellModal(${d.detainee_id})">Assign Cell</button>
+        <button class="btn-action btn-danger" onclick="openDeleteModal(${d.detainee_id})">Remove</button>
       </td>
     </tr>`).join('') : '<tr><td colspan="7" class="tbl-empty"><div class="loading-row">No detainees found.</div></td></tr>';
 }
@@ -282,36 +310,113 @@ function openDetaineeModal(d = null) {
   byId('detPurpose').value = d?.purpose_of_admission || 'Remand';
   byId('detAdmission').value = d?.admission_date || '';
   byId('detComplaint').value = d?.complaint_id || '';
-  byId('detMsg').textContent = '';
-  byId('detModalBg').classList.add('open');
+  hideAlert('detAlert');
+  openModal('detModalBg');
 }
 
 window.openEditDetainee = (id) => openDetaineeModal(state.detainees.find((d) => Number(d.detainee_id) === Number(id)));
-window.openAssignCell = async (id) => {
+
+// Delete confirmation state
+let deleteConfirmMode = false;
+let deleteTargetId = null;
+
+window.openDeleteModal = (id) => {
   const d = state.detainees.find((x) => Number(x.detainee_id) === Number(id));
   if (!d) return;
+  deleteTargetId = id;
+  deleteConfirmMode = false;
+  byId('delName').textContent = esc(fullName(d));
+  byId('btnConfirmDelete').textContent = 'Delete (Click Again to Confirm)';
+  hideAlert('alertDeleteConfirm');
+  openModal('modalDeleteDetainee');
+};
+
+byId('btnConfirmDelete').addEventListener('click', async () => {
+  if (!deleteConfirmMode) {
+    deleteConfirmMode = true;
+    byId('btnConfirmDelete').textContent = '⚠ Click Again to Confirm Deletion';
+    showAlert('alertDeleteConfirm', 'warning', '⚠ This action cannot be undone. All records will be permanently deleted.');
+  } else {
+    byId('btnConfirmDelete').disabled = true;
+    byId('btnConfirmDelete').textContent = 'Deleting…';
+    const res = await api('../php/superintendentDeleteDetainee.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ detainee_id: deleteTargetId })
+    });
+    byId('btnConfirmDelete').disabled = false;
+    if (!res.success) {
+      deleteConfirmMode = false;
+      byId('btnConfirmDelete').textContent = 'Delete (Click Again to Confirm)';
+      showAlert('alertDeleteConfirm', 'error', res.message || 'Failed to delete detainee.');
+      return;
+    }
+    closeModal('modalDeleteDetainee');
+    await Promise.all([loadDetainees(), loadCells(), loadStats()]);
+  }
+});
+
+// Cell assignment state
+let assignTargetDetainee = null;
+
+window.openAssignCellModal = (id) => {
+  const d = state.detainees.find((x) => Number(x.detainee_id) === Number(id));
+  if (!d) return;
+  assignTargetDetainee = d;
+  byId('assignDetName').textContent = esc(fullName(d));
+  byId('assignCellGender').textContent = esc(d.gender);
   const options = state.cells
     .filter((c) => c.gender === d.gender)
-    .map((c) => `${c.cell_id}:${c.cell_code} (${c.occupied}/${c.capacity})`).join('\n');
-  const input = prompt(`Enter Cell ID for ${fullName(d)} (${d.gender})\n${options}`);
-  const cellId = Number(input);
-  if (!cellId) return;
-  const res = await api('../php/superintendentAssignCell.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ detainee_id:id, cell_id:cellId }) });
-  if (!res.success) { alert(res.message || 'Assignment failed'); return; }
+    .map((c) => ({ ...c, available: Number(c.capacity) - Number(c.occupied) }));
+  const select = byId('assignCellSelect');
+  select.innerHTML = '<option value="">Choose a cell…</option>' +
+    options.map((c) => `<option value="${c.cell_id}">${esc(c.cell_code)} (${c.occupied}/${c.capacity})</option>`).join('');
+  hideAlert('alertAssignCell');
+  byId('assignCellInfo').style.display = 'none';
+  openModal('modalAssignCell');
+};
+
+byId('assignCellSelect').addEventListener('change', () => {
+  const cellId = Number(byId('assignCellSelect').value);
+  if (!cellId) {
+    byId('assignCellInfo').style.display = 'none';
+    return;
+  }
+  const cell = state.cells.find((c) => Number(c.cell_id) === cellId);
+  if (!cell) return;
+  const available = Number(cell.capacity) - Number(cell.occupied);
+  byId('infoCapacity').textContent = esc(cell.capacity);
+  byId('infoOccupied').textContent = esc(cell.occupied);
+  byId('infoAvailable').textContent = esc(available);
+  byId('infoGender').textContent = esc(cell.gender);
+  byId('assignCellInfo').style.display = 'block';
+});
+
+byId('btnAssignCell').addEventListener('click', async () => {
+  const cellId = Number(byId('assignCellSelect').value);
+  if (!cellId || !assignTargetDetainee) {
+    showAlert('alertAssignCell', 'error', 'Please select a cell.');
+    return;
+  }
+  byId('btnAssignCell').disabled = true;
+  byId('btnAssignCell').textContent = 'Assigning…';
+  const res = await api('../php/superintendentAssignCell.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ detainee_id: assignTargetDetainee.detainee_id, cell_id: cellId })
+  });
+  byId('btnAssignCell').disabled = false;
+  byId('btnAssignCell').textContent = 'Assign Cell';
+  if (!res.success) {
+    showAlert('alertAssignCell', 'error', res.message || 'Failed to assign cell.');
+    return;
+  }
+  closeModal('modalAssignCell');
   await Promise.all([loadDetainees(), loadCells()]);
-};
-window.removeDetainee = async (id) => {
-  if (!confirm('Remove this detainee?')) return;
-  const res = await api('../php/superintendentDeleteDetainee.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ detainee_id:id }) });
-  if (!res.success) { alert(res.message || 'Delete failed'); return; }
-  await Promise.all([loadDetainees(), loadCells(), loadStats()]);
-};
+});
 
 function wireDetaineeModal() {
   byId('addDetaineeBtn').addEventListener('click', () => openDetaineeModal());
-  byId('detCloseBtn').addEventListener('click', () => byId('detModalBg').classList.remove('open'));
-  byId('detCancelBtn').addEventListener('click', () => byId('detModalBg').classList.remove('open'));
-  byId('detModalBg').addEventListener('click', (e) => { if (e.target === byId('detModalBg')) byId('detModalBg').classList.remove('open'); });
   byId('detSaveBtn').addEventListener('click', async () => {
     const payload = {
       detainee_id: byId('detId').value || null,
@@ -325,11 +430,24 @@ function wireDetaineeModal() {
       admission_date: byId('detAdmission').value,
       complaint_id: byId('detComplaint').value || null,
     };
-    const res = await api('../php/superintendentSaveDetainee.php', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-    byId('detMsg').textContent = res.success ? 'Saved successfully.' : (res.message || 'Save failed.');
-    if (!res.success) return;
-    byId('detModalBg').classList.remove('open');
-    await Promise.all([loadDetainees(), loadCells(), loadCases(), loadStats()]);
+    byId('detSaveBtn').disabled = true;
+    byId('detSaveBtn').textContent = 'Saving…';
+    const res = await api('../php/superintendentSaveDetainee.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    byId('detSaveBtn').disabled = false;
+    byId('detSaveBtn').textContent = 'Save Detainee';
+    if (!res.success) {
+      showAlert('detAlert', 'error', res.message || 'Failed to save detainee.');
+      return;
+    }
+    showAlert('detAlert', 'success', 'Saved successfully.');
+    setTimeout(() => {
+      closeModal('detModalBg');
+      Promise.all([loadDetainees(), loadCells(), loadCases(), loadStats()]);
+    }, 600);
   });
 }
 
@@ -353,6 +471,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const ok = await checkSession();
   if (!ok) return;
   setTopbarDate();
+  wireModalCloseButtons();
   wireNavigation();
   wireSidebarToggle();
   wireFilters();
