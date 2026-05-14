@@ -9,12 +9,12 @@ if (
     $_SESSION['role'] !== 'officer' ||
     (int)$_SESSION['role_id'] !== 1
 ) {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized.']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized.']); //error message
     exit;
 }
 
 echo json_encode([
-    'success'      => true,
+    'success'      => true,   //session valid
     'officer_id'   => $_SESSION['officer_id'],
     'officer_name' => $_SESSION['officer_name'],
     'badge_number' => $_SESSION['badge_number'],

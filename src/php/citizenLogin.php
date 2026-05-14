@@ -5,27 +5,27 @@
 //      create session on success
 // ══════════════════════════════════════════════
 session_start();
-require_once __DIR__ . '/../config/config.php';
+require_once __DIR__ . '/../config/config.php';  //needed to access $conn
 
-header('Content-Type: application/json');
+header('Content-Type: application/json'); //json response
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    echo json_encode(['success' => false, 'message' => 'Invalid request']);
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') { //post only
+    echo json_encode(['success' => false, 'message' => 'Invalid request']); //error connecting to database
     exit;
 }
 
-$data       = json_decode(file_get_contents('php://input'), true);
+$data       = json_decode(file_get_contents('php://input'), true); //get post data
 $identifier = trim($data['identifier'] ?? '');
 $password   = $data['password']        ?? '';
 $mode       = trim($data['mode']       ?? 'email');
 
 if (!$identifier || !$password) {
-    echo json_encode(['success' => false, 'message' => 'Please fill in all fields']);
+    echo json_encode(['success' => false, 'message' => 'Please fill in all fields']);//fields are not filled
     exit;
 }
 
 // ── Find citizen by email or CNIC
-if ($mode === 'email') {
+if ($mode === 'email') { //logged in via email
     /*SQL*/
     $stmt = $conn->prepare("
         SELECT cnic, c_fname, c_lname, email, password_hash, is_verified 
@@ -36,14 +36,14 @@ if ($mode === 'email') {
     /*SQL*/
     $stmt = $conn->prepare("
         SELECT cnic, c_fname, c_lname, email, password_hash, is_verified 
-        FROM citizens WHERE cnic = ?
-    ");
+        FROM citizens WHERE cnic = ? 
+    ");//to prevent sql injection
     /*END*/
 }
 
-$stmt->bind_param("s", $identifier);
-$stmt->execute();
-$citizen = $stmt->get_result()->fetch_assoc();
+$stmt->bind_param("s", $identifier); //as string
+$stmt->execute();//execute kerdo query ko
+$citizen = $stmt->get_result()->fetch_assoc();//get the result aur array my convert kerdo asaani k liye
 
 // ── Check citizen exists
 if (!$citizen) {

@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $cnic = $_SESSION['citizen_cnic'];
-$input = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true); //json body ko convert kerdo array my after decoding it
 $appointment_id = (int) ($input['appointment_id'] ?? 0);
 $action = trim($input['action'] ?? '');
 

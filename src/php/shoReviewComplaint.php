@@ -48,10 +48,10 @@ if ($action === 'reject' && empty($reason)) {
     exit;
 }
 
-// Verify complaint belongs to this station and is in 'Submitted' status
+// Verify complaint belongs to this station and is in 'Submitted' or 'Under Review' status
 $chk = $conn->prepare("
     SELECT complaint_id FROM complaints
-    WHERE  complaint_id = ? AND station_id = ? AND status = 'Submitted'
+    WHERE  complaint_id = ? AND station_id = ? AND status IN ('Submitted', 'Under Review')
     LIMIT  1
 ");
 $chk->bind_param('ii', $complaint_id, $station_id);

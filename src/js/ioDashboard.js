@@ -82,12 +82,12 @@ async function loadProfile() {
 }
 
 // ── LOAD STATS ────────────────────────────────────────────
-async function loadStats() {
+async function loadStats() { //async cuz time lgega fetch use kerne main
   try {
-    const res  = await fetch('../php/ioGetStats.php');
-    const data = await res.json();
-    if (!data.success) return;
-    document.getElementById('oTotal').textContent    = data.totalCases;
+    const res  = await fetch('../php/ioGetStats.php'); //fetch se data get krna hai
+    const data = await res.json(); //json main convert krna hai
+    if (!data.success) return; //agar success nhi hai to return krdo
+    document.getElementById('oTotal').textContent    = data.totalCases; //values ko assign kero front end p show kerne k liye
     document.getElementById('oActive').textContent   = data.activeCases;
     document.getElementById('oResolved').textContent = data.resolvedCases;
   } catch (e) {

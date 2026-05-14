@@ -200,7 +200,7 @@ CREATE TABLE witnesses (
 CREATE TABLE withdrawal_requests (
     request_id     INT AUTO_INCREMENT PRIMARY KEY,
     complaint_id   INT NOT NULL,
-    requested_by   VARCHAR(15) NOT NULL,
+    requested_by   VARCHAR(15) NOT NULL,  -- not needed
     reason         TEXT NULL,
     status         ENUM('Pending','Approved','Rejected') DEFAULT 'Pending',
     rejection_note VARCHAR(255) NULL,
@@ -422,7 +422,7 @@ SELECT
     COALESCE((
         SELECT COUNT(*)
         FROM appointments ap2
-        WHERE ap2.complaint_id = a.complaint_id
+        WHERE ap2.complaint_id = a.complaint_id  
           AND ap2.status = 'Cancelled'
     ), 0) AS miss_count
 FROM appointments a

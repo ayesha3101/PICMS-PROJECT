@@ -1,6 +1,4 @@
 <?php
-// ioGetCaseDetail.php — Single case detail + timeline.
-// Enforces: case must be assigned to this IO AND at their station.
 require_once __DIR__ . '/../config/config.php';
 session_start();
 header('Content-Type: application/json');
@@ -14,7 +12,7 @@ if (
     exit;
 }
 
-$officerId   = (int)$_SESSION['officer_id'];
+$officerId   = (int)$_SESSION['officer_id'];//type cast
 $stationId   = (int)($_SESSION['station_id'] ?? 0);
 $complaintId = (int)($_GET['id'] ?? 0);
 

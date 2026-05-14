@@ -29,8 +29,7 @@
 // │ could leave the complaint in Accepted status
 // │ but the appointment still showing Accepted,
 // │ or the case closed without a log entry.
-// └────────────────────────────────────────────
-// ══════════════════════════════════════════════
+
 session_start();
 require_once __DIR__ . '/../config/config.php';
 header('Content-Type: application/json');

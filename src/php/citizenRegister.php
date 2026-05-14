@@ -1,9 +1,5 @@
 <?php
-// ══════════════════════════════════════════════
-// citizenRegister.php
-// Job: validate + save citizen to DB
-//      then call sendOTP.php to send OTP
-// ══════════════════════════════════════════════
+
 session_start();
 require_once __DIR__ . '/../config/config.php';
 require_once __DIR__ . '/otpService.php';

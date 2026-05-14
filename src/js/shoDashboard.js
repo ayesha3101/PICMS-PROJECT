@@ -493,8 +493,8 @@ function buildCaseActions(c, appointments, missCount) {
   const hasCompletedAppt = appointments.some(a => a.status === 'Completed');
   const hasPendingOrAcceptedAppt = lastAppt && ['Pending','Accepted'].includes(lastAppt.status);
 
-  // 1. Submitted → can review
-  if (c.status === 'Submitted') {
+  // 1. Submitted or Under Review → can review
+  if (['Submitted', 'Under Review'].includes(c.status)) {
     zone.innerHTML = `
       <button class="btn btn-primary" id="btnOpenReview">
         <svg viewBox="0 0 24 24"><polyline points="20,6 9,17 4,12"/></svg>
