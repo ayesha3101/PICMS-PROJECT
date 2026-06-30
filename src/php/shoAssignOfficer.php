@@ -4,30 +4,8 @@
 // Assigns (or reassigns) an investigating officer
 // to a complaint. Only allowed after at least one
 // completed appointment exists.
-//
-// ┌─ WHY TRANSACTION? ─────────────────────────
-// │ Assignment involves up to five coordinated writes:
-// │  1. INSERT case_assignments (trigger retires old one)
-// │     ↳ trigger `before_case_reassign` fires — it sets
-// │       the previous row's is_current = 0. This means
-// │       the trigger + our INSERT are part of one logical
-// │       unit. If our subsequent writes fail, we'd have
-// │       a retired assignment with no replacement.
-// │  2. UPDATE complaints SET status = 'Officer Assigned'
-// │     (trigger `after_status_update` auto-logs System entry)
-// │  3. UPDATE officers SET active_caseload = active_caseload + 1
-// │     (for the newly assigned officer)
-// │  4. UPDATE officers SET active_caseload = active_caseload - 1
-// │     (for the previously assigned officer, if reassigning)
-// │  5. INSERT case_updates (SHO-authored log note)
-// │
-// │ Without a transaction: if the network drops after
-// │ step 1 but before step 3, the new officer's caseload
-// │ counter would be wrong. If step 2 fails, the complaint
-// │ would show the wrong status. All five writes are
-// │ rolled back together if any step fails.
-// └────────────────────────────────────────────
-// ══════════════════════════════════════════════
+
+
 session_start();
 require_once __DIR__ . '/../config/config.php';
 header('Content-Type: application/json');
